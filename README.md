@@ -86,17 +86,41 @@ Solução organizada em camadas (Clean Architecture simplificada):
 
 ### Pré-requisitos
 - .NET 8 SDK
-- PostgreSQL 12+
+- PostgreSQL 12+ (ou Docker)
 - Visual Studio 2022 ou VS Code
 - Git
 
-### Configuração Inicial
-1. Clone o repositório: `git clone [url-do-repo]`
-2. Configure PostgreSQL e crie o banco `orama_erp`
-3. Ajuste a connection string no `appsettings.json`
-4. Execute as migrations: `dotnet ef database update`
-5. Execute o projeto: `dotnet run --project Orama.Web`
-6. Acesse: `https://localhost:5001`
+### Opção 1: Com Docker (Recomendado para desenvolvimento)
+```bash
+# 1. Clone o repositório
+git clone [url-do-repo]
+cd orama-erp
+
+# 2. Subir PostgreSQL com Docker
+docker-compose up -d postgres
+
+# 3. Restaurar pacotes e executar migrations
+dotnet restore
+cd src/Orama.Web
+dotnet ef database update
+
+# 4. Executar o projeto
+dotnet run
+```
+
+### Opção 2: PostgreSQL local
+```bash
+# 1. Instalar PostgreSQL localmente
+# 2. Criar banco: CREATE DATABASE orama_erp_dev;
+# 3. Configurar connection string no appsettings.Development.json
+# 4. Seguir passos 3 e 4 da Opção 1
+```
+
+### Acesso ao Sistema
+- **Sistema:** https://localhost:5001
+- **pgAdmin (se usando Docker):** http://localhost:8080
+  - Email: admin@orama.com.br
+  - Senha: admin123
 
 ### Usuário Padrão
 - **Login:** admin@orama.com.br

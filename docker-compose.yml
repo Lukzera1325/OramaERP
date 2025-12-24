@@ -1,0 +1,42 @@
+# Docker Compose para desenvolvimento local do Orama ERP
+# Facilita a configuração do PostgreSQL para desenvolvimento
+
+version: '3.8'
+
+services:
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: orama_postgres
+    environment:
+      POSTGRES_DB: orama_erp_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - orama_network
+
+  # pgAdmin para administração do banco (opcional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: orama_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@orama.com.br
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    networks:
+      - orama_network
+
+volumes:
+  postgres_data:
+
+networks:
+  orama_network:
+    driver: bridge
