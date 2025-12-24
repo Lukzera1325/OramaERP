@@ -1,0 +1,315 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Cabeçalho do Dashboard -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 mb-0">
+                        <i class="fas fa-tachometer-alt text-santorini-blue me-3"></i>
+                        Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Visão geral do seu negócio</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">Última atualização: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas Importantes -->
+    @if (Model.TemAlertas)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Atenção! Há itens que precisam da sua atenção:
+                    </h5>
+                    <ul class="mb-0">
+                        @if (Model.ContasReceberVencidas > 0)
+                        {
+                            <li><strong>@Model.ContasReceberVencidas</strong> contas a receber vencidas</li>
+                        }
+                        @if (Model.ContasPagarVencidas > 0)
+                        {
+                            <li><strong>@Model.ContasPagarVencidas</strong> contas a pagar vencidas</li>
+                        }
+                        @if (Model.EstoqueBaixo > 0)
+                        {
+                            <li><strong>@Model.EstoqueBaixo</strong> produtos com estoque baixo</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Cards de Resumo -->
+    <div class="row mb-4">
+        <!-- Clientes -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">@Model.TotalClientes</h3>
+                            <p class="mb-0">Clientes</p>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-3x text-santorini-blue"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="@Url.Action("Index", "Clientes")" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-eye me-1"></i> Ver Clientes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fornecedores -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">@Model.TotalFornecedores</h3>
+                            <p class="mb-0">Fornecedores</p>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-truck fa-3x text-santorini-gold"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="@Url.Action("Index", "Fornecedores")" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-eye me-1"></i> Ver Fornecedores
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produtos -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">@Model.TotalProdutos</h3>
+                            <p class="mb-0">Produtos</p>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box fa-3x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="@Url.Action("Index", "Produtos")" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-eye me-1"></i> Ver Produtos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estoque Baixo -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-body text-center">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0 @(Model.EstoqueBaixo > 0 ? "text-danger" : "")">@Model.EstoqueBaixo</h3>
+                            <p class="mb-0">Estoque Baixo</p>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-3x @(Model.EstoqueBaixo > 0 ? "text-danger" : "text-muted")"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="@Url.Action("Index", "Estoque")" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-warehouse me-1"></i> Ver Estoque
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos e Informações Financeiras -->
+    <div class="row mb-4">
+        <!-- Resumo Financeiro -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Resumo Financeiro do Mês
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-success mb-1">@Model.VendasMes.ToString("C")</h4>
+                                <p class="text-muted mb-0">Vendas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-danger mb-1">@Model.ComprasMes.ToString("C")</h4>
+                                <p class="text-muted mb-0">Compras</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <h4 class="@(Model.SaldoMes >= 0 ? "text-success" : "text-danger") mb-1">
+                                @Model.SaldoMes.ToString("C")
+                            </h4>
+                            <p class="text-muted mb-0">Saldo</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de progresso visual -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Performance do Mês</span>
+                            <span class="text-muted">
+                                @{
+                                    var performance = Model.VendasMes > 0 ? (Model.SaldoMes / Model.VendasMes * 100) : 0;
+                                }
+                                @performance.ToString("F1")%
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar @(performance >= 0 ? "bg-success" : "bg-danger")" 
+                                 role="progressbar" 
+                                 style="width: @Math.Abs(performance)%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Create", "Vendas")" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Nova Venda
+                        </a>
+                        <a href="@Url.Action("Create", "Clientes")" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Novo Cliente
+                        </a>
+                        <a href="@Url.Action("Create", "Produtos")" class="btn btn-warning">
+                            <i class="fas fa-box me-2"></i>Novo Produto
+                        </a>
+                        <a href="@Url.Action("Index", "ContasReceber")" class="btn btn-info">
+                            <i class="fas fa-money-bill-wave me-2"></i>Contas a Receber
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimas Atividades -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Últimas Atividades
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Por enquanto, dados fictícios -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Venda realizada</h6>
+                                <p class="mb-1 text-muted">Cliente: João Silva - Valor: R$ 1.250,00</p>
+                                <small class="text-muted">Há 2 horas</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Novo cliente cadastrado</h6>
+                                <p class="mb-1 text-muted">Maria Santos - CNPJ: 12.345.678/0001-90</p>
+                                <small class="text-muted">Há 4 horas</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Produto com estoque baixo</h6>
+                                <p class="mb-1 text-muted">Produto XYZ - Estoque atual: 5 unidades</p>
+                                <small class="text-muted">Há 6 horas</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--santorini-gray-light);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--santorini-gray-light);
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+}

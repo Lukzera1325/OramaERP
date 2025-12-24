@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Orama ERP</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Inspiração grega -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-santorini-blue fixed-top">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand text-white fw-bold fs-3" href="@Url.Action("Index", "Home")">
+                <i class="fas fa-columns me-2"></i>Orama
+            </a>
+            
+            <!-- Toggle para mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Menu superior -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            @(Context.Session.GetString("UsuarioNome") ?? "Usuário")
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Meu Perfil</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configurações</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Logout", "Auth")"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-santorini-white sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" href="@Url.Action("Index", "Home")">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        
+                        <!-- Cadastros -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" data-bs-toggle="collapse" href="#cadastrosMenu" role="button">
+                                <i class="fas fa-address-book me-2"></i>
+                                Cadastros
+                                <i class="fas fa-chevron-down ms-auto"></i>
+                            </a>
+                            <div class="collapse" id="cadastrosMenu">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "Clientes")">
+                                            <i class="fas fa-users me-2"></i>Clientes
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "Fornecedores")">
+                                            <i class="fas fa-truck me-2"></i>Fornecedores
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "Produtos")">
+                                            <i class="fas fa-box me-2"></i>Produtos
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        
+                        <!-- Financeiro -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" data-bs-toggle="collapse" href="#financeiroMenu" role="button">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                Financeiro
+                                <i class="fas fa-chevron-down ms-auto"></i>
+                            </a>
+                            <div class="collapse" id="financeiroMenu">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "ContasReceber")">
+                                            <i class="fas fa-arrow-up me-2 text-success"></i>Contas a Receber
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "ContasPagar")">
+                                            <i class="fas fa-arrow-down me-2 text-danger"></i>Contas a Pagar
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "FluxoCaixa")">
+                                            <i class="fas fa-chart-line me-2"></i>Fluxo de Caixa
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        
+                        <!-- Vendas -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" href="@Url.Action("Index", "Vendas")">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Vendas
+                            </a>
+                        </li>
+                        
+                        <!-- Compras -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" href="@Url.Action("Index", "Compras")">
+                                <i class="fas fa-shopping-bag me-2"></i>
+                                Compras
+                            </a>
+                        </li>
+                        
+                        <!-- Estoque -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" href="@Url.Action("Index", "Estoque")">
+                                <i class="fas fa-warehouse me-2"></i>
+                                Estoque
+                            </a>
+                        </li>
+                        
+                        <!-- Fiscal -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" href="@Url.Action("Index", "Fiscal")">
+                                <i class="fas fa-file-invoice me-2"></i>
+                                Fiscal
+                            </a>
+                        </li>
+                        
+                        <!-- Segurança -->
+                        <li class="nav-item">
+                            <a class="nav-link sidebar-link" data-bs-toggle="collapse" href="#segurancaMenu" role="button">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Segurança
+                                <i class="fas fa-chevron-down ms-auto"></i>
+                            </a>
+                            <div class="collapse" id="segurancaMenu">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "Usuarios")">
+                                            <i class="fas fa-users-cog me-2"></i>Usuários
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link sidebar-sublink" href="@Url.Action("Index", "Perfis")">
+                                            <i class="fas fa-user-tag me-2"></i>Perfis
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Conteúdo principal -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Breadcrumb -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+                            @if (ViewData["Breadcrumb"] != null)
+                            {
+                                @Html.Raw(ViewData["Breadcrumb"])
+                            }
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- Alertas -->
+                @if (TempData["Sucesso"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Sucesso"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (TempData["Erro"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Erro"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (TempData["Aviso"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Aviso"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <!-- Conteúdo da página -->
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

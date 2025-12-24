@@ -1,0 +1,380 @@
+/* 
+ * Orama ERP - Tema Santorini
+ * Inspirado na beleza clássica da Grécia
+ * Cores: Azul do mar Egeu e branco das construções
+ */
+
+:root {
+    /* Paleta de cores Santorini */
+    --santorini-blue: #2E86AB;
+    --santorini-blue-dark: #1B5E7A;
+    --santorini-blue-light: #A8DADC;
+    --santorini-white: #F8F9FA;
+    --santorini-cream: #FDF6E3;
+    --santorini-gold: #F4A261;
+    --santorini-coral: #E76F51;
+    --santorini-gray: #6C757D;
+    --santorini-gray-light: #E9ECEF;
+}
+
+/* Reset e configurações gerais */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--santorini-cream);
+    color: #333;
+    padding-top: 76px; /* Altura da navbar fixa */
+}
+
+/* Tipografia */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    color: var(--santorini-blue-dark);
+}
+
+/* Navbar */
+.bg-santorini-blue {
+    background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-blue-dark) 100%);
+    box-shadow: 0 2px 10px rgba(46, 134, 171, 0.3);
+}
+
+.navbar-brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Sidebar */
+.bg-santorini-white {
+    background-color: var(--santorini-white);
+    border-right: 1px solid var(--santorini-gray-light);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+
+.sidebar {
+    position: fixed;
+    top: 76px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.sidebar .nav-link {
+    color: var(--santorini-gray);
+    padding: 12px 20px;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: var(--santorini-blue);
+    background-color: var(--santorini-blue-light);
+    border-left: 4px solid var(--santorini-blue);
+    padding-left: 16px;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-sublink {
+    font-size: 0.9rem;
+    padding-left: 40px !important;
+}
+
+.sidebar-sublink:hover {
+    background-color: var(--santorini-gray-light);
+    border-left: 3px solid var(--santorini-gold);
+}
+
+/* Conteúdo principal */
+.main-content {
+    margin-left: 0;
+    padding-top: 20px;
+    min-height: calc(100vh - 76px);
+}
+
+@media (min-width: 768px) {
+    .main-content {
+        margin-left: 16.66667%;
+    }
+}
+
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 16.66667%;
+    }
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-blue-dark) 100%);
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+    border: none;
+    padding: 20px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+}
+
+/* Botões */
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-blue-dark) 100%);
+    box-shadow: 0 4px 15px rgba(46, 134, 171, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(46, 134, 171, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--santorini-gold) 0%, #e67e22 100%);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--santorini-coral) 0%, #c0392b 100%);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--santorini-blue);
+    color: var(--santorini-blue);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--santorini-blue);
+    border-color: var(--santorini-blue);
+    color: white;
+}
+
+/* Formulários */
+.form-control {
+    border: 2px solid var(--santorini-gray-light);
+    border-radius: 8px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--santorini-blue);
+    box-shadow: 0 0 0 0.2rem rgba(46, 134, 171, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--santorini-blue-dark);
+    margin-bottom: 8px;
+}
+
+/* Tabelas */
+.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.table thead th {
+    background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-blue-dark) 100%);
+    color: white;
+    border: none;
+    padding: 16px;
+    font-weight: 600;
+}
+
+.table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: var(--santorini-blue-light);
+}
+
+.table td {
+    padding: 16px;
+    border-color: var(--santorini-gray-light);
+}
+
+/* Alertas */
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.breadcrumb-item a {
+    color: var(--santorini-blue);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--santorini-blue-dark);
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: var(--santorini-gray);
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    background: linear-gradient(135deg, white 0%, var(--santorini-cream) 100%);
+    border-left: 4px solid var(--santorini-blue);
+}
+
+.dashboard-card .card-body {
+    padding: 30px;
+}
+
+.dashboard-card h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--santorini-blue);
+    margin-bottom: 10px;
+}
+
+.dashboard-card p {
+    color: var(--santorini-gray);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Ícones coloridos */
+.text-santorini-blue { color: var(--santorini-blue) !important; }
+.text-santorini-gold { color: var(--santorini-gold) !important; }
+.text-santorini-coral { color: var(--santorini-coral) !important; }
+
+/* Responsividade */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: relative;
+        top: 0;
+        height: auto;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding-top: 10px;
+    }
+    
+    body {
+        padding-top: 56px;
+    }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Loading spinner */
+.spinner-santorini {
+    border: 4px solid var(--santorini-gray-light);
+    border-top: 4px solid var(--santorini-blue);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Utilitários */
+.bg-gradient-santorini {
+    background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-blue-dark) 100%);
+}
+
+.text-shadow {
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.border-santorini {
+    border-color: var(--santorini-blue) !important;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--santorini-gray-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--santorini-blue);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--santorini-blue-dark);
+}
