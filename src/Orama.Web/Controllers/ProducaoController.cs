@@ -98,10 +98,13 @@ public class ProducaoController : BaseController
         return View(ordem);
     }
 
-    // POST: Producao/Liberar/5 (Liberar ordem)
+    /// <summary>
+    /// Libera ordem para produção
+    /// Ação: Planejada → Liberada
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Liberar(int id)
+    public async Task<IActionResult> LiberarParaProducao(int id)
     {
         try
         {
@@ -111,22 +114,25 @@ public class ProducaoController : BaseController
             var sucesso = await _ordemProducaoService.LiberarAsync(id, empresaId, usuarioId);
 
             if (sucesso)
-                TempData["Sucesso"] = "Ordem liberada para produção!";
+                TempData["Sucesso"] = "Ordem liberada para produção com sucesso!";
             else
-                TempData["Erro"] = "Ordem não encontrada.";
+                TempData["Erro"] = "Ordem não encontrada ou não pode ser liberada.";
         }
         catch (Exception ex)
         {
-            TempData["Erro"] = $"Erro ao liberar ordem: {ex.Message}";
+            TempData["Erro"] = $"Erro ao liberar ordem para produção: {ex.Message}";
         }
 
         return RedirectToAction(nameof(Detalhes), new { id });
     }
 
-    // POST: Producao/Iniciar/5 (Iniciar ordem)
+    /// <summary>
+    /// Inicia a produção
+    /// Ação: Liberada → Em Andamento
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Iniciar(int id)
+    public async Task<IActionResult> IniciarProducao(int id)
     {
         try
         {
@@ -138,7 +144,7 @@ public class ProducaoController : BaseController
             if (sucesso)
                 TempData["Sucesso"] = "Produção iniciada com sucesso!";
             else
-                TempData["Erro"] = "Ordem não encontrada.";
+                TempData["Erro"] = "Ordem não encontrada ou não pode ser iniciada.";
         }
         catch (Exception ex)
         {
@@ -148,10 +154,14 @@ public class ProducaoController : BaseController
         return RedirectToAction(nameof(Detalhes), new { id });
     }
 
-    // POST: Producao/Finalizar/5 (Finalizar ordem)
+    /// <summary>
+    /// Finaliza a produção e atualiza estoque automaticamente
+    /// Ação: Em Andamento → Finalizada
+    /// Efeitos: Baixa componentes + Entrada produto acabado
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Finalizar(int id, decimal quantidadeProduzida)
+    public async Task<IActionResult> FinalizarProducao(int id, decimal quantidadeProduzida)
     {
         try
         {
@@ -163,7 +173,7 @@ public class ProducaoController : BaseController
             if (sucesso)
                 TempData["Sucesso"] = "Produção finalizada com sucesso! Estoque atualizado automaticamente.";
             else
-                TempData["Erro"] = "Ordem não encontrada.";
+                TempData["Erro"] = "Ordem não encontrada ou não pode ser finalizada.";
         }
         catch (Exception ex)
         {
@@ -173,10 +183,13 @@ public class ProducaoController : BaseController
         return RedirectToAction(nameof(Detalhes), new { id });
     }
 
-    // POST: Producao/Cancelar/5 (Cancelar ordem)
+    /// <summary>
+    /// Cancela a ordem de produção
+    /// Ação: Qualquer Status (exceto Finalizada) → Cancelada
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Cancelar(int id, string motivo)
+    public async Task<IActionResult> CancelarOrdemProducao(int id, string motivo)
     {
         try
         {
@@ -186,13 +199,13 @@ public class ProducaoController : BaseController
             var sucesso = await _ordemProducaoService.CancelarAsync(id, motivo, empresaId, usuarioId);
 
             if (sucesso)
-                TempData["Sucesso"] = "Ordem cancelada com sucesso!";
+                TempData["Sucesso"] = "Ordem de produção cancelada com sucesso!";
             else
-                TempData["Erro"] = "Ordem não encontrada.";
+                TempData["Erro"] = "Ordem não encontrada ou não pode ser cancelada.";
         }
         catch (Exception ex)
         {
-            TempData["Erro"] = $"Erro ao cancelar ordem: {ex.Message}";
+            TempData["Erro"] = $"Erro ao cancelar ordem de produção: {ex.Message}";
         }
 
         return RedirectToAction(nameof(Detalhes), new { id });

@@ -3,23 +3,31 @@ using System.ComponentModel.DataAnnotations;
 namespace Orama.Domain.Entities;
 
 /// <summary>
-/// Status simples da Ordem de Produção
+/// Status da Ordem de Produção - Fluxo Industrial Simplificado
+/// Planejada → Liberada → Em Andamento → Finalizada
 /// </summary>
 public enum StatusOrdemProducao
 {
-    Planejada = 1,    // Criada
-    Liberada = 2,     // Liberada para produção
-    EmAndamento = 3,  // Em produção
-    Finalizada = 5,   // Finalizada
-    Cancelada = 6     // Cancelada
+    Planejada = 1,    // Ordem criada, aguardando liberação
+    Liberada = 2,     // Liberada para iniciar produção
+    EmAndamento = 3,  // Produção em execução
+    Finalizada = 5,   // Produção concluída, estoque atualizado
+    Cancelada = 6     // Ordem cancelada
 }
 
 /// <summary>
-/// Ordem de Produção - SIMPLIFICADA
-/// Centraliza todas as regras de produção industrial
+/// Ordem de Produção Industrial - Entidade Rica com Regras de Negócio
+/// 
+/// Responsabilidades:
+/// - Controlar o fluxo de produção (Planejar → Liberar → Iniciar → Finalizar)
+/// - Validar pré-condições para cada transição de estado
+/// - Calcular custos e quantidades de produção
+/// - Integrar com estrutura de produtos (BOM)
 /// </summary>
 public class OrdemProducao
 {
+    #region Propriedades Básicas
+    
     public int Id { get; set; }
 
     [Required]
@@ -59,7 +67,10 @@ public class OrdemProducao
     // Relacionamentos essenciais
     public virtual ICollection<OrdemProducaoItem> Itens { get; set; } = new List<OrdemProducaoItem>();
 
-    // Propriedades calculadas
+    #endregion
+
+    #region Propriedades Calculadas
+
     public string StatusDescricao => Status switch
     {
         StatusOrdemProducao.Planejada => "Planejada",
@@ -79,28 +90,39 @@ public class OrdemProducao
         }
     }
 
-    // REGRAS DE NEGÓCIO CENTRALIZADAS NA ENTIDADE
+    #endregion
+
+    #region Métodos Estáticos - Operações de Criação e Validação
 
     /// <summary>
-    /// Valida se a ordem pode ser criada
+    /// Valida se uma ordem de produção pode ser criada
+    /// Verifica: produto produzível, estrutura definida, estoque suficiente
     /// </summary>
-    public static (bool Valida, List<string> Erros) ValidarCriacao(Produto produto, decimal quantidade, IEnumerable<EstruturaProduto> estrutura)
+    public static (bool EhValida, List<string> MensagensErro) ValidarCriacaoOrdemProducao(
+        Produto produto, 
+        decimal quantidadeDesejada, 
+        IEnumerable<EstruturaProduto> estruturaProduto)
     {
         var erros = new List<string>();
 
+        // Validar se produto pode ser produzido
         if (!produto.EhProduzivel())
             erros.Add($"Produto '{produto.Descricao}' não é produzível");
 
-        if (!estrutura.Any())
-            erros.Add($"Produto '{produto.Descricao}' não possui estrutura de produção");
+        // Validar se tem estrutura de produção (BOM)
+        if (!estruturaProduto.Any())
+            erros.Add($"Produto '{produto.Descricao}' não possui estrutura de produção definida");
 
-        foreach (var item in estrutura)
+        // Validar estoque dos componentes
+        foreach (var componenteEstrutura in estruturaProduto)
         {
-            if (!item.ComponenteTemEstoqueSuficiente(quantidade))
+            if (!componenteEstrutura.ComponenteTemEstoqueSuficiente(quantidadeDesejada))
             {
-                var necessario = item.CalcularQuantidadeTotal(quantidade);
-                var disponivel = item.ProdutoComponente.EstoqueAtual;
-                erros.Add($"Estoque insuficiente: {item.ProdutoComponente.Descricao}. Necessário: {necessario:N2}, Disponível: {disponivel:N2}");
+                var quantidadeNecessaria = componenteEstrutura.CalcularQuantidadeTotal(quantidadeDesejada);
+                var estoqueDisponivel = componenteEstrutura.ProdutoComponente.EstoqueAtual;
+                
+                erros.Add($"Estoque insuficiente do componente '{componenteEstrutura.ProdutoComponente.Descricao}'. " +
+                         $"Necessário: {quantidadeNecessaria:N2}, Disponível: {estoqueDisponivel:N2}");
             }
         }
 
@@ -108,63 +130,79 @@ public class OrdemProducao
     }
 
     /// <summary>
-    /// Gera número da OP
+    /// Gera número sequencial da Ordem de Produção
+    /// Formato: OP{EmpresaId}{Ano}{Sequencial}
+    /// Exemplo: OP0012024000001
     /// </summary>
-    public static string GerarNumero(int empresaId, int proximoNumero)
+    public static string GerarNumeroOrdemProducao(int empresaId, int proximoNumeroSequencial)
     {
-        var ano = DateTime.Now.Year;
-        return $"OP{empresaId:D3}{ano}{proximoNumero:D6}";
+        var anoAtual = DateTime.Now.Year;
+        return $"OP{empresaId:D3}{anoAtual}{proximoNumeroSequencial:D6}";
     }
 
     /// <summary>
-    /// Calcula custo de produção
+    /// Calcula custo total de produção baseado na estrutura de produtos
+    /// Soma: (quantidade necessária de cada componente) × (preço de custo)
     /// </summary>
-    public static decimal CalcularCusto(decimal quantidade, IEnumerable<EstruturaProduto> estrutura)
+    public static decimal CalcularCustoProducao(decimal quantidadeAProduzir, IEnumerable<EstruturaProduto> estruturaProduto)
     {
-        return estrutura.Sum(item => item.CalcularQuantidadeTotal(quantidade) * item.ProdutoComponente.PrecoCusto);
+        return estruturaProduto.Sum(componente => 
+            componente.CalcularQuantidadeTotal(quantidadeAProduzir) * componente.ProdutoComponente.PrecoCusto);
     }
 
-    /// <summary>
-    /// Cria itens da ordem baseado na estrutura
-    /// </summary>
-    public List<OrdemProducaoItem> CriarItens(decimal quantidade, IEnumerable<EstruturaProduto> estrutura)
-    {
-        var itens = new List<OrdemProducaoItem>();
+    #endregion
 
-        foreach (var estruturaItem in estrutura)
+    #region Métodos de Instância - Operações da Ordem
+
+    /// <summary>
+    /// Cria os itens (componentes) da ordem baseado na estrutura de produtos
+    /// Cada item representa um componente necessário para a produção
+    /// </summary>
+    public List<OrdemProducaoItem> CriarItensProducao(decimal quantidadeAProduzir, IEnumerable<EstruturaProduto> estruturaProduto)
+    {
+        var itensOrdem = new List<OrdemProducaoItem>();
+
+        foreach (var componenteEstrutura in estruturaProduto)
         {
-            var item = new OrdemProducaoItem
+            var itemOrdem = new OrdemProducaoItem
             {
                 OrdemProducaoId = Id,
-                ProdutoId = estruturaItem.ProdutoComponenteId,
-                QuantidadePlanejada = estruturaItem.CalcularQuantidadeTotal(quantidade),
-                CustoUnitario = estruturaItem.ProdutoComponente.PrecoCusto
+                ProdutoId = componenteEstrutura.ProdutoComponenteId,
+                QuantidadePlanejada = componenteEstrutura.CalcularQuantidadeTotal(quantidadeAProduzir),
+                CustoUnitario = componenteEstrutura.ProdutoComponente.PrecoCusto
             };
-            itens.Add(item);
+            itensOrdem.Add(itemOrdem);
         }
 
-        return itens;
+        return itensOrdem;
     }
 
+    #endregion
+
+    #region Fluxo de Produção - Transições de Estado
+
     /// <summary>
-    /// Liberar ordem para produção
+    /// Libera a ordem para produção
+    /// Transição: Planejada → Liberada
     /// </summary>
-    public void Liberar()
+    public void LiberarParaProducao()
     {
         if (Status != StatusOrdemProducao.Planejada)
-            throw new InvalidOperationException("Apenas ordens planejadas podem ser liberadas");
+            throw new InvalidOperationException("Apenas ordens planejadas podem ser liberadas para produção");
 
         Status = StatusOrdemProducao.Liberada;
         DataAtualizacao = DateTime.Now;
     }
 
     /// <summary>
-    /// Iniciar produção
+    /// Inicia a produção
+    /// Transição: Liberada → Em Andamento
+    /// Registra data/hora de início
     /// </summary>
-    public void Iniciar()
+    public void IniciarProducao()
     {
         if (Status != StatusOrdemProducao.Liberada)
-            throw new InvalidOperationException("Apenas ordens liberadas podem ser iniciadas");
+            throw new InvalidOperationException("Apenas ordens liberadas podem ter a produção iniciada");
 
         Status = StatusOrdemProducao.EmAndamento;
         DataInicio = DateTime.Now;
@@ -172,9 +210,17 @@ public class OrdemProducao
     }
 
     /// <summary>
-    /// Finalizar produção
+    /// Finaliza a produção
+    /// Transição: Em Andamento → Finalizada
+    /// 
+    /// Efeitos:
+    /// - Registra quantidade produzida
+    /// - Atualiza quantidades consumidas dos componentes
+    /// - Registra data/hora de conclusão
+    /// 
+    /// Nota: A integração com estoque é feita pelo Service
     /// </summary>
-    public void Finalizar(decimal quantidadeProduzida)
+    public void FinalizarProducao(decimal quantidadeProduzida)
     {
         if (Status != StatusOrdemProducao.EmAndamento)
             throw new InvalidOperationException("Apenas ordens em andamento podem ser finalizadas");
@@ -187,34 +233,76 @@ public class OrdemProducao
         DataFim = DateTime.Now;
         DataAtualizacao = DateTime.Now;
 
-        // Atualizar quantidades consumidas nos itens
-        foreach (var item in Itens)
-        {
-            item.QuantidadeConsumida = (item.QuantidadePlanejada / QuantidadePlanejada) * quantidadeProduzida;
-        }
+        // Calcular quantidades realmente consumidas dos componentes
+        AtualizarQuantidadesConsumidasDosComponentes(quantidadeProduzida);
     }
 
     /// <summary>
-    /// Cancelar ordem
+    /// Cancela a ordem de produção
+    /// Transição: Qualquer Status (exceto Finalizada) → Cancelada
     /// </summary>
-    public void Cancelar(string motivo)
+    public void CancelarOrdemProducao(string motivoCancelamento)
     {
         if (Status == StatusOrdemProducao.Finalizada)
             throw new InvalidOperationException("Ordens finalizadas não podem ser canceladas");
 
         Status = StatusOrdemProducao.Cancelada;
-        Observacoes = $"CANCELADA: {motivo}";
+        Observacoes = $"CANCELADA: {motivoCancelamento}";
         DataAtualizacao = DateTime.Now;
     }
 
-    // Validações de estado simples
-    public bool PodeLiberar() => Status == StatusOrdemProducao.Planejada;
-    public bool PodeIniciar() => Status == StatusOrdemProducao.Liberada;
-    public bool PodeFinalizar() => Status == StatusOrdemProducao.EmAndamento;
-}
+    #endregion
 
+    #region Validações de Estado
+
+    /// <summary>
+    /// Verifica se a ordem pode ser liberada para produção
+    /// </summary>
+    public bool PodeLiberarParaProducao() => Status == StatusOrdemProducao.Planejada;
+
+    /// <summary>
+    /// Verifica se a produção pode ser iniciada
+    /// </summary>
+    public bool PodeIniciarProducao() => Status == StatusOrdemProducao.Liberada;
+
+    /// <summary>
+    /// Verifica se a produção pode ser finalizada
+    /// </summary>
+    public bool PodeFinalizarProducao() => Status == StatusOrdemProducao.EmAndamento;
+
+    /// <summary>
+    /// Verifica se a ordem pode ser cancelada
+    /// </summary>
+    public bool PodeCancelarOrdem() => Status != StatusOrdemProducao.Finalizada;
+
+    #endregion
+
+    #region Métodos Privados
+
+    /// <summary>
+    /// Atualiza as quantidades consumidas dos componentes baseado na produção real
+    /// Proporção: (quantidade planejada / quantidade total planejada) × quantidade produzida
+    /// </summary>
+    private void AtualizarQuantidadesConsumidasDosComponentes(decimal quantidadeProduzida)
+    {
+        foreach (var item in Itens)
+        {
+            // Calcula proporcionalmente quanto foi consumido de cada componente
+            item.QuantidadeConsumida = (item.QuantidadePlanejada / QuantidadePlanejada) * quantidadeProduzida;
+        }
+    }
+
+    #endregion
+}
 /// <summary>
-/// Item da Ordem de Produção - SIMPLIFICADO
+/// Item (Componente) da Ordem de Produção
+/// 
+/// Representa um componente necessário para produzir o produto final.
+/// Cada item corresponde a uma linha da estrutura de produtos (BOM).
+/// 
+/// Exemplo: Para produzir 1 Martelo
+/// - Item 1: Cabo de Madeira (1 unidade)
+/// - Item 2: Cabeça de Ferro (1 unidade)
 /// </summary>
 public class OrdemProducaoItem
 {
@@ -226,15 +314,29 @@ public class OrdemProducaoItem
     public int ProdutoId { get; set; }
     public virtual Produto Produto { get; set; } = null!;
 
+    /// <summary>
+    /// Quantidade necessária do componente (calculada pela estrutura de produtos)
+    /// </summary>
     [Display(Name = "Quantidade Planejada")]
     public decimal QuantidadePlanejada { get; set; }
 
+    /// <summary>
+    /// Quantidade realmente consumida na produção
+    /// Atualizada quando a ordem é finalizada
+    /// </summary>
     [Display(Name = "Quantidade Consumida")]
     public decimal QuantidadeConsumida { get; set; } = 0;
 
+    /// <summary>
+    /// Preço de custo unitário do componente
+    /// </summary>
     [Display(Name = "Custo Unitário")]
     public decimal CustoUnitario { get; set; }
 
+    /// <summary>
+    /// Custo total do componente na produção
+    /// Calculado: Quantidade Consumida × Custo Unitário
+    /// </summary>
     public decimal CustoTotal => QuantidadeConsumida * CustoUnitario;
 
     public DateTime DataCriacao { get; set; } = DateTime.Now;

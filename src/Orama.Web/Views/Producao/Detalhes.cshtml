@@ -113,36 +113,37 @@
                     }
                 </div>
                 <div class="card-footer">
-                    @if (Model.PodeLiberar())
+                    @* Botões de ação baseados no status atual da ordem *@
+                    @if (Model.PodeLiberarParaProducao())
                     {
-                        <form asp-action="Liberar" asp-route-id="@Model.Id" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check"></i> Liberar
+                        <form asp-action="LiberarParaProducao" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success" title="Liberar ordem para iniciar produção">
+                                <i class="fas fa-check"></i> Liberar para Produção
                             </button>
                         </form>
                     }
-                    @if (Model.PodeIniciar())
+                    @if (Model.PodeIniciarProducao())
                     {
-                        <form asp-action="Iniciar" asp-route-id="@Model.Id" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-play"></i> Iniciar
+                        <form asp-action="IniciarProducao" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-warning" title="Iniciar execução da produção">
+                                <i class="fas fa-play"></i> Iniciar Produção
                             </button>
                         </form>
                     }
-                    @if (Model.PodeFinalizar())
+                    @if (Model.PodeFinalizarProducao())
                     {
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#finalizarModal">
-                            <i class="fas fa-stop"></i> Finalizar
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#finalizarModal" title="Finalizar produção e atualizar estoque">
+                            <i class="fas fa-stop"></i> Finalizar Produção
                         </button>
                     }
-                    @if (Model.Status != Orama.Domain.Entities.StatusOrdemProducao.Finalizada)
+                    @if (Model.PodeCancelarOrdem())
                     {
-                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal">
-                            <i class="fas fa-times"></i> Cancelar
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelarModal" title="Cancelar ordem de produção">
+                            <i class="fas fa-times"></i> Cancelar Ordem
                         </button>
                     }
                     <a asp-action="Index" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Voltar
+                        <i class="fas fa-arrow-left"></i> Voltar à Lista
                     </a>
                 </div>
             </div>
@@ -150,48 +151,67 @@
     </div>
 </div>
 
-<!-- Modal Finalizar -->
+<!-- Modal Finalizar Produção -->
 <div class="modal fade" id="finalizarModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-action="Finalizar" asp-route-id="@Model.Id" method="post">
+            <form asp-action="FinalizarProducao" asp-route-id="@Model.Id" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Finalizar Produção</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        Ao finalizar, o sistema irá automaticamente:
+                    </p>
+                    <ul class="text-muted small">
+                        <li>Dar baixa nos componentes utilizados</li>
+                        <li>Dar entrada do produto acabado no estoque</li>
+                        <li>Atualizar o status da ordem para "Finalizada"</li>
+                    </ul>
                     <div class="form-group">
-                        <label for="quantidadeProduzida">Quantidade Produzida:</label>
+                        <label for="quantidadeProduzida">Quantidade Realmente Produzida:</label>
                         <input type="number" name="quantidadeProduzida" class="form-control" step="0.01" min="0.01" value="@Model.QuantidadePlanejada" required />
+                        <small class="form-text text-muted">Informe a quantidade que foi efetivamente produzida</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Finalizar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Finalizar Produção
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Cancelar -->
+<!-- Modal Cancelar Ordem -->
 <div class="modal fade" id="cancelarModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post">
+            <form asp-action="CancelarOrdemProducao" asp-route-id="@Model.Id" method="post">
                 <div class="modal-header">
-                    <h5 class="modal-title">Cancelar Ordem</h5>
+                    <h5 class="modal-title">Cancelar Ordem de Produção</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <p class="text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Tem certeza que deseja cancelar esta ordem de produção?
+                    </p>
                     <div class="form-group">
                         <label for="motivo">Motivo do Cancelamento:</label>
-                        <textarea name="motivo" class="form-control" rows="3" required></textarea>
+                        <textarea name="motivo" class="form-control" rows="3" placeholder="Descreva o motivo do cancelamento..." required></textarea>
+                        <small class="form-text text-muted">Este motivo será registrado no histórico da ordem</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="submit" class="btn btn-danger">Cancelar Ordem</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Cancelar Ordem
+                    </button>
                 </div>
             </form>
         </div>
