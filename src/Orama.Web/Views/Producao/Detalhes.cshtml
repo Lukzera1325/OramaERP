@@ -66,6 +66,21 @@
                                     <th>Custo Material:</th>
                                     <td>@Model.CustoMaterial.ToString("C")</td>
                                 </tr>
+                                @if (Model.CustoCalculado)
+                                {
+                                    <tr>
+                                        <th>Custo Total Produção:</th>
+                                        <td><strong>@Model.CustoTotalProducao.ToString("C")</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Custo Unitário:</th>
+                                        <td><strong>@Model.CustoUnitarioProducao.ToString("C")</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Data Cálculo Custo:</th>
+                                        <td>@Model.DataCustoCalculado?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    </tr>
+                                }
                             </table>
                         </div>
                     </div>

@@ -178,6 +178,36 @@ public class Produto : BaseEntity
     {
         return TipoProduto == TipoProduto.MateriaPrima || TipoProduto == TipoProduto.ProdutoEmProcesso;
     }
+
+    /// <summary>
+    /// Atualiza o custo médio do produto baseado no custo de produção
+    /// Usado quando o produto é produzido internamente
+    /// 
+    /// Fórmula: Custo Médio Ponderado
+    /// NovoPreco = ((EstoqueAtual × PrecoAtual) + (QuantidadeProduzida × CustoProducao)) ÷ (EstoqueAtual + QuantidadeProduzida)
+    /// </summary>
+    public void AtualizarCustoMedioComProducao(decimal quantidadeProduzida, decimal custoUnitarioProducao)
+    {
+        if (quantidadeProduzida <= 0)
+            throw new ArgumentException("Quantidade produzida deve ser maior que zero");
+
+        if (custoUnitarioProducao < 0)
+            throw new ArgumentException("Custo unitário não pode ser negativo");
+
+        // Se não há estoque atual, usar diretamente o custo de produção
+        if (EstoqueAtual == 0)
+        {
+            PrecoCusto = custoUnitarioProducao;
+            return;
+        }
+
+        // Calcular custo médio ponderado
+        var valorEstoqueAtual = EstoqueAtual * PrecoCusto;
+        var valorProducao = quantidadeProduzida * custoUnitarioProducao;
+        var quantidadeTotal = EstoqueAtual + quantidadeProduzida;
+
+        PrecoCusto = (valorEstoqueAtual + valorProducao) / quantidadeTotal;
+    }
 }
 
 /// <summary>

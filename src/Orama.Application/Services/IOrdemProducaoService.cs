@@ -22,4 +22,6 @@ public interface IOrdemProducaoService
     // Relatórios
     Task<decimal> CalcularCustoProducaoAsync(int ordemProducaoId, int empresaId);
     Task<IEnumerable<OrdemProducao>> ObterOrdensAtrasadasAsync(int empresaId);
+    Task<IEnumerable<OrdemProducao>> ObterRelatorioCustomPorPeriodoAsync(DateTime dataInicio, DateTime dataFim, int empresaId);
+    Task<IEnumerable<OrdemProducao>> ObterOrdensMaiorCustoAsync(int empresaId, int quantidade = 10);
 }

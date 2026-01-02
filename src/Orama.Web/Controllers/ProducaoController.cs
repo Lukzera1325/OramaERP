@@ -235,4 +235,27 @@ public class ProducaoController : BaseController
             return Json(new { success = false, message = ex.Message });
         }
     }
+
+    // GET: Producao/RelatorioCustom (Relatório de custos)
+    public async Task<IActionResult> RelatorioCustom(DateTime? dataInicio, DateTime? dataFim)
+    {
+        var empresaId = ObterEmpresaId();
+        
+        // Padrão: últimos 30 dias
+        dataInicio ??= DateTime.Now.AddDays(-30);
+        dataFim ??= DateTime.Now;
+
+        var ordens = await _ordemProducaoService.ObterRelatorioCustomPorPeriodoAsync(
+            dataInicio.Value, 
+            dataFim.Value, 
+            empresaId);
+
+        ViewBag.DataInicio = dataInicio.Value.ToString("yyyy-MM-dd");
+        ViewBag.DataFim = dataFim.Value.ToString("yyyy-MM-dd");
+        ViewBag.TotalOrdens = ordens.Count();
+        ViewBag.CustoTotalPeriodo = ordens.Sum(o => o.CustoTotalProducao);
+        ViewBag.QuantidadeTotalProduzida = ordens.Sum(o => o.QuantidadeProduzida);
+
+        return View(ordens);
+    }
 }

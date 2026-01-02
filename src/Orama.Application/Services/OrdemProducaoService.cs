@@ -159,17 +159,24 @@ public class OrdemProducaoService : IOrdemProducaoService
     /// Transição: Em Andamento → Finalizada
     /// 
     /// Efeitos:
-    /// - Finaliza a ordem (via entidade)
+    /// - Finaliza a ordem (via entidade) - inclui cálculo de custo
     /// - Dá baixa nos componentes no estoque
     /// - Dá entrada do produto acabado no estoque
+    /// - Atualiza custo médio do produto acabado
     /// </summary>
     public async Task<bool> FinalizarAsync(int id, decimal quantidadeProduzida, int empresaId, int usuarioId)
     {
         var ordem = await BuscarOrdemComItensAsync(id, empresaId);
         if (ordem == null) return false;
 
-        // Finalizar produção (regra de negócio na entidade)
+        // Finalizar produção (regra de negócio na entidade - inclui cálculo de custo)
         ordem.FinalizarProducao(quantidadeProduzida);
+
+        // Atualizar custo médio do produto acabado baseado no custo de produção
+        if (ordem.CustoCalculado && ordem.CustoUnitarioProducao > 0)
+        {
+            ordem.Produto.AtualizarCustoMedioComProducao(quantidadeProduzida, ordem.CustoUnitarioProducao);
+        }
 
         // Integrar com estoque: baixa componentes + entrada produto acabado
         await ProcessarMovimentacaoEstoqueAsync(ordem, empresaId, usuarioId);
@@ -208,6 +215,44 @@ public class OrdemProducaoService : IOrdemProducaoService
         if (ordem == null) return 0;
 
         return ordem.Itens.Sum(item => item.CustoTotal);
+    }
+
+    /// <summary>
+    /// Obtém relatório de custos de produção por período
+    /// Mostra ordens finalizadas com seus custos calculados
+    /// </summary>
+    public async Task<IEnumerable<OrdemProducao>> ObterRelatorioCustomPorPeriodoAsync(
+        DateTime dataInicio, 
+        DateTime dataFim, 
+        int empresaId)
+    {
+        return await _context.OrdensProducao
+            .Include(o => o.Produto)
+            .Include(o => o.Itens)
+                .ThenInclude(i => i.Produto)
+            .Where(o => o.EmpresaId == empresaId &&
+                       o.Status == StatusOrdemProducao.Finalizada &&
+                       o.DataFim >= dataInicio &&
+                       o.DataFim <= dataFim &&
+                       o.CustoCalculado)
+            .OrderByDescending(o => o.DataFim)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Obtém ordens com maior custo de produção
+    /// Útil para análise de produtos mais caros de produzir
+    /// </summary>
+    public async Task<IEnumerable<OrdemProducao>> ObterOrdensMaiorCustoAsync(int empresaId, int quantidade = 10)
+    {
+        return await _context.OrdensProducao
+            .Include(o => o.Produto)
+            .Where(o => o.EmpresaId == empresaId &&
+                       o.Status == StatusOrdemProducao.Finalizada &&
+                       o.CustoCalculado)
+            .OrderByDescending(o => o.CustoUnitarioProducao)
+            .Take(quantidade)
+            .ToListAsync();
     }
 
     #endregion

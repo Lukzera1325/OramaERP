@@ -58,6 +58,22 @@ public class OrdemProducao
 
     public decimal CustoMaterial { get; set; }
 
+    // Controle de Custo de Produção
+    /// <summary>
+    /// Custo total real da produção baseado nos componentes consumidos
+    /// Calculado automaticamente ao finalizar a produção
+    /// Fórmula: Σ (CustoMedioComponente × QuantidadeConsumida)
+    /// </summary>
+    [Display(Name = "Custo Total de Produção")]
+    public decimal CustoTotalProducao { get; set; } = 0;
+
+    /// <summary>
+    /// Data em que o custo foi calculado
+    /// Registra quando o cálculo de custo foi realizado
+    /// </summary>
+    [Display(Name = "Data Cálculo Custo")]
+    public DateTime? DataCustoCalculado { get; set; }
+
     public DateTime DataCriacao { get; set; } = DateTime.Now;
     public DateTime? DataAtualizacao { get; set; }
 
@@ -89,6 +105,24 @@ public class OrdemProducao
             return (QuantidadeProduzida / QuantidadePlanejada) * 100;
         }
     }
+
+    /// <summary>
+    /// Custo unitário do produto produzido
+    /// Calculado: CustoTotalProducao ÷ QuantidadeProduzida
+    /// </summary>
+    public decimal CustoUnitarioProducao
+    {
+        get
+        {
+            if (QuantidadeProduzida == 0) return 0;
+            return CustoTotalProducao / QuantidadeProduzida;
+        }
+    }
+
+    /// <summary>
+    /// Indica se o custo de produção já foi calculado
+    /// </summary>
+    public bool CustoCalculado => DataCustoCalculado.HasValue;
 
     #endregion
 
@@ -216,6 +250,7 @@ public class OrdemProducao
     /// Efeitos:
     /// - Registra quantidade produzida
     /// - Atualiza quantidades consumidas dos componentes
+    /// - Calcula custo total de produção
     /// - Registra data/hora de conclusão
     /// 
     /// Nota: A integração com estoque é feita pelo Service
@@ -235,6 +270,9 @@ public class OrdemProducao
 
         // Calcular quantidades realmente consumidas dos componentes
         AtualizarQuantidadesConsumidasDosComponentes(quantidadeProduzida);
+
+        // Calcular custo total de produção baseado nos componentes consumidos
+        CalcularCustoTotalProducao();
     }
 
     /// <summary>
@@ -290,6 +328,42 @@ public class OrdemProducao
             // Calcula proporcionalmente quanto foi consumido de cada componente
             item.QuantidadeConsumida = (item.QuantidadePlanejada / QuantidadePlanejada) * quantidadeProduzida;
         }
+    }
+
+    /// <summary>
+    /// Calcula o custo total de produção baseado nos componentes realmente consumidos
+    /// 
+    /// Fórmula: CustoTotalProducao = Σ (CustoMedioComponente × QuantidadeConsumida)
+    /// 
+    /// Regras:
+    /// - Usa o custo médio atual de cada componente
+    /// - Considera apenas as quantidades realmente consumidas
+    /// - Se componente não tem custo médio, usa valor 0 (com aviso)
+    /// </summary>
+    private void CalcularCustoTotalProducao()
+    {
+        decimal custoTotal = 0;
+
+        foreach (var item in Itens)
+        {
+            // Usar custo médio atual do componente (PrecoCusto)
+            var custoMedioComponente = item.Produto?.PrecoCusto ?? 0;
+            
+            // Se não tem custo médio, usar o custo unitário registrado no item
+            if (custoMedioComponente == 0)
+                custoMedioComponente = item.CustoUnitario;
+
+            // Calcular custo do componente: quantidade consumida × custo médio
+            var custoComponente = item.QuantidadeConsumida * custoMedioComponente;
+            custoTotal += custoComponente;
+
+            // Atualizar custo unitário do item com o valor atual
+            item.CustoUnitario = custoMedioComponente;
+        }
+
+        // Registrar custo total calculado
+        CustoTotalProducao = custoTotal;
+        DataCustoCalculado = DateTime.Now;
     }
 
     #endregion
