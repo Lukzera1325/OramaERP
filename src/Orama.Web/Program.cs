@@ -130,6 +130,12 @@ builder.Services.AddScoped<IAlertaMargemService, AlertaMargemService>();
 // Serviços de Explicação de Resultados
 builder.Services.AddScoped<IExplicacaoResultadoService, ExplicacaoResultadoService>();
 
+// Serviços de Apoio à Decisão
+builder.Services.AddScoped<ISugestaoAcaoService, SugestaoAcaoService>();
+builder.Services.AddScoped<ISimulacaoService, SimulacaoService>();
+builder.Services.AddScoped<IDecisaoGerencialService, DecisaoGerencialService>();
+builder.Services.AddScoped<IChecklistFechamentoService, ChecklistFechamentoService>();
+
 // Serviços Fiscais
 // builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
 

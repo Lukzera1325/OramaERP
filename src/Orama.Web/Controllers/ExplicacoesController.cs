@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Orama.Application.Services;
 using Orama.Domain.Entities;
-using Orama.Web.Extensions;
 
 namespace Orama.Web.Controllers;
 
@@ -15,7 +14,7 @@ namespace Orama.Web.Controllers;
 /// 
 /// Padrão: Receber → Chamar Service → Retornar
 /// </summary>
-public class ExplicacoesController : Controller
+public class ExplicacoesController : BaseController
 {
     private readonly IExplicacaoResultadoService _explicacaoResultadoService;
 
@@ -29,7 +28,7 @@ public class ExplicacoesController : Controller
     /// </summary>
     public async Task<IActionResult> Index(TipoResultado? tipo, DateTime? dataInicio, DateTime? dataFim)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         // Definir período padrão (últimos 30 dias)
         dataInicio ??= DateTime.Now.AddDays(-30);
@@ -61,7 +60,7 @@ public class ExplicacoesController : Controller
     /// </summary>
     public async Task<IActionResult> Detalhes(int id)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         var explicacao = await _explicacaoResultadoService.ObterExplicacaoPorIdAsync(id, empresaId);
         
         if (explicacao == null)
@@ -75,7 +74,7 @@ public class ExplicacoesController : Controller
     /// </summary>
     public async Task<IActionResult> Venda(int vendaId)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         var explicacoes = await _explicacaoResultadoService.ObterExplicacoesVendaAsync(vendaId, empresaId);
         
         if (!explicacoes.Any())
@@ -93,7 +92,7 @@ public class ExplicacoesController : Controller
     /// </summary>
     public async Task<IActionResult> MotivosPrejuizo(DateTime? dataInicio, DateTime? dataFim)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         // Definir período padrão (últimos 30 dias)
         dataInicio ??= DateTime.Now.AddDays(-30);
@@ -113,7 +112,7 @@ public class ExplicacoesController : Controller
     /// </summary>
     public async Task<IActionResult> ProdutosPrejuizo(DateTime? dataInicio, DateTime? dataFim, int limite = 10)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         // Definir período padrão (últimos 30 dias)
         dataInicio ??= DateTime.Now.AddDays(-30);
@@ -134,7 +133,7 @@ public class ExplicacoesController : Controller
     /// </summary>
     public async Task<IActionResult> Dashboard(DateTime? dataInicio, DateTime? dataFim)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         // Definir período padrão (últimos 30 dias)
         dataInicio ??= DateTime.Now.AddDays(-30);
@@ -155,7 +154,7 @@ public class ExplicacoesController : Controller
     [HttpGet]
     public async Task<IActionResult> ObterExplicacoesVenda(int vendaId)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         var explicacoes = await _explicacaoResultadoService.ObterExplicacoesVendaAsync(vendaId, empresaId);
         
         var resultado = explicacoes.Select(e => new
@@ -186,7 +185,7 @@ public class ExplicacoesController : Controller
     [HttpPost]
     public async Task<IActionResult> RegenerarExplicacoes(int vendaId)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         try
         {

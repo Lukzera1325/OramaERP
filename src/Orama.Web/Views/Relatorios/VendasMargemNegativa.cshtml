@@ -146,9 +146,9 @@
                                 <div class="alert alert-warning">
                                     <h5><i class="fas fa-chart-pie"></i> Análise por Impacto:</h5>
                                     <ul class="mb-0">
-                                        <li><strong>Alto impacto (>20%):</strong> @Model.Count(v => v.PercentualPrejuizo > 20) vendas</li>
+                                        <li><strong>Alto impacto (&gt;20%):</strong> @Model.Count(v => v.PercentualPrejuizo > 20) vendas</li>
                                         <li><strong>Médio impacto (10-20%):</strong> @Model.Count(v => v.PercentualPrejuizo > 10 && v.PercentualPrejuizo <= 20) vendas</li>
-                                        <li><strong>Baixo impacto (<10%):</strong> @Model.Count(v => v.PercentualPrejuizo <= 10) vendas</li>
+                                        <li><strong>Baixo impacto (&lt;10%):</strong> @Model.Count(v => v.PercentualPrejuizo <= 10) vendas</li>
                                     </ul>
                                 </div>
                             </div>
@@ -194,7 +194,7 @@
 </div>
 
 <style>
-    @media print {
+    @@media print {
         .card-header, .card-footer, .btn { display: none !important; }
         .container-fluid { margin: 0; padding: 0; }
     }

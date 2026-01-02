@@ -25,9 +25,9 @@
                         <div class="col-md-3">
                             <label for="limite" class="form-label">Quantidade:</label>
                             <select name="limite" class="form-control">
-                                <option value="10" @(ViewBag.Limite == 10 ? "selected" : "")>Top 10</option>
-                                <option value="20" @(ViewBag.Limite == 20 ? "selected" : "")>Top 20</option>
-                                <option value="50" @(ViewBag.Limite == 50 ? "selected" : "")>Top 50</option>
+                                <option value="10" selected="@(ViewBag.Limite == 10)">Top 10</option>
+                                <option value="20" selected="@(ViewBag.Limite == 20)">Top 20</option>
+                                <option value="50" selected="@(ViewBag.Limite == 50)">Top 50</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
@@ -213,7 +213,7 @@
 </div>
 
 <style>
-    @media print {
+    @@media print {
         .card-header, .card-footer, .btn { display: none !important; }
         .container-fluid { margin: 0; padding: 0; }
     }

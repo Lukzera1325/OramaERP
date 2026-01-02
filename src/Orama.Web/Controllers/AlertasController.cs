@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Orama.Application.Services;
 using Orama.Domain.Entities;
-using Orama.Web.Extensions;
 
 namespace Orama.Web.Controllers;
 
@@ -15,7 +14,7 @@ namespace Orama.Web.Controllers;
 /// 
 /// Padrão: Receber → Chamar Service → Retornar
 /// </summary>
-public class AlertasController : Controller
+public class AlertasController : BaseController
 {
     private readonly IAlertaMargemService _alertaMargemService;
 
@@ -29,7 +28,7 @@ public class AlertasController : Controller
     /// </summary>
     public async Task<IActionResult> Index()
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         var alertas = await _alertaMargemService.ObterAlertasAtivosAsync(empresaId);
         return View(alertas);
     }
@@ -39,7 +38,7 @@ public class AlertasController : Controller
     /// </summary>
     public async Task<IActionResult> Detalhes(int id)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         var alerta = await _alertaMargemService.ObterAlertaPorIdAsync(id, empresaId);
         
         if (alerta == null)
@@ -54,8 +53,8 @@ public class AlertasController : Controller
     [HttpPost]
     public async Task<IActionResult> Resolver(int id, string? observacoes)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
-        var usuarioId = HttpContext.ObterUsuarioId();
+        var empresaId = ObterEmpresaId();
+        var usuarioId = UsuarioId;
         
         var sucesso = await _alertaMargemService.ResolverAlertaAsync(id, usuarioId, empresaId, observacoes);
         
@@ -77,7 +76,7 @@ public class AlertasController : Controller
     [HttpPost]
     public async Task<IActionResult> Reativar(int id)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         var sucesso = await _alertaMargemService.ReativarAlertaAsync(id, empresaId);
         
@@ -105,8 +104,8 @@ public class AlertasController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var empresaId = HttpContext.ObterEmpresaId();
-        var usuarioId = HttpContext.ObterUsuarioId();
+        var empresaId = ObterEmpresaId();
+        var usuarioId = UsuarioId;
         
         var quantidade = await _alertaMargemService.ResolverAlertasEmLoteAsync(alertaIds, usuarioId, empresaId, observacoes);
         
@@ -119,7 +118,7 @@ public class AlertasController : Controller
     /// </summary>
     public async Task<IActionResult> Relatorio(DateTime? dataInicio, DateTime? dataFim, StatusAlerta? status)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         // Definir período padrão (últimos 30 dias)
         dataInicio ??= DateTime.Now.AddDays(-30);
@@ -140,7 +139,7 @@ public class AlertasController : Controller
     /// </summary>
     public async Task<IActionResult> Estatisticas(DateTime? dataInicio, DateTime? dataFim)
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         
         // Definir período padrão (últimos 30 dias)
         dataInicio ??= DateTime.Now.AddDays(-30);
@@ -157,7 +156,7 @@ public class AlertasController : Controller
     /// </summary>
     public async Task<IActionResult> ContarAtivos()
     {
-        var empresaId = HttpContext.ObterEmpresaId();
+        var empresaId = ObterEmpresaId();
         var quantidade = await _alertaMargemService.ContarAlertasAtivosAsync(empresaId);
         return Json(new { quantidade });
     }

@@ -62,6 +62,12 @@ public class OramaDbContext : DbContext
     // Explicações de Resultado
     public DbSet<ExplicacaoResultado> ExplicacoesResultados { get; set; }
 
+    // Apoio à Decisão
+    public DbSet<SugestaoAcao> SugestoesAcao { get; set; }
+    public DbSet<DecisaoGerencial> DecisoesGerenciais { get; set; }
+    public DbSet<ChecklistFechamento> ChecklistsFechamento { get; set; }
+    public DbSet<ChecklistItem> ChecklistItens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -387,6 +393,69 @@ public class OramaDbContext : DbContext
             .WithMany()
             .HasForeignKey(e => e.ProdutoId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // === RELACIONAMENTOS DE APOIO À DECISÃO ===
+        
+        // SugestaoAcao -> Empresa
+        modelBuilder.Entity<SugestaoAcao>()
+            .HasOne(s => s.Empresa)
+            .WithMany()
+            .HasForeignKey(s => s.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // SugestaoAcao -> Usuario (resolução - opcional)
+        modelBuilder.Entity<SugestaoAcao>()
+            .HasOne(s => s.UsuarioResolucao)
+            .WithMany()
+            .HasForeignKey(s => s.UsuarioResolucaoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // DecisaoGerencial -> Empresa
+        modelBuilder.Entity<DecisaoGerencial>()
+            .HasOne(d => d.Empresa)
+            .WithMany()
+            .HasForeignKey(d => d.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // DecisaoGerencial -> Usuario
+        modelBuilder.Entity<DecisaoGerencial>()
+            .HasOne(d => d.Usuario)
+            .WithMany()
+            .HasForeignKey(d => d.UsuarioId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ChecklistFechamento -> Empresa
+        modelBuilder.Entity<ChecklistFechamento>()
+            .HasOne(c => c.Empresa)
+            .WithMany()
+            .HasForeignKey(c => c.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ChecklistFechamento -> Usuario (conclusão - opcional)
+        modelBuilder.Entity<ChecklistFechamento>()
+            .HasOne(c => c.UsuarioConclusao)
+            .WithMany()
+            .HasForeignKey(c => c.UsuarioConclusaoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // ChecklistItem -> ChecklistFechamento
+        modelBuilder.Entity<ChecklistItem>()
+            .HasOne(i => i.ChecklistFechamento)
+            .WithMany(c => c.Itens)
+            .HasForeignKey(i => i.ChecklistFechamentoId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ChecklistItem -> Usuario (conclusão - opcional)
+        modelBuilder.Entity<ChecklistItem>()
+            .HasOne(i => i.UsuarioConclusao)
+            .WithMany()
+            .HasForeignKey(i => i.UsuarioConclusaoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Índices únicos para ChecklistFechamento (um por período por empresa)
+        modelBuilder.Entity<ChecklistFechamento>()
+            .HasIndex(c => new { c.EmpresaId, c.Ano, c.Mes })
+            .IsUnique();
     }
 
     private static void SeedData(ModelBuilder modelBuilder)

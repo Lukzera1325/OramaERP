@@ -1,0 +1,259 @@
+@model ApoioDecisaoViewModel
+@{
+    ViewData["Title"] = "Apoio à Decisão";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Apoio à Decisão</h4>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active">Apoio à Decisão</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <span class="text-muted mb-3 lh-1 d-block text-truncate">Sugestões Pendentes</span>
+                            <h4 class="mb-3">
+                                <span class="counter-value" data-target="@Model.SugestoesPendentes.Count">@Model.SugestoesPendentes.Count</span>
+                            </h4>
+                        </div>
+                        <div class="flex-shrink-0 align-self-center">
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
+                                <span class="avatar-title">
+                                    <i class="bx bx-bulb font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <span class="text-muted mb-3 lh-1 d-block text-truncate">Decisões Recentes</span>
+                            <h4 class="mb-3">
+                                <span class="counter-value" data-target="@Model.DecisoesRecentes.Count">@Model.DecisoesRecentes.Count</span>
+                            </h4>
+                        </div>
+                        <div class="flex-shrink-0 align-self-center">
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-success">
+                                <span class="avatar-title">
+                                    <i class="bx bx-check-circle font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <span class="text-muted mb-3 lh-1 d-block text-truncate">Checklist Atual</span>
+                            <h4 class="mb-3">
+                                @if (Model.ChecklistAtual != null)
+                                {
+                                    <span class="text-success">@Model.ChecklistAtual.StatusDescricao</span>
+                                }
+                                else
+                                {
+                                    <span class="text-warning">Não Criado</span>
+                                }
+                            </h4>
+                        </div>
+                        <div class="flex-shrink-0 align-self-center">
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-info">
+                                <span class="avatar-title">
+                                    <i class="bx bx-list-check font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <span class="text-muted mb-3 lh-1 d-block text-truncate">Progresso Mensal</span>
+                            <h4 class="mb-3">
+                                <span class="counter-value">@Model.ResumoMensal.PercentualConclusao.ToString("F1")%</span>
+                            </h4>
+                        </div>
+                        <div class="flex-shrink-0 align-self-center">
+                            <div class="mini-stat-icon avatar-sm rounded-circle bg-warning">
+                                <span class="avatar-title">
+                                    <i class="bx bx-trending-up font-size-24"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Ações Rápidas</h4>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Sugestoes")" class="btn btn-primary btn-block">
+                                <i class="bx bx-bulb me-2"></i>Ver Sugestões
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Simulacao")" class="btn btn-info btn-block">
+                                <i class="bx bx-calculator me-2"></i>Fazer Simulação
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Decisoes")" class="btn btn-success btn-block">
+                                <i class="bx bx-history me-2"></i>Histórico de Decisões
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Checklist")" class="btn btn-warning btn-block">
+                                <i class="bx bx-list-check me-2"></i>Checklist Mensal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sugestões Pendentes -->
+    @if (Model.SugestoesPendentes.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Sugestões Pendentes</h4>
+                        <div class="table-responsive">
+                            <table class="table table-nowrap mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Descrição</th>
+                                        <th>Prioridade</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sugestao in Model.SugestoesPendentes.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@sugestao.TipoReferencia.ToString()</td>
+                                            <td>@sugestao.TextoSugestao</td>
+                                            <td>
+                                                <span class="badge bg-@(sugestao.Prioridade == PrioridadeSugestao.Alta ? "danger" : 
+                                                                      sugestao.Prioridade == PrioridadeSugestao.Media ? "warning" : "info")">
+                                                    @sugestao.Prioridade.ToString()
+                                                </span>
+                                            </td>
+                                            <td>@sugestao.DataCriacao.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                <a href="@Url.Action("DetalhesSugestao", new { id = sugestao.Id })" class="btn btn-sm btn-outline-primary">
+                                                    Ver Detalhes
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.SugestoesPendentes.Count > 5)
+                        {
+                            <div class="text-center mt-3">
+                                <a href="@Url.Action("Sugestoes")" class="btn btn-primary">Ver Todas (@Model.SugestoesPendentes.Count)</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Decisões Recentes -->
+    @if (Model.DecisoesRecentes.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Decisões Recentes</h4>
+                        <div class="table-responsive">
+                            <table class="table table-nowrap mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Problema</th>
+                                        <th>Ação Tomada</th>
+                                        <th>Data</th>
+                                        <th>Resultado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var decisao in Model.DecisoesRecentes.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@decisao.TipoReferencia.ToString()</td>
+                                            <td>@decisao.ProblemaIdentificado</td>
+                                            <td>@decisao.AcaoTomada</td>
+                                            <td>@decisao.DataDecisao.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                @if (decisao.FoiEfetiva.HasValue)
+                                                {
+                                                    <span class="badge bg-@(decisao.FoiEfetiva.Value ? "success" : "danger")">
+                                                        @(decisao.FoiEfetiva.Value ? "Efetiva" : "Não Efetiva")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Pendente</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.DecisoesRecentes.Count > 5)
+                        {
+                            <div class="text-center mt-3">
+                                <a href="@Url.Action("Decisoes")" class="btn btn-success">Ver Todas (@Model.DecisoesRecentes.Count)</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

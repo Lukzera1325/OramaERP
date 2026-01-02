@@ -38,6 +38,11 @@ public abstract class BaseController : Controller
     protected bool UsuarioAutenticado => UsuarioLogado != null;
 
     /// <summary>
+    /// ID do usuário atualmente logado
+    /// </summary>
+    protected int UsuarioId => UsuarioLogado?.Id ?? 1; // Fallback para usuário ID 1
+
+    /// <summary>
     /// Verifica se o usuário tem uma permissão específica
     /// </summary>
     protected bool TemPermissao(string nomePermissao)

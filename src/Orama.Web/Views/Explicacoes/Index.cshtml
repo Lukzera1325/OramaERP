@@ -29,9 +29,9 @@
                             <div class="col-md-3">
                                 <label>Tipo de Resultado:</label>
                                 <select name="tipo" class="form-control">
-                                    <option value="@TipoResultado.Prejuizo" @(ViewBag.TipoSelecionado.ToString() == TipoResultado.Prejuizo.ToString() ? "selected" : "")>Prejuízo</option>
-                                    <option value="@TipoResultado.Atencao" @(ViewBag.TipoSelecionado.ToString() == TipoResultado.Atencao.ToString() ? "selected" : "")>Atenção</option>
-                                    <option value="@TipoResultado.Lucro" @(ViewBag.TipoSelecionado.ToString() == TipoResultado.Lucro.ToString() ? "selected" : "")>Lucro</option>
+                                    <option value="@((int)TipoResultado.Prejuizo)" selected="@(ViewBag.TipoSelecionado?.ToString() == TipoResultado.Prejuizo.ToString())">Prejuízo</option>
+                                    <option value="@((int)TipoResultado.Atencao)" selected="@(ViewBag.TipoSelecionado?.ToString() == TipoResultado.Atencao.ToString())">Atenção</option>
+                                    <option value="@((int)TipoResultado.Lucro)" selected="@(ViewBag.TipoSelecionado?.ToString() == TipoResultado.Lucro.ToString())">Lucro</option>
                                 </select>
                             </div>
                             <div class="col-md-3">

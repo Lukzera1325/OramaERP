@@ -2,6 +2,14 @@
 @{
     ViewData["Title"] = "Evolução de Margem no Tempo";
     var resumo = ViewBag.Resumo;
+    
+    // Variáveis para análise de tendência (se houver dados)
+    var periodosLucrativos = Model.Any() ? Model.Count(p => p.PeriodoLucrativo) : 0;
+    var totalPeriodos = Model.Count();
+    var margemInicial = Model.Any() ? Model.First().MargemCalculada : 0;
+    var margemFinal = Model.Any() ? Model.Last().MargemCalculada : 0;
+    var tendenciaGeral = margemFinal > margemInicial ? "Melhorando" : margemFinal < margemInicial ? "Piorando" : "Estável";
+    var corTendenciaGeral = margemFinal > margemInicial ? "success" : margemFinal < margemInicial ? "danger" : "warning";
 }
 
 <div class="container-fluid">
@@ -25,8 +33,8 @@
                         <div class="col-md-3">
                             <label for="periodo" class="form-label">Período:</label>
                             <select name="periodo" class="form-control">
-                                <option value="mensal" @(ViewBag.Periodo == "mensal" ? "selected" : "")>Mensal</option>
-                                <option value="diario" @(ViewBag.Periodo == "diario" ? "selected" : "")>Diário</option>
+                                <option value="mensal" selected="@(ViewBag.Periodo == "mensal")">Mensal</option>
+                                <option value="diario" selected="@(ViewBag.Periodo == "diario")">Diário</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
@@ -109,11 +117,11 @@
                                 <tbody>
                                     @{
                                         var periodos = Model.ToList();
-                                        decimal? margemAnterior = null;
                                     }
                                     @for (int i = 0; i < periodos.Count; i++)
                                     {
                                         var periodo = periodos[i];
+                                        var margemAnterior = i > 0 ? periodos[i - 1].MargemCalculada : (decimal?)null;
                                         string tendencia = "";
                                         string iconeTendencia = "";
                                         string corTendencia = "";
@@ -189,8 +197,6 @@
                                                 }
                                             </td>
                                         </tr>
-
-                                        margemAnterior = periodo.MargemCalculada;
                                     }
                                 </tbody>
                                 <tfoot class="table-secondary">
@@ -209,14 +215,6 @@
                         </div>
 
                         <!-- Análise de Tendência -->
-                        @{
-                            var periodosLucrativos = Model.Count(p => p.PeriodoLucrativo);
-                            var totalPeriodos = Model.Count();
-                            var margemInicial = Model.First().MargemCalculada;
-                            var margemFinal = Model.Last().MargemCalculada;
-                            var tendenciaGeral = margemFinal > margemInicial ? "Melhorando" : margemFinal < margemInicial ? "Piorando" : "Estável";
-                            var corTendenciaGeral = margemFinal > margemInicial ? "success" : margemFinal < margemInicial ? "danger" : "warning";
-                        }
 
                         <div class="row">
                             <div class="col-md-6">
@@ -282,7 +280,7 @@
 </div>
 
 <style>
-    @media print {
+    @@media print {
         .card-header, .card-footer, .btn { display: none !important; }
         .container-fluid { margin: 0; padding: 0; }
     }

@@ -1,0 +1,300 @@
+@{
+    ViewData["Title"] = "Simulação de Cenários";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Simulação de Cenários</h4>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index")">Apoio à Decisão</a></li>
+                    <li class="breadcrumb-item active">Simulação</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Simulação "E se?"</h4>
+                    <p class="text-muted">Simule diferentes cenários para tomar decisões mais informadas.</p>
+
+                    <!-- Formulário de Simulação -->
+                    <form id="formSimulacao">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="produtoId" class="form-label">Produto</label>
+                                    <select class="form-select" id="produtoId" name="produtoId" required>
+                                        <option value="">Selecione um produto...</option>
+                                        <!-- Produtos serão carregados via AJAX -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tipoSimulacao" class="form-label">Tipo de Simulação</label>
+                                    <select class="form-select" id="tipoSimulacao" name="tipoSimulacao" required>
+                                        <option value="">Selecione o tipo...</option>
+                                        <option value="preco">Novo Preço de Venda</option>
+                                        <option value="custo">Novo Custo</option>
+                                        <option value="venda">Simulação de Venda</option>
+                                        <option value="cenarios">Múltiplos Cenários</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos específicos por tipo -->
+                        <div id="camposPreco" class="campos-simulacao" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="novoPreco" class="form-label">Novo Preço de Venda</label>
+                                        <input type="number" class="form-control" id="novoPreco" name="novoPreco" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="camposCusto" class="campos-simulacao" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="novoCusto" class="form-label">Novo Custo</label>
+                                        <input type="number" class="form-control" id="novoCusto" name="novoCusto" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="camposVenda" class="campos-simulacao" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="quantidade" class="form-label">Quantidade</label>
+                                        <input type="number" class="form-control" id="quantidade" name="quantidade" step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="precoUnitario" class="form-label">Preço Unitário</label>
+                                        <input type="number" class="form-control" id="precoUnitario" name="precoUnitario" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-calculator me-2"></i>Simular
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="limparFormulario()">
+                                <i class="bx bx-refresh me-2"></i>Limpar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados da Simulação -->
+    <div class="row" id="resultadosSimulacao" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Resultados da Simulação</h4>
+                    <div id="conteudoResultados">
+                        <!-- Resultados serão inseridos aqui via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Carregar produtos
+    carregarProdutos();
+    
+    // Configurar eventos
+    document.getElementById('tipoSimulacao').addEventListener('change', mostrarCamposSimulacao);
+    document.getElementById('formSimulacao').addEventListener('submit', executarSimulacao);
+});
+
+function carregarProdutos() {
+    // Implementar carregamento de produtos via AJAX
+    // Por enquanto, vamos usar dados estáticos
+    const select = document.getElementById('produtoId');
+    select.innerHTML = '<option value="">Carregando produtos...</option>';
+    
+    // Simular carregamento
+    setTimeout(() => {
+        select.innerHTML = `
+            <option value="">Selecione um produto...</option>
+            <option value="1">Notebook Dell Inspiron 15</option>
+            <option value="2">Mouse Óptico USB</option>
+            <option value="3">Microsoft Office 365 Business</option>
+        `;
+    }, 500);
+}
+
+function mostrarCamposSimulacao() {
+    const tipo = document.getElementById('tipoSimulacao').value;
+    
+    // Ocultar todos os campos
+    document.querySelectorAll('.campos-simulacao').forEach(campo => {
+        campo.style.display = 'none';
+    });
+    
+    // Mostrar campos específicos
+    if (tipo === 'preco') {
+        document.getElementById('camposPreco').style.display = 'block';
+    } else if (tipo === 'custo') {
+        document.getElementById('camposCusto').style.display = 'block';
+    } else if (tipo === 'venda') {
+        document.getElementById('camposVenda').style.display = 'block';
+    }
+}
+
+function executarSimulacao(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const tipo = formData.get('tipoSimulacao');
+    const produtoId = formData.get('produtoId');
+    
+    if (!produtoId || !tipo) {
+        alert('Por favor, selecione um produto e tipo de simulação.');
+        return;
+    }
+    
+    let url = '';
+    let dados = { produtoId: produtoId };
+    
+    switch (tipo) {
+        case 'preco':
+            url = '@Url.Action("SimularPreco")';
+            dados.novoPreco = formData.get('novoPreco');
+            break;
+        case 'custo':
+            url = '@Url.Action("SimularCusto")';
+            dados.novoCusto = formData.get('novoCusto');
+            break;
+        case 'venda':
+            url = '@Url.Action("SimularVenda")';
+            dados.quantidade = formData.get('quantidade');
+            dados.precoUnitario = formData.get('precoUnitario');
+            break;
+        case 'cenarios':
+            url = '@Url.Action("SimularCenarios")';
+            break;
+    }
+    
+    // Mostrar loading
+    document.getElementById('conteudoResultados').innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
+    document.getElementById('resultadosSimulacao').style.display = 'block';
+    
+    // Fazer requisição AJAX
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: JSON.stringify(dados)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            exibirResultados(data.dados, tipo);
+        } else {
+            document.getElementById('conteudoResultados').innerHTML = 
+                '<div class="alert alert-danger">Erro: ' + data.erro + '</div>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('conteudoResultados').innerHTML = 
+            '<div class="alert alert-danger">Erro na simulação: ' + error.message + '</div>';
+    });
+}
+
+function exibirResultados(dados, tipo) {
+    let html = '';
+    
+    if (tipo === 'cenarios') {
+        // Múltiplos cenários
+        html = '<div class="row">';
+        dados.forEach((cenario, index) => {
+            html += `
+                <div class="col-md-4">
+                    <div class="card border-${cenario.margem >= 0 ? 'success' : 'danger'}">
+                        <div class="card-body">
+                            <h5 class="card-title">${cenario.descricao}</h5>
+                            <p class="card-text">
+                                <strong>Preço:</strong> R$ ${cenario.preco.toFixed(2)}<br>
+                                <strong>Custo:</strong> R$ ${cenario.custo.toFixed(2)}<br>
+                                <strong>Margem:</strong> <span class="text-${cenario.margem >= 0 ? 'success' : 'danger'}">${cenario.margem.toFixed(2)}%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    } else {
+        // Resultado único
+        html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Situação Atual</h5>
+                            <p class="card-text">
+                                <strong>Preço:</strong> R$ ${dados.precoAtual.toFixed(2)}<br>
+                                <strong>Custo:</strong> R$ ${dados.custoAtual.toFixed(2)}<br>
+                                <strong>Margem:</strong> <span class="text-${dados.margemAtual >= 0 ? 'success' : 'danger'}">${dados.margemAtual.toFixed(2)}%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Simulação</h5>
+                            <p class="card-text">
+                                <strong>Preço:</strong> R$ ${dados.precoSimulado.toFixed(2)}<br>
+                                <strong>Custo:</strong> R$ ${dados.custoSimulado.toFixed(2)}<br>
+                                <strong>Margem:</strong> <span class="text-${dados.margemSimulada >= 0 ? 'success' : 'danger'}">${dados.margemSimulada.toFixed(2)}%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="alert alert-${dados.margemSimulada >= dados.margemAtual ? 'success' : 'warning'}">
+                        <strong>Impacto:</strong> ${dados.impacto}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    document.getElementById('conteudoResultados').innerHTML = html;
+}
+
+function limparFormulario() {
+    document.getElementById('formSimulacao').reset();
+    document.querySelectorAll('.campos-simulacao').forEach(campo => {
+        campo.style.display = 'none';
+    });
+    document.getElementById('resultadosSimulacao').style.display = 'none';
+}
+</script>

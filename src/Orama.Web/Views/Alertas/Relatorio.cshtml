@@ -35,8 +35,8 @@
                                 <label>Status:</label>
                                 <select name="status" class="form-control">
                                     <option value="">Todos</option>
-                                    <option value="@StatusAlerta.Ativo" @(ViewBag.Status?.ToString() == StatusAlerta.Ativo.ToString() ? "selected" : "")>Ativo</option>
-                                    <option value="@StatusAlerta.Resolvido" @(ViewBag.Status?.ToString() == StatusAlerta.Resolvido.ToString() ? "selected" : "")>Resolvido</option>
+                                    <option value="@((int)StatusAlerta.Ativo)" selected="@(ViewBag.Status?.ToString() == StatusAlerta.Ativo.ToString())">Ativo</option>
+                                    <option value="@((int)StatusAlerta.Resolvido)" selected="@(ViewBag.Status?.ToString() == StatusAlerta.Resolvido.ToString())">Resolvido</option>
                                 </select>
                             </div>
                             <div class="col-md-3 d-flex align-items-end">
