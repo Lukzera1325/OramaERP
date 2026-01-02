@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orama.Domain.Entities;
 using Orama.Domain.Entities.Fiscal;
+using Orama.Domain.Entities.Fiscal.NFe;
 
 namespace Orama.Infra.Data.Context;
 
@@ -73,6 +74,11 @@ public class OramaDbContext : DbContext
     public DbSet<EmpresaFiscalConfig> EmpresasFiscaisConfig { get; set; }
     public DbSet<ProdutoFiscalConfig> ProdutosFiscaisConfig { get; set; }
     public DbSet<OperacaoFiscalConfig> OperacoesFiscaisConfig { get; set; }
+
+    // NF-e (ISOLADA DO CORE)
+    public DbSet<NFeDocumento> NFeDocumentos { get; set; }
+    public DbSet<NFeItem> NFeItens { get; set; }
+    public DbSet<NFeEvento> NFeEventos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

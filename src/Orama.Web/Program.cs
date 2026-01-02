@@ -141,6 +141,13 @@ builder.Services.AddScoped<Orama.Application.Services.Fiscal.IEmpresaFiscalServi
 builder.Services.AddScoped<Orama.Application.Services.Fiscal.IContextoFiscalService, Orama.Application.Services.Fiscal.ContextoFiscalService>();
 builder.Services.AddScoped<Orama.Domain.Interfaces.ITaxCalculator, Orama.Application.Services.Fiscal.BasicTaxCalculator>();
 
+// Serviços NF-e (ISOLADOS DO CORE)
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.NFe.INFeEmissaoService, Orama.Application.Services.Fiscal.NFe.NFeEmissaoService>();
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.NFe.INFeConsultaService, Orama.Application.Services.Fiscal.NFe.NFeConsultaService>();
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.NFe.INFeCancelamentoService, Orama.Application.Services.Fiscal.NFe.NFeCancelamentoService>();
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.NFe.ISefazNFeGateway, Orama.Application.Services.Fiscal.NFe.SefazNFeGatewayMock>();
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.NFe.Mapping.IVendaParaNFeMapper, Orama.Application.Services.Fiscal.NFe.Mapping.VendaParaNFeMapper>();
+
 // Serviços Fiscais
 // builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
 
