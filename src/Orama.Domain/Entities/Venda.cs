@@ -184,6 +184,50 @@ public class Venda : BaseEntity
     }
 
     /// <summary>
+    /// Detecta problemas de margem que devem gerar alertas
+    /// 
+    /// Verifica:
+    /// 1. Venda com margem negativa total
+    /// 2. Produtos vendidos abaixo do custo unitário
+    /// 
+    /// Retorna lista de alertas que devem ser criados
+    /// </summary>
+    public List<AlertaMargem> DetectarProblemasDeMargemParaAlertas(IEnumerable<Produto> produtos, int empresaId)
+    {
+        if (!MargemCalculada)
+            throw new InvalidOperationException("Margem deve ser calculada antes de detectar problemas");
+
+        var alertas = new List<AlertaMargem>();
+
+        // Alerta 1: Venda com margem negativa total
+        if (LucroTotal < 0)
+        {
+            var alertaVenda = AlertaMargem.CriarAlertaVendaMargemNegativa(this, empresaId);
+            alertas.Add(alertaVenda);
+        }
+
+        // Alerta 2: Produtos vendidos abaixo do custo unitário
+        foreach (var item in Itens)
+        {
+            var produto = produtos.FirstOrDefault(p => p.Id == item.ProdutoId);
+            if (produto == null) continue;
+
+            var precoUnitarioVendido = item.PrecoUnitario;
+            var custoUnitario = item.CustoUnitario;
+
+            // Verificar se produto foi vendido abaixo do custo
+            if (precoUnitarioVendido < custoUnitario)
+            {
+                var alertaProduto = AlertaMargem.CriarAlertaProdutoAbaixoCusto(
+                    this, produto, precoUnitarioVendido, custoUnitario, empresaId);
+                alertas.Add(alertaProduto);
+            }
+        }
+
+        return alertas;
+    }
+
+    /// <summary>
     /// Determina o custo unitário do produto baseado no seu tipo
     /// 
     /// Regras:

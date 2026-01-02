@@ -121,6 +121,12 @@ builder.Services.AddScoped<Orama.Domain.Services.VendaProcessingService>();
 builder.Services.AddScoped<IEstruturaProdutoService, EstruturaProdutoService>();
 builder.Services.AddScoped<IOrdemProducaoService, OrdemProducaoService>();
 
+// Serviços de Relatórios de Lucratividade
+builder.Services.AddScoped<IRelatorioLucratividadeService, RelatorioLucratividadeService>();
+
+// Serviços de Alertas de Margem
+builder.Services.AddScoped<IAlertaMargemService, AlertaMargemService>();
+
 // Serviços Fiscais
 // builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
 

@@ -56,6 +56,9 @@ public class OramaDbContext : DbContext
     public DbSet<NotaFiscal> NotasFiscais { get; set; }
     public DbSet<NotaFiscalItem> NotasFiscaisItens { get; set; }
 
+    // Alertas de Margem
+    public DbSet<AlertaMargem> AlertasMargem { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -328,6 +331,36 @@ public class OramaDbContext : DbContext
             .HasIndex(nf => nf.ChaveAcesso)
             .IsUnique()
             .HasFilter("[ChaveAcesso] IS NOT NULL AND [ChaveAcesso] != ''");
+
+        // === RELACIONAMENTOS DE ALERTAS DE MARGEM ===
+        
+        // AlertaMargem -> Empresa
+        modelBuilder.Entity<AlertaMargem>()
+            .HasOne(a => a.Empresa)
+            .WithMany()
+            .HasForeignKey(a => a.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // AlertaMargem -> Venda
+        modelBuilder.Entity<AlertaMargem>()
+            .HasOne(a => a.Venda)
+            .WithMany()
+            .HasForeignKey(a => a.VendaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // AlertaMargem -> Produto (opcional)
+        modelBuilder.Entity<AlertaMargem>()
+            .HasOne(a => a.Produto)
+            .WithMany()
+            .HasForeignKey(a => a.ProdutoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // AlertaMargem -> Usuario (resolução - opcional)
+        modelBuilder.Entity<AlertaMargem>()
+            .HasOne(a => a.UsuarioResolucao)
+            .WithMany()
+            .HasForeignKey(a => a.UsuarioResolucaoId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     private static void SeedData(ModelBuilder modelBuilder)

@@ -13,11 +13,16 @@ public class VendaService : IVendaService
 {
     private readonly OramaDbContext _context;
     private readonly VendaProcessingService _vendaProcessingService;
+    private readonly IAlertaMargemService _alertaMargemService;
 
-    public VendaService(OramaDbContext context, VendaProcessingService vendaProcessingService)
+    public VendaService(
+        OramaDbContext context, 
+        VendaProcessingService vendaProcessingService,
+        IAlertaMargemService alertaMargemService)
     {
         _context = context;
         _vendaProcessingService = vendaProcessingService;
+        _alertaMargemService = alertaMargemService;
     }
 
     // CRUD Básico - Simples e Direto
@@ -222,6 +227,9 @@ public class VendaService : IVendaService
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+
+            // Processar alertas de margem após faturamento bem-sucedido
+            await _alertaMargemService.ProcessarAlertasVendaAsync(resultado.VendaFaturada.Id, empresaId);
 
             return resultado.VendaFaturada;
         }
