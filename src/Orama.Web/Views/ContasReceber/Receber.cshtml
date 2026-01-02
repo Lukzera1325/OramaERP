@@ -1,0 +1,70 @@
+@model ReceberContaViewModel
+@{
+    ViewData["Title"] = "Receber Conta";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-dollar-sign text-success me-2"></i>Receber Conta</h2>
+        <p class="text-muted mb-0">Registre o recebimento da conta</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Registrar Recebimento</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Conta:</strong> @Model.Descricao<br>
+                    <strong>Saldo Devedor:</strong> <span class="text-danger fw-bold">@Model.SaldoDevedor.ToString("C")</span>
+                </div>
+
+                <form asp-action="Receber" method="post">
+                    <input type="hidden" asp-for="ContaId" />
+                    <input type="hidden" asp-for="Descricao" />
+                    <input type="hidden" asp-for="SaldoDevedor" />
+
+                    <div class="mb-3">
+                        <label asp-for="ValorRecebido" class="form-label"></label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">R$</span>
+                            <input asp-for="ValorRecebido" type="number" step="0.01" class="form-control" />
+                        </div>
+                        <span asp-validation-for="ValorRecebido" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ContaBancariaId" class="form-label"></label>
+                        <select asp-for="ContaBancariaId" class="form-select" asp-items="ViewBag.ContasBancarias">
+                            <option value="">Selecione a conta bancária</option>
+                        </select>
+                        <span asp-validation-for="ContaBancariaId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="DataRecebimento" class="form-label"></label>
+                        <input asp-for="DataRecebimento" type="date" class="form-control" />
+                        <span asp-validation-for="DataRecebimento" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check me-2"></i>Confirmar Recebimento
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

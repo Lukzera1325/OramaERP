@@ -1,0 +1,302 @@
+@model IEnumerable<Orama.Web.Models.OrdemProducaoViewModel>
+
+@{
+    ViewData["Title"] = "Ordens de Produção";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0 font-size-18">Ordens de Produção</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index")">Produção</a></li>
+                        <li class="breadcrumb-item active">Ordens de Produção</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <h4 class="card-title mb-0 flex-grow-1">Lista de Ordens de Produção</h4>
+                        <div class="flex-shrink-0">
+                            <a href="@Url.Action("CriarOrdemProducao")" class="btn btn-primary">
+                                <i class="bx bx-plus me-1"></i> Nova Ordem
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtroStatus">
+                                <option value="">Todos os Status</option>
+                                <option value="1">Planejada</option>
+                                <option value="2">Liberada</option>
+                                <option value="3">Em Andamento</option>
+                                <option value="4">Pausada</option>
+                                <option value="5">Finalizada</option>
+                                <option value="6">Cancelada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="filtroPrioridade">
+                                <option value="">Todas as Prioridades</option>
+                                <option value="1">Baixa</option>
+                                <option value="2">Normal</option>
+                                <option value="3">Alta</option>
+                                <option value="4">Urgente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="filtroDataInicio" placeholder="Data Início">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="filtroDataFim" placeholder="Data Fim">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-nowrap align-middle mb-0" id="tabelaOrdens">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Progresso</th>
+                                    <th>Data Planejada</th>
+                                    <th>Status</th>
+                                    <th>Prioridade</th>
+                                    <th>Custo Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Any())
+                                {
+                                    @foreach (var ordem in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a href="@Url.Action("DetalhesOrdemProducao", new { id = ordem.Id })" class="text-body fw-bold">
+                                                    @ordem.Numero
+                                                </a>
+                                            </td>
+                                            <td>@ordem.ProdutoDescricao</td>
+                                            <td>
+                                                @ordem.QuantidadeProduzida.ToString("N2") / @ordem.QuantidadePlanejada.ToString("N2")
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar @(ordem.PercentualConclusao == 100 ? "bg-success" : "bg-primary")" 
+                                                         role="progressbar" 
+                                                         style="width: @ordem.PercentualConclusao%"
+                                                         aria-valuenow="@ordem.PercentualConclusao" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">@ordem.PercentualConclusao.ToString("N1")%</small>
+                                            </td>
+                                            <td>
+                                                @ordem.DataPlanejada.ToString("dd/MM/yyyy")
+                                                @if (ordem.DataPlanejada < DateTime.Today && ordem.Status != StatusOrdemProducao.Finalizada && ordem.Status != StatusOrdemProducao.Cancelada)
+                                                {
+                                                    <span class="badge bg-danger ms-1">Atrasada</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="@ordem.StatusCssClass">@ordem.StatusDescricao</span>
+                                            </td>
+                                            <td>
+                                                <span class="@ordem.PrioridadeCssClass">
+                                                    <i class="bx bx-flag me-1"></i>@ordem.PrioridadeDescricao
+                                                </span>
+                                            </td>
+                                            <td>@ordem.CustoTotal.ToString("C2")</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="bx bx-dots-horizontal-rounded font-size-16"></i>
+                                                    </a>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <a class="dropdown-item" href="@Url.Action("DetalhesOrdemProducao", new { id = ordem.Id })">
+                                                                <i class="bx bx-show me-2"></i> Ver Detalhes
+                                                            </a>
+                                                        </li>
+                                                        @if (ordem.PodeLiberarOrdem)
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item" href="#" onclick="liberarOrdem(@ordem.Id)">
+                                                                    <i class="bx bx-check me-2"></i> Liberar Ordem
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        @if (ordem.PodeIniciarProducao)
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item" href="#" onclick="iniciarProducao(@ordem.Id)">
+                                                                    <i class="bx bx-play me-2"></i> Iniciar Produção
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        @if (ordem.PodeFinalizarProducao)
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item" href="#" onclick="finalizarProducao(@ordem.Id)">
+                                                                    <i class="bx bx-check-circle me-2"></i> Finalizar
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        @if (ordem.PodeEditar)
+                                                        {
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <a class="dropdown-item" href="#">
+                                                                    <i class="bx bx-edit me-2"></i> Editar
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                        @if (ordem.PodeExcluir)
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item text-danger" href="#" onclick="excluirOrdem(@ordem.Id)">
+                                                                    <i class="bx bx-trash me-2"></i> Excluir
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-4">
+                                            <i class="bx bx-info-circle me-1"></i>
+                                            Nenhuma ordem de produção encontrada.
+                                            <a href="@Url.Action("CriarOrdemProducao")">Criar primeira ordem</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Finalizar Produção -->
+<div class="modal fade" id="modalFinalizarProducao" tabindex="-1" aria-labelledby="modalFinalizarProducaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFinalizarProducaoLabel">Finalizar Produção</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formFinalizarProducao" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="ordemIdFinalizar" name="id" />
+                    <div class="mb-3">
+                        <label for="quantidadeProduzida" class="form-label">Quantidade Produzida</label>
+                        <input type="number" class="form-control" id="quantidadeProduzida" name="quantidadeProduzida" 
+                               step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Finalizar Produção</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTable
+            $('#tabelaOrdens').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json"
+                },
+                "order": [[0, "desc"]],
+                "pageLength": 25
+            });
+
+            // Filtros
+            $('#filtroStatus, #filtroPrioridade, #filtroDataInicio, #filtroDataFim').on('change', function() {
+                aplicarFiltros();
+            });
+        });
+
+        function aplicarFiltros() {
+            // Implementar filtros se necessário
+        }
+
+        function liberarOrdem(id) {
+            if (confirm('Deseja liberar esta ordem de produção?')) {
+                $.post('@Url.Action("LiberarOrdem")', { id: id })
+                    .done(function() {
+                        location.reload();
+                    })
+                    .fail(function() {
+                        alert('Erro ao liberar ordem de produção.');
+                    });
+            }
+        }
+
+        function iniciarProducao(id) {
+            if (confirm('Deseja iniciar a produção desta ordem?')) {
+                $.post('@Url.Action("IniciarProducao")', { id: id })
+                    .done(function() {
+                        location.reload();
+                    })
+                    .fail(function() {
+                        alert('Erro ao iniciar produção.');
+                    });
+            }
+        }
+
+        function finalizarProducao(id) {
+            $('#ordemIdFinalizar').val(id);
+            $('#formFinalizarProducao').attr('action', '@Url.Action("FinalizarProducao")');
+            $('#modalFinalizarProducao').modal('show');
+        }
+
+        function excluirOrdem(id) {
+            if (confirm('Deseja realmente excluir esta ordem de produção?')) {
+                $.post('@Url.Action("ExcluirOrdem")', { id: id })
+                    .done(function() {
+                        location.reload();
+                    })
+                    .fail(function() {
+                        alert('Erro ao excluir ordem de produção.');
+                    });
+            }
+        }
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+}

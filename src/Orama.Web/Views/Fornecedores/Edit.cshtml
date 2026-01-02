@@ -1,0 +1,220 @@
+@model FornecedorViewModel
+@{
+    ViewData["Title"] = "Editar Fornecedor";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-truck me-2"></i>Editar Fornecedor</h2>
+        <p class="text-muted mb-0">Altere os dados do fornecedor</p>
+    </div>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info me-2">
+            <i class="fas fa-eye me-2"></i>Detalhes
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="DataCriacao" />
+    <input type="hidden" asp-for="Ativo" />
+    
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row">
+        <!-- Dados Principais -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Dados Principais</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="TipoPessoa" class="form-label"></label>
+                            <select asp-for="TipoPessoa" class="form-select" id="TipoPessoa">
+                                <option value="@((int)TipoPessoa.Fisica)">Pessoa Física</option>
+                                <option value="@((int)TipoPessoa.Juridica)">Pessoa Jurídica</option>
+                            </select>
+                            <span asp-validation-for="TipoPessoa" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CpfCnpj" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="CpfCnpj" class="form-control" id="CpfCnpj" placeholder="Digite o CPF/CNPJ">
+                                <button type="button" class="btn btn-outline-secondary" id="btnBuscarCnpj" title="Buscar dados do CNPJ">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Para CNPJ: os dados serão buscados automaticamente na Receita Federal
+                            </small>
+                            <span asp-validation-for="CpfCnpj" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label asp-for="Nome" class="form-label"></label>
+                            <input asp-for="Nome" class="form-control" placeholder="Digite o nome ou razão social">
+                            <span asp-validation-for="Nome" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="RgIe" class="form-label"></label>
+                            <input asp-for="RgIe" class="form-control" placeholder="RG ou IE">
+                            <span asp-validation-for="RgIe" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="nomeFantasiaGroup">
+                        <label asp-for="NomeFantasia" class="form-label"></label>
+                        <input asp-for="NomeFantasia" class="form-control" placeholder="Digite o nome fantasia">
+                        <span asp-validation-for="NomeFantasia" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endereço -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Endereço</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Cep" class="form-label"></label>
+                            <input asp-for="Cep" class="form-control" id="Cep" placeholder="00000-000">
+                            <span asp-validation-for="Cep" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Logradouro" class="form-label"></label>
+                            <input asp-for="Logradouro" class="form-control" id="Logradouro" placeholder="Rua, Avenida, etc.">
+                            <span asp-validation-for="Logradouro" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Numero" class="form-label"></label>
+                            <input asp-for="Numero" class="form-control" placeholder="Número">
+                            <span asp-validation-for="Numero" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Complemento" class="form-label"></label>
+                            <input asp-for="Complemento" class="form-control" placeholder="Apto, Sala, etc.">
+                            <span asp-validation-for="Complemento" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Bairro" class="form-label"></label>
+                            <input asp-for="Bairro" class="form-control" id="Bairro" placeholder="Bairro">
+                            <span asp-validation-for="Bairro" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Cidade" class="form-label"></label>
+                            <input asp-for="Cidade" class="form-control" id="Cidade" placeholder="Cidade">
+                            <span asp-validation-for="Cidade" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-1 mb-3">
+                            <label asp-for="Uf" class="form-label"></label>
+                            <input asp-for="Uf" class="form-control" id="Uf" placeholder="UF" maxlength="2">
+                            <span asp-validation-for="Uf" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contato e Observações -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contato</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="email@exemplo.com">
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Telefone" class="form-label"></label>
+                        <input asp-for="Telefone" class="form-control" placeholder="(00) 0000-0000">
+                        <span asp-validation-for="Telefone" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Celular" class="form-label"></label>
+                        <input asp-for="Celular" class="form-control" placeholder="(00) 00000-0000">
+                        <span asp-validation-for="Celular" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Observações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea asp-for="Observacoes" class="form-control" rows="4" placeholder="Observações adicionais..."></textarea>
+                        <span asp-validation-for="Observacoes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h5>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <strong>Cadastrado em:</strong> @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")<br>
+                        @if (Model.DataAtualizacao.HasValue)
+                        {
+                            <strong>Última atualização:</strong> @Model.DataAtualizacao.Value.ToString("dd/MM/yyyy HH:mm")
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Salvar Alterações
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="~/js/fornecedores.js?v=@DateTime.Now.Ticks"></script>
+    
+    <style>
+        #btnBuscarCnpj {
+            border-left: 0;
+        }
+        
+        #btnBuscarCnpj:hover {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+        
+        .input-group .form-control:focus + .btn {
+            border-color: #86b7fe;
+        }
+        
+        .toast {
+            min-width: 300px;
+        }
+    </style>
+}

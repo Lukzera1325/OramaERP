@@ -1,0 +1,119 @@
+@model ContaBancariaViewModel
+@{
+    ViewData["Title"] = "Editar Conta Bancária";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-university me-2"></i>Editar Conta Bancária</h2>
+        <p class="text-muted mb-0">@Model.Descricao</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="SaldoAtual" />
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Dados da Conta</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label asp-for="Descricao" class="form-label"></label>
+                            <input asp-for="Descricao" class="form-control" />
+                            <span asp-validation-for="Descricao" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="TipoConta" class="form-label"></label>
+                            <select asp-for="TipoConta" class="form-select">
+                                <option value="1">Conta Corrente</option>
+                                <option value="2">Poupança</option>
+                                <option value="3">Caixa</option>
+                                <option value="4">Investimento</option>
+                            </select>
+                            <span asp-validation-for="TipoConta" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Banco" class="form-label"></label>
+                            <input asp-for="Banco" class="form-control" />
+                            <span asp-validation-for="Banco" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Agencia" class="form-label"></label>
+                            <input asp-for="Agencia" class="form-control" />
+                            <span asp-validation-for="Agencia" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="NumeroConta" class="form-label"></label>
+                            <input asp-for="NumeroConta" class="form-control" />
+                            <span asp-validation-for="NumeroConta" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SaldoInicial" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input asp-for="SaldoInicial" type="number" step="0.01" class="form-control" readonly />
+                            </div>
+                            <small class="text-muted">Saldo inicial não pode ser alterado</small>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input asp-for="ContaPadrao" class="form-check-input" type="checkbox" />
+                                <label asp-for="ContaPadrao" class="form-check-label">
+                                    <i class="fas fa-star text-warning me-1"></i>Definir como conta padrão
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-wallet me-2"></i>Saldo Atual</h6>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="@(Model.SaldoAtual >= 0 ? "text-success" : "text-danger")">
+                        @Model.SaldoAtual.ToString("C")
+                    </h2>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><small class="text-muted">Cadastrada em:</small></p>
+                    <p>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-2"></i>Salvar Alterações
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

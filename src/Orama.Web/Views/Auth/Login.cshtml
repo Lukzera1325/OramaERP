@@ -1,0 +1,89 @@
+@model Orama.Web.Models.LoginViewModel
+@{
+    Layout = "_LoginLayout";
+    ViewData["Title"] = "Login";
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <!-- Logo e Título -->
+        <div class="login-header">
+            <img src="~/images/icone.png" alt="Orama" class="login-logo" />
+            <h1 class="login-title">Orama ERP</h1>
+            <p class="login-subtitle">Sistema de Gestão Empresarial</p>
+        </div>
+
+        <!-- Formulário -->
+        <form asp-action="Login" method="post" class="login-form">
+            <input type="hidden" asp-for="ReturnUrl" />
+            
+            @if (!string.IsNullOrEmpty(ViewBag.Erro))
+            {
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.Erro
+                </div>
+            }
+
+            <div class="form-group">
+                <label asp-for="Email" class="form-label">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input asp-for="Email" class="form-control" placeholder="Digite seu email" autofocus />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Senha" class="form-label">
+                    <i class="fas fa-lock"></i> Senha
+                </label>
+                <div class="password-wrapper">
+                    <input asp-for="Senha" class="form-control" placeholder="Digite sua senha" id="senha" />
+                    <button type="button" class="btn-toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Senha" class="text-danger"></span>
+            </div>
+
+            <div class="form-check">
+                <input asp-for="LembrarMe" class="form-check-input" />
+                <label asp-for="LembrarMe" class="form-check-label">Lembrar-me</label>
+            </div>
+
+            <button type="submit" class="btn btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>Entrar
+            </button>
+        </form>
+
+        <!-- Rodapé -->
+        <div class="login-footer">
+            <div class="demo-credentials">
+                <p class="demo-title"><i class="fas fa-info-circle"></i> Credenciais de Demonstração</p>
+                <p><strong>Email:</strong> admin@orama.com.br</p>
+                <p><strong>Senha:</strong> Admin@123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Versão -->
+    <p class="version-text">Orama ERP v1.0 &copy; @DateTime.Now.Year</p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePassword() {
+            var senha = document.getElementById('senha');
+            var icon = document.getElementById('toggleIcon');
+            if (senha.type === 'password') {
+                senha.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                senha.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+}

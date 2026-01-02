@@ -1,0 +1,128 @@
+@model UsuarioViewModel
+@{
+    ViewData["Title"] = "Novo Usuário";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-plus me-2"></i>Novo Usuário</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Nome" class="form-label"></label>
+                                <input asp-for="Nome" class="form-control" placeholder="Digite o nome completo" />
+                                <span asp-validation-for="Nome" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="Digite o email" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Telefone" class="form-label"></label>
+                                <input asp-for="Telefone" class="form-control" placeholder="(11) 99999-9999" />
+                                <span asp-validation-for="Telefone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="PerfilId" class="form-label"></label>
+                                <select asp-for="PerfilId" class="form-select" asp-items="ViewBag.Perfis">
+                                    <option value="">Selecione um perfil</option>
+                                </select>
+                                <span asp-validation-for="PerfilId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Senha" class="form-label"></label>
+                                <input asp-for="Senha" class="form-control" placeholder="Digite a senha" />
+                                <span asp-validation-for="Senha" class="text-danger"></span>
+                                <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ConfirmarSenha" class="form-label"></label>
+                                <input asp-for="ConfirmarSenha" class="form-control" placeholder="Confirme a senha" />
+                                <span asp-validation-for="ConfirmarSenha" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h6>
+            </div>
+            <div class="card-body">
+                <h6>Perfis Disponíveis:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Administrador:</strong> Acesso total ao sistema</li>
+                    <li><strong>Financeiro:</strong> Módulos financeiros</li>
+                    <li><strong>Vendas:</strong> Módulos de vendas</li>
+                    <li><strong>Compras:</strong> Módulos de compras</li>
+                    <li><strong>Estoque:</strong> Controle de estoque</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Requisitos da Senha:</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success me-2"></i>Mínimo 6 caracteres</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Letras e números</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Pelo menos 1 maiúscula</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Máscara para telefone
+        document.getElementById('Telefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                if (value.length < 14) {
+                    value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                }
+                e.target.value = value;
+            }
+        });
+    </script>
+}

@@ -1,0 +1,63 @@
+@model Orama.Domain.Entities.Categoria
+
+@{
+    ViewData["Title"] = "Excluir Categoria";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 col-lg-6 mx-auto">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Excluir Categoria
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+
+                    <p>Tem certeza que deseja excluir a categoria abaixo?</p>
+
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <strong>Nome:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            @Model.Nome
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Descricao))
+                    {
+                        <div class="row mt-2">
+                            <div class="col-sm-3">
+                                <strong>Descrição:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                @Model.Descricao
+                            </div>
+                        </div>
+                    }
+
+                    <form asp-action="Delete" method="post" class="mt-4">
+                        <input asp-for="Id" type="hidden" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>
+                                Confirmar Exclusão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

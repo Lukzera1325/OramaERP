@@ -1,0 +1,159 @@
+@model ClienteViewModel
+@{
+    ViewData["Title"] = "Detalhes do Cliente";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1"><i class="fas fa-user text-primary me-2"></i>@Model.Nome</h2>
+        <p class="text-muted mb-0">
+            <span class="badge bg-secondary">@(Model.IsPessoaFisica ? "Pessoa Física" : "Pessoa Jurídica")</span>
+            @Model.CpfCnpj
+        </p>
+    </div>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+            <i class="fas fa-edit me-1"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Dados Básicos -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-id-card me-2"></i>Dados Básicos
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><small class="text-muted d-block">Nome/Razão Social</small><strong>@Model.Nome</strong></p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.NomeFantasia))
+                    {
+                        <div class="col-md-6">
+                            <p class="mb-2"><small class="text-muted d-block">Nome Fantasia</small><strong>@Model.NomeFantasia</strong></p>
+                        </div>
+                    }
+                    <div class="col-md-4">
+                        <p class="mb-2"><small class="text-muted d-block">CPF/CNPJ</small><strong>@Model.CpfCnpj</strong></p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.RgIe))
+                    {
+                        <div class="col-md-4">
+                            <p class="mb-2"><small class="text-muted d-block">RG/IE</small><strong>@Model.RgIe</strong></p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Contato -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-phone me-2"></i>Contato
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="col-md-4">
+                            <p class="mb-2">
+                                <small class="text-muted d-block">Email</small>
+                                <a href="mailto:@Model.Email">@Model.Email</a>
+                            </p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Telefone))
+                    {
+                        <div class="col-md-4">
+                            <p class="mb-2">
+                                <small class="text-muted d-block">Telefone</small>
+                                <a href="tel:@Model.Telefone">@Model.Telefone</a>
+                            </p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Celular))
+                    {
+                        <div class="col-md-4">
+                            <p class="mb-2">
+                                <small class="text-muted d-block">Celular</small>
+                                <a href="tel:@Model.Celular">@Model.Celular</a>
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Endereço -->
+        @if (!string.IsNullOrEmpty(Model.Logradouro))
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-map-marker-alt me-2"></i>Endereço
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">
+                        <strong>@Model.Logradouro@(!string.IsNullOrEmpty(Model.Numero) ? $", {Model.Numero}" : "")</strong>
+                        @if (!string.IsNullOrEmpty(Model.Complemento))
+                        {
+                            <span> - @Model.Complemento</span>
+                        }
+                    </p>
+                    <p class="mb-1">@Model.Bairro</p>
+                    <p class="mb-0">@Model.Cidade - @Model.Uf @(!string.IsNullOrEmpty(Model.Cep) ? $"- CEP: {Model.Cep}" : "")</p>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Informações Comerciais -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-dollar-sign me-2"></i>Informações Comerciais
+            </div>
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted">Limite de Crédito</p>
+                <h3 class="text-success mb-0">R$ @Model.LimiteCredito.ToString("N2")</h3>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Observacoes))
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-sticky-note me-2"></i>Observações
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@Model.Observacoes</p>
+                </div>
+            </div>
+        }
+
+        <!-- Info do Sistema -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-info-circle me-2"></i>Sistema
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><small class="text-muted">Cadastrado em:</small><br>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-0"><small class="text-muted">Status:</small><br>
+                    @if (Model.Ativo)
+                    {
+                        <span class="badge bg-success">Ativo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inativo</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

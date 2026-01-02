@@ -1,0 +1,157 @@
+@model UsuarioViewModel
+@{
+    ViewData["Title"] = "Detalhes do Usuário";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user me-2"></i>Detalhes do Usuário</h2>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="avatar-circle-large mb-3">
+                            @Model.Nome.Substring(0, 1).ToUpper()
+                        </div>
+                        <h5>@Model.Nome</h5>
+                        <p class="text-muted">@Model.Email</p>
+                        @if (Model.Ativo)
+                        {
+                            <span class="badge bg-success">Ativo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inativo</span>
+                        }
+                    </div>
+                    <div class="col-md-9">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td width="150"><strong>ID:</strong></td>
+                                <td>@Model.Id</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nome:</strong></td>
+                                <td>@Model.Nome</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>@Model.Email</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Telefone:</strong></td>
+                                <td>@(Model.Telefone ?? "Não informado")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Perfil:</strong></td>
+                                <td><span class="badge bg-info">@Model.NomePerfil</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Último Login:</strong></td>
+                                <td>
+                                    @if (Model.UltimoLogin.HasValue)
+                                    {
+                                        @Model.UltimoLogin.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Nunca logou</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Criado em:</strong></td>
+                                <td>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    @if (Model.Ativo)
+                                    {
+                                        <span class="badge bg-success">Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inativo</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Permissões do Perfil</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Perfil: <strong>@Model.NomePerfil</strong></p>
+                
+                @if (Model.NomePerfil == "Administrador")
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-crown me-2"></i>
+                        <strong>Administrador</strong><br>
+                        Acesso total a todos os módulos do sistema.
+                    </div>
+                }
+                else
+                {
+                    <p class="small text-muted">
+                        As permissões específicas são definidas pelo perfil atribuído ao usuário.
+                        Entre em contato com o administrador para mais detalhes.
+                    </p>
+                }
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Estatísticas</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">@(Model.UltimoLogin.HasValue ? "Sim" : "Não")</h4>
+                        <small class="text-muted">Já logou</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">@((DateTime.Now - Model.DataCriacao).Days)</h4>
+                        <small class="text-muted">Dias no sistema</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-light-blue) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 2rem;
+        margin: 0 auto;
+    }
+</style>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:OramaGo.Services"
+             x:Class="OramaGo.Views.Components.ConnectivityIndicator"
+             x:Name="ConnectivityIndicatorView">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <!-- Cores para diferentes status -->
+            <Color x:Key="ConnectedColor">#4CAF50</Color>
+            <Color x:Key="DisconnectedColor">#F44336</Color>
+            <Color x:Key="PartialColor">#FF9800</Color>
+            <Color x:Key="UnknownColor">#9E9E9E</Color>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <Border BackgroundColor="{Binding StatusColor, Source={x:Reference ConnectivityIndicatorView}}"
+            Stroke="{Binding StatusColor, Source={x:Reference ConnectivityIndicatorView}}"
+            StrokeThickness="1"
+            Padding="8,4"
+            HorizontalOptions="End"
+            VerticalOptions="Start">
+        
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="12"/>
+        </Border.StrokeShape>
+
+        <StackLayout Orientation="Horizontal" Spacing="4">
+            
+            <!-- Ícone de conectividade -->
+            <Label Text="{Binding StatusIcon, Source={x:Reference ConnectivityIndicatorView}}"
+                   FontFamily="MaterialIcons"
+                   FontSize="14"
+                   TextColor="White"
+                   VerticalOptions="Center"/>
+            
+            <!-- Texto do status -->
+            <Label Text="{Binding StatusText, Source={x:Reference ConnectivityIndicatorView}}"
+                   FontSize="12"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   IsVisible="{Binding ShowText, Source={x:Reference ConnectivityIndicatorView}}"/>
+            
+        </StackLayout>
+        
+        <!-- Gesture para mostrar detalhes -->
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding ShowDetailsCommand, Source={x:Reference ConnectivityIndicatorView}}"/>
+        </Border.GestureRecognizers>
+        
+    </Border>
+
+</ContentView>

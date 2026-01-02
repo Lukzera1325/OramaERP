@@ -1,0 +1,256 @@
+@model InventarioViewModel
+@{
+    ViewData["Title"] = "Inventário Físico";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-clipboard-list me-2"></i>Inventário Físico
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Posicao" class="btn btn-info">
+                            <i class="fas fa-boxes me-1"></i>Posição Estoque
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="preencherTodos()">
+                            <i class="fas fa-check-double me-1"></i>Preencher Todos
+                        </button>
+                    </div>
+                </div>
+
+                <form asp-action="Inventario" method="post" id="formInventario">
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Instruções:</strong> Conte fisicamente cada produto e informe a quantidade real encontrada. 
+                            O sistema calculará automaticamente as diferenças e fará os ajustes necessários.
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label asp-for="ObservacoesGerais" class="form-label">Observações Gerais do Inventário</label>
+                                <textarea asp-for="ObservacoesGerais" class="form-control" rows="2" 
+                                          placeholder="Ex: Inventário mensal - Dezembro 2024"></textarea>
+                            </div>
+                        </div>
+
+                        @if (Model.Itens.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="tabelaInventario">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Produto</th>
+                                            <th>Categoria</th>
+                                            <th>Estoque Sistema</th>
+                                            <th>Contagem Física</th>
+                                            <th>Diferença</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < Model.Itens.Count; i++)
+                                        {
+                                            <tr data-produto-id="@Model.Itens[i].ProdutoId">
+                                                <td>
+                                                    <strong>@Model.Itens[i].Codigo</strong>
+                                                    @Html.HiddenFor(m => m.Itens[i].ProdutoId)
+                                                    @Html.HiddenFor(m => m.Itens[i].Codigo)
+                                                    @Html.HiddenFor(m => m.Itens[i].Nome)
+                                                    @Html.HiddenFor(m => m.Itens[i].Categoria)
+                                                    @Html.HiddenFor(m => m.Itens[i].EstoqueSistema)
+                                                </td>
+                                                <td>@Model.Itens[i].Nome</td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(Model.Itens[i].Categoria))
+                                                    {
+                                                        <span class="badge bg-secondary">@Model.Itens[i].Categoria</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold">@Model.Itens[i].EstoqueSistema.ToString("N2")</span>
+                                                </td>
+                                                <td>
+                                                    <input asp-for="@Model.Itens[i].ContagemFisica" 
+                                                           class="form-control contagem-fisica" 
+                                                           type="number" 
+                                                           step="0.01" 
+                                                           min="0"
+                                                           data-estoque-sistema="@Model.Itens[i].EstoqueSistema"
+                                                           onchange="calcularDiferenca(this)" />
+                                                </td>
+                                                <td>
+                                                    <span class="diferenca fw-bold" data-diferenca="0">0,00</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge status-badge bg-secondary">Não contado</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Nenhum produto encontrado</h5>
+                                <p class="text-muted">Não há produtos cadastrados que controlem estoque</p>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.Itens.Any())
+                    {
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-3">
+                                            <strong>Resumo:</strong>
+                                        </span>
+                                        <span class="badge bg-secondary me-2" id="naoContados">
+                                            <span id="countNaoContados">@Model.Itens.Count</span> Não contados
+                                        </span>
+                                        <span class="badge bg-success me-2" id="conferidos">
+                                            <span id="countConferidos">0</span> Conferidos
+                                        </span>
+                                        <span class="badge bg-warning me-2" id="comDiferenca">
+                                            <span id="countComDiferenca">0</span> Com diferença
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button type="button" class="btn btn-outline-secondary me-2" onclick="limparTodos()">
+                                        <i class="fas fa-eraser me-1"></i>Limpar Todos
+                                    </button>
+                                    <button type="submit" class="btn btn-primary" id="btnProcessar">
+                                        <i class="fas fa-save me-1"></i>Processar Inventário
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function calcularDiferenca(input) {
+            const row = $(input).closest('tr');
+            const estoqueSistema = parseFloat($(input).data('estoque-sistema'));
+            const contagemFisica = parseFloat($(input).val()) || 0;
+            const diferenca = contagemFisica - estoqueSistema;
+            
+            // Atualizar diferença
+            const spanDiferenca = row.find('.diferenca');
+            spanDiferenca.text(diferenca.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            spanDiferenca.attr('data-diferenca', diferenca);
+            
+            // Atualizar status
+            const statusBadge = row.find('.status-badge');
+            if (contagemFisica === estoqueSistema) {
+                statusBadge.removeClass('bg-secondary bg-warning bg-danger').addClass('bg-success').text('Conferido');
+                spanDiferenca.removeClass('text-warning text-danger').addClass('text-success');
+            } else if (diferenca !== 0) {
+                statusBadge.removeClass('bg-secondary bg-success').addClass('bg-warning').text('Com diferença');
+                spanDiferenca.removeClass('text-success text-danger').addClass('text-warning');
+            } else {
+                statusBadge.removeClass('bg-success bg-warning bg-danger').addClass('bg-secondary').text('Não contado');
+                spanDiferenca.removeClass('text-success text-warning text-danger');
+            }
+            
+            // Atualizar contadores
+            atualizarContadores();
+        }
+        
+        function atualizarContadores() {
+            const rows = $('#tabelaInventario tbody tr');
+            let naoContados = 0;
+            let conferidos = 0;
+            let comDiferenca = 0;
+            
+            rows.each(function() {
+                const statusBadge = $(this).find('.status-badge');
+                const status = statusBadge.text();
+                
+                if (status === 'Não contado') {
+                    naoContados++;
+                } else if (status === 'Conferido') {
+                    conferidos++;
+                } else if (status === 'Com diferença') {
+                    comDiferenca++;
+                }
+            });
+            
+            $('#countNaoContados').text(naoContados);
+            $('#countConferidos').text(conferidos);
+            $('#countComDiferenca').text(comDiferenca);
+            
+            // Habilitar/desabilitar botão processar
+            const btnProcessar = $('#btnProcessar');
+            if (naoContados === 0) {
+                btnProcessar.prop('disabled', false);
+            } else {
+                btnProcessar.prop('disabled', true);
+            }
+        }
+        
+        function preencherTodos() {
+            if (confirm('Deseja preencher todos os campos com o estoque atual do sistema?')) {
+                $('.contagem-fisica').each(function() {
+                    const estoqueSistema = $(this).data('estoque-sistema');
+                    $(this).val(estoqueSistema);
+                    calcularDiferenca(this);
+                });
+            }
+        }
+        
+        function limparTodos() {
+            if (confirm('Deseja limpar todas as contagens físicas?')) {
+                $('.contagem-fisica').each(function() {
+                    $(this).val('');
+                    calcularDiferenca(this);
+                });
+            }
+        }
+        
+        $(document).ready(function() {
+            // Inicializar contadores
+            atualizarContadores();
+            
+            // Validação do formulário
+            $('#formInventario').on('submit', function(e) {
+                const naoContados = parseInt($('#countNaoContados').text());
+                
+                if (naoContados > 0) {
+                    e.preventDefault();
+                    alert('Ainda existem produtos não contados. Complete a contagem antes de processar o inventário.');
+                    return false;
+                }
+                
+                const comDiferenca = parseInt($('#countComDiferenca').text());
+                if (comDiferenca > 0) {
+                    if (!confirm(`Foram encontradas diferenças em ${comDiferenca} produto(s). Deseja continuar com o processamento?`)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        });
+    </script>
+}

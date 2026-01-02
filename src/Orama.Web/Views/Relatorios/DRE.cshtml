@@ -1,0 +1,285 @@
+@model RelatorioDREViewModel
+@{
+    ViewData["Title"] = "DRE - Demonstração do Resultado do Exercício";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-calculator me-2"></i>DRE - Demonstração do Resultado
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="exportarExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card-body border-bottom">
+                    <form method="get" asp-action="DRE" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="inicio" class="form-control" value="@Model.DataInicio.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="fim" class="form-control" value="@Model.DataFim.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- DRE -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2" class="text-center bg-primary text-white">
+                                            <h5 class="mb-0">DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO</h5>
+                                            <small>@Model.PeriodoFormatado</small>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Receita Bruta -->
+                                    <tr class="table-light">
+                                        <td><strong>RECEITA BRUTA</strong></td>
+                                        <td class="text-end"><strong>@Model.ReceitaBruta.ToString("C")</strong></td>
+                                    </tr>
+                                    
+                                    <!-- Custo da Mercadoria Vendida -->
+                                    <tr>
+                                        <td class="ps-4">(-) Custo da Mercadoria Vendida</td>
+                                        <td class="text-end text-danger">(@Model.CustoMercadoriaVendida.ToString("C"))</td>
+                                    </tr>
+                                    
+                                    <!-- Lucro Bruto -->
+                                    <tr class="table-success">
+                                        <td><strong>LUCRO BRUTO</strong></td>
+                                        <td class="text-end"><strong>@Model.LucroBruto.ToString("C")</strong></td>
+                                    </tr>
+                                    
+                                    <!-- Despesas Operacionais -->
+                                    <tr>
+                                        <td class="ps-4">(-) Despesas Operacionais</td>
+                                        <td class="text-end text-danger">(@Model.DespesasOperacionais.ToString("C"))</td>
+                                    </tr>
+                                    
+                                    <!-- Lucro Líquido -->
+                                    <tr class="table-@(Model.LucroLiquido >= 0 ? "success" : "danger")">
+                                        <td><strong>LUCRO LÍQUIDO</strong></td>
+                                        <td class="text-end">
+                                            <strong class="@(Model.LucroLiquido >= 0 ? "text-success" : "text-danger")">
+                                                @Model.LucroLiquido.ToString("C")
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Indicadores -->
+                        <div class="col-md-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-chart-pie me-2"></i>Indicadores de Performance
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Margem Bruta</label>
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar @(Model.MargemBruta >= 30 ? "bg-success" : Model.MargemBruta >= 15 ? "bg-warning" : "bg-danger")" 
+                                                 style="width: @Math.Min(Model.MargemBruta, 100)%"></div>
+                                        </div>
+                                        <small class="@(Model.MargemBruta >= 30 ? "text-success" : Model.MargemBruta >= 15 ? "text-warning" : "text-danger")">
+                                            @Model.MargemBruta.ToString("N2")%
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Margem Líquida</label>
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar @(Model.MargemLiquida >= 15 ? "bg-success" : Model.MargemLiquida >= 5 ? "bg-warning" : "bg-danger")" 
+                                                 style="width: @Math.Min(Math.Max(Model.MargemLiquida, 0), 100)%"></div>
+                                        </div>
+                                        <small class="@(Model.MargemLiquida >= 15 ? "text-success" : Model.MargemLiquida >= 5 ? "text-warning" : "text-danger")">
+                                            @Model.MargemLiquida.ToString("N2")%
+                                        </small>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="text-center">
+                                        @if (Model.LucroLiquido >= 0)
+                                        {
+                                            <i class="fas fa-thumbs-up fa-2x text-success mb-2"></i>
+                                            <p class="text-success mb-0"><strong>Resultado Positivo</strong></p>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-thumbs-down fa-2x text-danger mb-2"></i>
+                                            <p class="text-danger mb-0"><strong>Resultado Negativo</strong></p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Alertas -->
+                            <div class="mt-3">
+                                @if (Model.MargemBruta < 15)
+                                {
+                                    <div class="alert alert-warning alert-sm">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Atenção:</strong> Margem bruta baixa
+                                    </div>
+                                }
+                                @if (Model.MargemLiquida < 5)
+                                {
+                                    <div class="alert alert-danger alert-sm">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Alerta:</strong> Margem líquida muito baixa
+                                    </div>
+                                }
+                                @if (Model.LucroLiquido < 0)
+                                {
+                                    <div class="alert alert-danger alert-sm">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        <strong>Prejuízo:</strong> Resultado negativo no período
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Valores estimados baseados nas vendas e compras do período
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                Gerado em: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Evolução -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Evolução dos Resultados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoEvolucao" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function exportarExcel() {
+            const inicio = '@Model.DataInicio.ToString("yyyy-MM-dd")';
+            const fim = '@Model.DataFim.ToString("yyyy-MM-dd")';
+            
+            $.post('@Url.Action("ExportarExcel")', {
+                tipoRelatorio: 'dre',
+                inicio: inicio,
+                fim: fim
+            })
+            .done(function(response) {
+                if (response.success) {
+                    alert('DRE exportado com sucesso!');
+                } else {
+                    alert('Erro ao exportar: ' + response.message);
+                }
+            })
+            .fail(function() {
+                alert('Erro ao exportar DRE');
+            });
+        }
+        
+        $(document).ready(function() {
+            // Criar gráfico de evolução
+            const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+            
+            // Dados simulados para os últimos 6 meses
+            const receitas = [@Model.ReceitaBruta * 0.7m, @Model.ReceitaBruta * 0.8m, @Model.ReceitaBruta * 0.9m, @Model.ReceitaBruta * 1.1m, @Model.ReceitaBruta * 0.95m, @Model.ReceitaBruta];
+            const custos = [@Model.CustoMercadoriaVendida * 0.7m, @Model.CustoMercadoriaVendida * 0.8m, @Model.CustoMercadoriaVendida * 0.9m, @Model.CustoMercadoriaVendida * 1.1m, @Model.CustoMercadoriaVendida * 0.95m, @Model.CustoMercadoriaVendida];
+            const lucros = receitas.map((r, i) => r - custos[i] - (@Model.DespesasOperacionais / 6));
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mês -5', 'Mês -4', 'Mês -3', 'Mês -2', 'Mês -1', 'Mês Atual'],
+                    datasets: [{
+                        label: 'Receita Bruta',
+                        data: receitas,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: 'Custos',
+                        data: custos,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: 'Lucro Líquido',
+                        data: lucros,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Evolução dos Resultados - Últimos 6 Meses'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

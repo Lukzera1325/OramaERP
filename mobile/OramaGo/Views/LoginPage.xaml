@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="OramaGo.Views.LoginPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Login"
+             BackgroundColor="#F5F5F5"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <StackLayout Padding="40,60,40,40" Spacing="30">
+            
+            <!-- Logo e Header -->
+            <StackLayout Spacing="20" VerticalOptions="CenterAndExpand">
+                
+                <!-- Logo -->
+                <Frame BackgroundColor="#2196F3" 
+                       HasShadow="True" 
+                       CornerRadius="50" 
+                       WidthRequest="100" 
+                       HeightRequest="100" 
+                       HorizontalOptions="Center">
+                    <Label Text="ÓG" 
+                           FontSize="32" 
+                           FontAttributes="Bold" 
+                           TextColor="White" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" />
+                </Frame>
+
+                <!-- Título -->
+                <StackLayout Spacing="5">
+                    <Label Text="Órama Go" 
+                           FontSize="28" 
+                           FontAttributes="Bold" 
+                           TextColor="#2196F3" 
+                           HorizontalOptions="Center" />
+                    <Label Text="Força de Vendas Mobile" 
+                           FontSize="16" 
+                           TextColor="Gray" 
+                           HorizontalOptions="Center" />
+                </StackLayout>
+            </StackLayout>
+
+            <!-- Formulário de Login -->
+            <StackLayout Spacing="20">
+                
+                <!-- Campo Email -->
+                <Frame BackgroundColor="White" HasShadow="True" CornerRadius="10" Padding="0">
+                    <StackLayout Spacing="5" Padding="15">
+                        <Label Text="Email" FontSize="14" TextColor="Gray" />
+                        <Entry x:Name="EmailEntry"
+                               Text="{Binding Email}"
+                               Placeholder="Digite seu email"
+                               Keyboard="Email"
+                               ReturnType="Next"
+                               BackgroundColor="Transparent"
+                               TextColor="#333" />
+                        <Label Text="{Binding EmailError}" 
+                               TextColor="Red" 
+                               FontSize="12" 
+                               IsVisible="{Binding HasEmailError}" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- Campo Senha -->
+                <Frame BackgroundColor="White" HasShadow="True" CornerRadius="10" Padding="0">
+                    <StackLayout Spacing="5" Padding="15">
+                        <Label Text="Senha" FontSize="14" TextColor="Gray" />
+                        <Entry x:Name="SenhaEntry"
+                               Text="{Binding Senha}"
+                               Placeholder="Digite sua senha"
+                               IsPassword="True"
+                               ReturnType="Done"
+                               BackgroundColor="Transparent"
+                               TextColor="#333" />
+                        <Label Text="{Binding SenhaError}" 
+                               TextColor="Red" 
+                               FontSize="12" 
+                               IsVisible="{Binding HasSenhaError}" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- Lembrar-me -->
+                <StackLayout Orientation="Horizontal" Spacing="10">
+                    <CheckBox IsChecked="{Binding LembrarMe}" Color="#2196F3" />
+                    <Label Text="Lembrar-me" TextColor="#666" VerticalOptions="Center" />
+                </StackLayout>
+
+                <!-- Botão Login -->
+                <Button Text="Entrar"
+                        Command="{Binding LoginCommand}"
+                        BackgroundColor="#2196F3"
+                        TextColor="White"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        CornerRadius="10"
+                        HeightRequest="50"
+                        IsEnabled="{Binding IsNotBusy}" />
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator IsVisible="{Binding IsBusy}" 
+                                   IsRunning="{Binding IsBusy}" 
+                                   Color="#2196F3" />
+
+                <!-- Mensagem de Erro -->
+                <Frame BackgroundColor="#FFEBEE" 
+                       BorderColor="#F44336" 
+                       CornerRadius="5" 
+                       Padding="15"
+                       IsVisible="{Binding HasError}">
+                    <Label Text="{Binding ErrorMessage}" 
+                           TextColor="#D32F2F" 
+                           FontSize="14" 
+                           HorizontalOptions="Center" />
+                </Frame>
+            </StackLayout>
+
+            <!-- Informações de Teste -->
+            <Frame BackgroundColor="#E3F2FD" 
+                   BorderColor="#2196F3" 
+                   CornerRadius="10" 
+                   Padding="15"
+                   Margin="0,20,0,0">
+                <StackLayout Spacing="10">
+                    <Label Text="Contas de Teste:" 
+                           FontSize="14" 
+                           FontAttributes="Bold" 
+                           TextColor="#1976D2" />
+                    
+                    <StackLayout Spacing="5">
+                        <Label Text="👤 Admin: admin@orama.com.br / Admin@123" 
+                               FontSize="12" 
+                               TextColor="#1976D2" />
+                        <Label Text="👤 Vendedor: vendedor@orama.com.br / 123456" 
+                               FontSize="12" 
+                               TextColor="#1976D2" />
+                        <Label Text="🚫 Sem Acesso: semacesso@orama.com.br / 123456" 
+                               FontSize="12" 
+                               TextColor="#1976D2" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Versão -->
+            <Label Text="Versão 1.0.0" 
+                   FontSize="12" 
+                   TextColor="Gray" 
+                   HorizontalOptions="Center" 
+                   Margin="0,20,0,0" />
+
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,143 @@
+@model List<ContaPagarViewModel>
+
+@{
+    ViewData["Title"] = "Pagamentos Agendados";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Pagamentos Agendados para Hoje
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>@Model.Count</strong> pagamento(s) agendado(s) para hoje (@DateTime.Today.ToString("dd/MM/yyyy"))
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Fornecedor</th>
+                                        <th>Valor</th>
+                                        <th>Conta Bancária</th>
+                                        <th>Status</th>
+                                        <th width="200">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var conta in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@conta.Descricao</strong>
+                                                @if (!string.IsNullOrEmpty(conta.NumeroDocumento))
+                                                {
+                                                    <br><small class="text-muted">Doc: @conta.NumeroDocumento</small>
+                                                }
+                                            </td>
+                                            <td>@conta.FornecedorNome</td>
+                                            <td>
+                                                <strong>@conta.ValorTotal.ToString("C")</strong>
+                                                @if (conta.SaldoDevedor != conta.ValorTotal)
+                                                {
+                                                    <br><small class="text-muted">Saldo: @conta.SaldoDevedor.ToString("C")</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (conta.ContaBancariaId.HasValue)
+                                                {
+                                                    <span class="badge bg-primary">Conta Definida</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Sem Conta</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">Agendado</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="Pagar" asp-route-id="@conta.Id" class="btn btn-success">
+                                                        <i class="fas fa-dollar-sign"></i> Pagar
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@conta.Id" class="btn btn-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Details" asp-route-id="@conta.Id" class="btn btn-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Total Agendado</h5>
+                                        <h3 class="text-primary">@Model.Sum(c => c.ValorTotal).ToString("C")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Saldo a Pagar</h5>
+                                        <h3 class="text-danger">@Model.Sum(c => c.SaldoDevedor).ToString("C")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                            <h4>Nenhum pagamento agendado para hoje</h4>
+                            <p class="text-muted">Não há pagamentos programados para @DateTime.Today.ToString("dd/MM/yyyy").</p>
+                            <a asp-action="Index" class="btn btn-primary">
+                                <i class="fas fa-list me-1"></i>Ver Todas as Contas
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Destacar contas com valores altos
+            $('tbody tr').each(function() {
+                const valorText = $(this).find('td:nth-child(3) strong').text();
+                const valor = parseFloat(valorText.replace(/[^\d,]/g, '').replace(',', '.'));
+                
+                if (valor > 10000) {
+                    $(this).addClass('table-warning');
+                }
+            });
+        });
+    </script>
+}

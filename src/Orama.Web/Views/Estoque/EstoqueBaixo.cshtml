@@ -1,0 +1,128 @@
+@model List<PosicaoEstoqueViewModel>
+@{
+    ViewData["Title"] = "Produtos com Estoque Baixo";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Produtos com Estoque Baixo
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Posicao" class="btn btn-info">
+                            <i class="fas fa-boxes me-1"></i>Posição Geral
+                        </a>
+                        <a asp-action="Ajustar" class="btn btn-warning">
+                            <i class="fas fa-edit me-1"></i>Ajustar Estoque
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="alert alert-warning mx-3 mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Atenção!</strong> @Model.Count produto(s) com estoque abaixo do mínimo.
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Produto</th>
+                                        <th>Categoria</th>
+                                        <th>Estoque Atual</th>
+                                        <th>Estoque Mínimo</th>
+                                        <th>Diferença</th>
+                                        <th>Valor Unitário</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var produto in Model.OrderBy(p => p.DiferencaMinimo))
+                                    {
+                                        <tr class="@(produto.EstoqueAtual <= 0 ? "table-danger" : "table-warning")">
+                                            <td>
+                                                <strong>@produto.Codigo</strong>
+                                            </td>
+                                            <td>@produto.Nome</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(produto.Categoria))
+                                                {
+                                                    <span class="badge bg-secondary">@produto.Categoria</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="@(produto.EstoqueAtual <= 0 ? "text-danger" : "text-warning") fw-bold">
+                                                    @produto.EstoqueAtual.ToString("N2")
+                                                </span>
+                                            </td>
+                                            <td>@produto.EstoqueMinimo.ToString("N2")</td>
+                                            <td>
+                                                <span class="text-danger fw-bold">
+                                                    @produto.DiferencaMinimo.ToString("N2")
+                                                </span>
+                                            </td>
+                                            <td>@produto.PrecoCusto.ToString("C")</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="Ajustar" asp-route-id="@produto.Id" 
+                                                       class="btn btn-outline-warning" title="Ajustar Estoque">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Historico" asp-route-id="@produto.Id" 
+                                                       class="btn btn-outline-info" title="Ver Histórico">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">Parabéns!</h5>
+                            <p class="text-muted">Nenhum produto com estoque baixo encontrado</p>
+                            <a asp-action="Posicao" class="btn btn-primary">
+                                <i class="fas fa-boxes me-1"></i>Ver Posição Geral
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Any())
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Total: @Model.Count produto(s) com estoque baixo
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small class="text-muted">
+                                    Sem estoque: <span class="text-danger">@Model.Count(p => p.EstoqueAtual <= 0)</span> |
+                                    Abaixo do mínimo: <span class="text-warning">@Model.Count(p => p.EstoqueAtual > 0 && p.EstoqueAtual <= p.EstoqueMinimo)</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

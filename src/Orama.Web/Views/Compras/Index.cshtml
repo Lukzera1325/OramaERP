@@ -1,0 +1,166 @@
+@model List<CompraViewModel>
+@{
+    ViewData["Title"] = "Compras";
+    var filtro = ViewBag.Filtro as CompraFiltroViewModel ?? new CompraFiltroViewModel();
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Compras
+                    </h3>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nova Compra
+                    </a>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card-body border-bottom">
+                    <form method="get" asp-action="Index" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Fornecedor</label>
+                            @Html.DropDownListFor(m => filtro.FornecedorId, filtro.Fornecedores, new { @class = "form-select" })
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Status</label>
+                            @Html.DropDownListFor(m => filtro.Status, filtro.StatusList, new { @class = "form-select" })
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Data Inicial</label>
+                            @Html.TextBoxFor(m => filtro.DataInicial, new { @class = "form-control", type = "date" })
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Data Final</label>
+                            @Html.TextBoxFor(m => filtro.DataFinal, new { @class = "form-control", type = "date" })
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Número</label>
+                            @Html.TextBoxFor(m => filtro.NumeroCompra, new { @class = "form-control", placeholder = "Número da compra" })
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Fornecedor</th>
+                                        <th>Data Compra</th>
+                                        <th>Status</th>
+                                        <th>Valor Total</th>
+                                        <th>NF</th>
+                                        <th width="120">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var compra in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@compra.NumeroCompra</strong>
+                                            </td>
+                                            <td>@compra.FornecedorNome</td>
+                                            <td>@compra.DataCompra.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                <span class="badge @compra.StatusBadgeClass">
+                                                    @compra.StatusDescricao
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">@compra.ValorTotal.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(compra.NumeroNF))
+                                                {
+                                                    <span class="badge bg-info">@compra.NumeroNF</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="Details" asp-route-id="@compra.Id" 
+                                                       class="btn btn-outline-primary" title="Detalhes">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (compra.PodeEditar)
+                                                    {
+                                                        <a asp-action="Edit" asp-route-id="@compra.Id" 
+                                                           class="btn btn-outline-warning" title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    }
+                                                    @if (!compra.EstaRecebida)
+                                                    {
+                                                        <a asp-action="Delete" asp-route-id="@compra.Id" 
+                                                           class="btn btn-outline-danger" title="Excluir">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhuma compra encontrada</h5>
+                            <p class="text-muted">Clique em "Nova Compra" para começar</p>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Any())
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Exibindo @Model.Count compra(s)
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <strong class="text-primary">
+                                    Total: @Model.Sum(c => c.ValorTotal).ToString("C")
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-submit do filtro quando mudar fornecedor ou status
+            $('#FornecedorId, #Status').change(function() {
+                $(this).closest('form').submit();
+            });
+        });
+    </script>
+}

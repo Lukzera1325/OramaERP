@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="OramaGo.Views.ClienteDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="{Binding Title}"
+             BackgroundColor="#F5F5F5">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Editar" 
+                     Command="{Binding EditClienteCommand}" 
+                     IsEnabled="{Binding CanEdit}"
+                     IconImageSource="edit.png" />
+        <ToolbarItem Text="Compartilhar" 
+                     Command="{Binding ShareClienteCommand}" 
+                     IconImageSource="share.png" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView IsVisible="{Binding HasCliente}">
+        <StackLayout Padding="20" Spacing="20">
+
+            <!-- Header do Cliente -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                    
+                    <!-- Nome e Status -->
+                    <StackLayout Grid.Row="0" Grid.Column="0" Spacing="5">
+                        <Label Text="{Binding Cliente.Nome}" 
+                               FontSize="24" 
+                               FontAttributes="Bold" 
+                               TextColor="#333" />
+                        
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Frame BackgroundColor="{Binding Cliente.Bloqueado, Converter={StaticResource BoolToColorConverter}}"
+                                   Padding="8,4"
+                                   CornerRadius="12"
+                                   IsVisible="{Binding Cliente.Bloqueado}">
+                                <Label Text="BLOQUEADO" 
+                                       FontSize="12" 
+                                       TextColor="White" 
+                                       FontAttributes="Bold" />
+                            </Frame>
+                            
+                            <Frame BackgroundColor="{Binding Cliente.StatusSync, Converter={StaticResource SyncStatusToColorConverter}}"
+                                   Padding="8,4"
+                                   CornerRadius="12">
+                                <Label Text="{Binding Cliente.StatusSync, Converter={StaticResource SyncStatusToTextConverter}}" 
+                                       FontSize="12" 
+                                       TextColor="White" 
+                                       FontAttributes="Bold" />
+                            </Frame>
+                        </StackLayout>
+                    </StackLayout>
+
+                    <!-- Botões de Ação -->
+                    <StackLayout Grid.Row="0" Grid.Column="1" Spacing="10">
+                        <Button Text="📞" 
+                                Command="{Binding CallClienteCommand}"
+                                BackgroundColor="#4CAF50"
+                                TextColor="White"
+                                FontSize="20"
+                                WidthRequest="50"
+                                HeightRequest="50"
+                                CornerRadius="25"
+                                IsVisible="{Binding Cliente.TelefoneCompleto, Converter={StaticResource StringToBoolConverter}}" />
+                        
+                        <Button Text="✉️" 
+                                Command="{Binding EmailClienteCommand}"
+                                BackgroundColor="#2196F3"
+                                TextColor="White"
+                                FontSize="20"
+                                WidthRequest="50"
+                                HeightRequest="50"
+                                CornerRadius="25"
+                                IsVisible="{Binding Cliente.Email, Converter={StaticResource StringToBoolConverter}}" />
+                    </StackLayout>
+
+                    <!-- Informações Financeiras -->
+                    <Grid Grid.Row="1" Grid.ColumnSpan="2" 
+                          ColumnDefinitions="*,*" 
+                          Margin="0,20,0,0">
+                        
+                        <Frame Grid.Column="0" BackgroundColor="#E8F5E8" CornerRadius="10" Padding="15">
+                            <StackLayout>
+                                <Label Text="Limite de Crédito" 
+                                       FontSize="14" 
+                                       TextColor="Gray" />
+                                <Label Text="{Binding Cliente.LimiteCredito, StringFormat='{0:C2}'}" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold" 
+                                       TextColor="#4CAF50" />
+                            </StackLayout>
+                        </Frame>
+                        
+                        <Frame Grid.Column="1" BackgroundColor="#FFF3E0" CornerRadius="10" Padding="15" Margin="10,0,0,0">
+                            <StackLayout>
+                                <Label Text="Crédito Disponível" 
+                                       FontSize="14" 
+                                       TextColor="Gray" />
+                                <Label Text="{Binding Cliente.CreditoDisponivel, StringFormat='{0:C2}'}" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold" 
+                                       TextColor="{Binding Cliente.CreditoDisponivel, Converter={StaticResource CreditoToColorConverter}}" />
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+                </Grid>
+            </Frame>
+
+            <!-- Informações de Contato -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="📞 Contato" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.CpfCnpj, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="CPF/CNPJ" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.CpfCnpjFormatado}" FontSize="16" TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.Email, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="Email" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.Email}" FontSize="16" TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.Telefone, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="Telefone" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.Telefone}" FontSize="16" TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.Celular, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="Celular" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.Celular}" FontSize="16" TextColor="#333" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Endereço -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20"
+                   IsVisible="{Binding Cliente.Endereco, Converter={StaticResource StringToBoolConverter}}">
+                <StackLayout Spacing="15">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="🏠 Endereço" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="#333" />
+                        
+                        <Button Grid.Column="1"
+                                Text="📍"
+                                Command="{Binding ViewLocationCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="#2196F3"
+                                FontSize="20" />
+                    </Grid>
+
+                    <StackLayout Spacing="5">
+                        <Label Text="{Binding Cliente.EnderecoCompleto}" 
+                               FontSize="16" 
+                               TextColor="#333" />
+                        
+                        <StackLayout Orientation="Horizontal" Spacing="10" IsVisible="{Binding Cliente.Cep, Converter={StaticResource StringToBoolConverter}}">
+                            <Label Text="CEP:" FontSize="14" TextColor="Gray" />
+                            <Label Text="{Binding Cliente.Cep}" FontSize="14" TextColor="#333" />
+                        </StackLayout>
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Informações Adicionais -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="ℹ️ Informações Adicionais" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.DataNascimento, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="Data de Nascimento" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.DataNascimento, StringFormat='{0:dd/MM/yyyy}'}" FontSize="16" TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.Observacoes, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="Observações" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.Observacoes}" FontSize="16" TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Cliente.Bloqueado}">
+                        <Label Text="Motivo do Bloqueio" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.MotivoBloqueio}" FontSize="16" TextColor="Red" />
+                    </StackLayout>
+
+                    <!-- Informações de Sistema -->
+                    <StackLayout Spacing="5" Margin="0,20,0,0">
+                        <Label Text="Criado em:" FontSize="12" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.DataCriacao, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontSize="12" TextColor="Gray" />
+                        
+                        <Label Text="Última modificação:" FontSize="12" TextColor="Gray" />
+                        <Label Text="{Binding Cliente.DataModificacao, StringFormat='{0:dd/MM/yyyy HH:mm}'}" FontSize="12" TextColor="Gray" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsVisible="{Binding IsBusy}" 
+                               IsRunning="{Binding IsBusy}" 
+                               Color="#2196F3" 
+                               VerticalOptions="CenterAndExpand" />
+
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>

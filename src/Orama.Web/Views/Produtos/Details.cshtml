@@ -1,0 +1,269 @@
+@model Orama.Domain.Entities.Produto
+@{
+    ViewData["Title"] = "Detalhes do Produto";
+}
+
+<div class="container-fluid">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-box text-primary me-2"></i>Detalhes do Produto
+            </h2>
+            <p class="text-muted mb-0">
+                <span class="badge bg-secondary fs-6">@Model.Codigo</span>
+            </p>
+        </div>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                <i class="fas fa-edit me-1"></i>Editar
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna Principal -->
+        <div class="col-lg-8">
+            <!-- Dados Básicos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-info-circle me-2"></i>Dados Básicos
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Código</label>
+                            <p class="fw-bold">@Model.Codigo</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Descrição</label>
+                            <p class="fw-bold">@Model.Descricao</p>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">Unidade</label>
+                            <p class="fw-bold">@Model.Unidade</p>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.DescricaoDetalhada))
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Descrição Detalhada</label>
+                                <p>@Model.DescricaoDetalhada</p>
+                            </div>
+                        </div>
+                    }
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Categoria</label>
+                            <p>
+                                @if (Model.CategoriaNavigation != null)
+                                {
+                                    <span class="badge bg-info">@Model.CategoriaNavigation.Nome</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Não definida</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preços -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-dollar-sign me-2"></i>Preços
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <label class="form-label text-muted small d-block">Preço de Custo</label>
+                                <span class="fs-4 fw-bold text-secondary">
+                                    R$ @Model.PrecoCusto.ToString("N2")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <label class="form-label text-muted small d-block">Margem de Lucro</label>
+                                <span class="fs-4 fw-bold text-info">
+                                    @Model.MargemCalculada.ToString("N2")%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 bg-light">
+                                <label class="form-label text-muted small d-block">Preço de Venda</label>
+                                <span class="fs-4 fw-bold text-success">
+                                    R$ @Model.PrecoVenda.ToString("N2")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estoque -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-warehouse me-2"></i>Controle de Estoque
+                </div>
+                <div class="card-body">
+                    @if (Model.ControlaEstoque)
+                    {
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="border rounded p-3">
+                                    <label class="form-label text-muted small d-block">Estoque Mínimo</label>
+                                    <span class="fs-4 fw-bold text-danger">
+                                        @Model.EstoqueMinimo.ToString("N2")
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-3 @(Model.EstoqueBaixo ? "bg-danger text-white" : "bg-light")">
+                                    <label class="form-label @(Model.EstoqueBaixo ? "text-white" : "text-muted") small d-block">
+                                        Estoque Atual
+                                    </label>
+                                    <span class="fs-4 fw-bold">
+                                        @Model.EstoqueAtual.ToString("N2")
+                                        @if (Model.EstoqueBaixo)
+                                        {
+                                            <i class="fas fa-exclamation-triangle ms-2"></i>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-3">
+                                    <label class="form-label text-muted small d-block">Estoque Máximo</label>
+                                    <span class="fs-4 fw-bold text-success">
+                                        @Model.EstoqueMaximo.ToString("N2")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.EstoqueBaixo)
+                        {
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Atenção!</strong> O estoque deste produto está abaixo do mínimo.
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-ban fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">Este produto não controla estoque</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Lateral -->
+        <div class="col-lg-4">
+            <!-- Classificação Fiscal -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-file-invoice me-2"></i>Classificação Fiscal
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">NCM</label>
+                        <p class="fw-bold mb-0">
+                            @(string.IsNullOrEmpty(Model.Ncm) ? "Não informado" : Model.Ncm)
+                        </p>
+                    </div>
+                    <div>
+                        <label class="form-label text-muted small">CEST</label>
+                        <p class="fw-bold mb-0">
+                            @(string.IsNullOrEmpty(Model.Cest) ? "Não informado" : Model.Cest)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dimensões -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-ruler-combined me-2"></i>Dimensões
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label text-muted small">Peso</label>
+                            <p class="fw-bold mb-0">
+                                @(Model.Peso.HasValue ? $"{Model.Peso:N3} kg" : "-")
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small">Altura</label>
+                            <p class="fw-bold mb-0">
+                                @(Model.Altura.HasValue ? $"{Model.Altura:N2} cm" : "-")
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small">Largura</label>
+                            <p class="fw-bold mb-0">
+                                @(Model.Largura.HasValue ? $"{Model.Largura:N2} cm" : "-")
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small">Profundidade</label>
+                            <p class="fw-bold mb-0">
+                                @(Model.Profundidade.HasValue ? $"{Model.Profundidade:N2} cm" : "-")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            @if (!string.IsNullOrEmpty(Model.Observacoes))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <i class="fas fa-sticky-note me-2"></i>Observações
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@Model.Observacoes</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Informações do Sistema -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="fas fa-clock me-2"></i>Informações do Sistema
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">Data de Criação:</small>
+                        <br>
+                        <span>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div>
+                        <small class="text-muted">Status:</small>
+                        <br>
+                        @if (Model.Ativo)
+                        {
+                            <span class="badge bg-success">Ativo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inativo</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

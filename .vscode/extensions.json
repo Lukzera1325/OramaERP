@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.dotnet-interactive-vscode",
+        "jmrog.vscode-nuget-package-manager",
+        "formulahendry.auto-rename-tag",
+        "eamodio.gitlens",
+        "rangav.vscode-thunder-client",
+        "ms-vscode.vscode-json",
+        "bradlc.vscode-tailwindcss",
+        "christian-kohler.path-intellisense",
+        "visualstudioexptteam.vscodeintellicode"
+    ]
+}

@@ -154,7 +154,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row text-center">
+                    <div class="row text-center mb-4">
                         <div class="col-md-4 mb-3">
                             <div class="border-end">
                                 <h4 class="text-success mb-1">@Model.VendasMes.ToString("C")</h4>
@@ -175,23 +175,9 @@
                         </div>
                     </div>
                     
-                    <!-- Barra de progresso visual -->
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Performance do Mês</span>
-                            <span class="text-muted">
-                                @{
-                                    var performance = Model.VendasMes > 0 ? (Model.SaldoMes / Model.VendasMes * 100) : 0;
-                                }
-                                @performance.ToString("F1")%
-                            </span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar @(performance >= 0 ? "bg-success" : "bg-danger")" 
-                                 role="progressbar" 
-                                 style="width: @Math.Abs(performance)%">
-                            </div>
-                        </div>
+                    <!-- Gráfico de Vendas vs Compras -->
+                    <div class="mt-3">
+                        <canvas id="graficoFinanceiro" height="100"></canvas>
                     </div>
                 </div>
             </div>
@@ -211,14 +197,66 @@
                         <a href="@Url.Action("Create", "Vendas")" class="btn btn-success">
                             <i class="fas fa-plus me-2"></i>Nova Venda
                         </a>
+                        <a href="@Url.Action("Create", "Compras")" class="btn btn-info">
+                            <i class="fas fa-shopping-cart me-2"></i>Nova Compra
+                        </a>
                         <a href="@Url.Action("Create", "Clientes")" class="btn btn-primary">
                             <i class="fas fa-user-plus me-2"></i>Novo Cliente
                         </a>
                         <a href="@Url.Action("Create", "Produtos")" class="btn btn-warning">
                             <i class="fas fa-box me-2"></i>Novo Produto
                         </a>
-                        <a href="@Url.Action("Index", "ContasReceber")" class="btn btn-info">
-                            <i class="fas fa-money-bill-wave me-2"></i>Contas a Receber
+                        <a href="@Url.Action("Index", "Relatorios")" class="btn btn-secondary">
+                            <i class="fas fa-chart-bar me-2"></i>Relatórios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Valor do Estoque e Alertas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-warehouse me-2"></i>Valor do Estoque
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="text-info mb-2">@Model.ValorEstoque.ToString("C")</h3>
+                    <p class="text-muted mb-0">Valor total em estoque</p>
+                    <a href="@Url.Action("Posicao", "Estoque")" class="btn btn-outline-info btn-sm mt-2">
+                        <i class="fas fa-eye me-1"></i>Ver Detalhes
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Alertas Financeiros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h5 class="text-danger mb-1">@Model.ContasReceberVencidas</h5>
+                            <small class="text-muted">Contas a Receber Vencidas</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-warning mb-1">@Model.ContasPagarVencidas</h5>
+                            <small class="text-muted">Contas a Pagar Vencidas</small>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <a href="@Url.Action("Index", "ContasReceber")" class="btn btn-outline-danger btn-sm me-1">
+                            <i class="fas fa-arrow-up me-1"></i>Receber
+                        </a>
+                        <a href="@Url.Action("Index", "ContasPagar")" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-arrow-down me-1"></i>Pagar
                         </a>
                     </div>
                 </div>
@@ -273,6 +311,69 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Carregar dados dos gráficos
+            carregarDadosGraficos();
+        });
+        
+        function carregarDadosGraficos() {
+            $.get('@Url.Action("ObterDadosGraficos")')
+                .done(function(response) {
+                    if (response.success) {
+                        criarGraficoFinanceiro(response.data);
+                    }
+                })
+                .fail(function() {
+                    console.log('Erro ao carregar dados dos gráficos');
+                });
+        }
+        
+        function criarGraficoFinanceiro(dados) {
+            const ctx = document.getElementById('graficoFinanceiro').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dados.vendas.map(v => v.mes),
+                    datasets: [{
+                        label: 'Vendas (R$)',
+                        data: dados.vendas.map(v => v.valor),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: 'Compras (R$)',
+                        data: dados.compras.map(c => c.valor),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Evolução Financeira - Últimos 12 Meses'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    
     <style>
         .timeline {
             position: relative;

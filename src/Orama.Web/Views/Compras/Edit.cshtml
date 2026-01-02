@@ -1,0 +1,237 @@
+@model CompraViewModel
+@{
+    ViewData["Title"] = $"Editar Compra {Model.NumeroCompra}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>Editar Compra @Model.NumeroCompra
+                    </h3>
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    <input asp-for="Id" type="hidden">
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Informações Gerais -->
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3">Informações Gerais</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Número da Compra</label>
+                                    <input value="@Model.NumeroCompra" class="form-control" readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="FornecedorId" class="form-label"></label>
+                                    @Html.DropDownListFor(m => m.FornecedorId, Model.Fornecedores, "Selecione um fornecedor...", new { @class = "form-select", required = "required" })
+                                    <span asp-validation-for="FornecedorId" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="NumeroNF" class="form-label"></label>
+                                    <input asp-for="NumeroNF" class="form-control" placeholder="Número da nota fiscal">
+                                    <span asp-validation-for="NumeroNF" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label asp-for="DataCompra" class="form-label"></label>
+                                        <input asp-for="DataCompra" class="form-control" type="date" required>
+                                        <span asp-validation-for="DataCompra" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="DataEntrega" class="form-label"></label>
+                                        <input asp-for="DataEntrega" class="form-control" type="date">
+                                        <span asp-validation-for="DataEntrega" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Informações Financeiras -->
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3">Informações Financeiras</h5>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="FormaPagamento" class="form-label"></label>
+                                    @Html.DropDownListFor(m => m.FormaPagamento, Model.FormasPagamento, new { @class = "form-select" })
+                                    <span asp-validation-for="FormaPagamento" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label asp-for="Parcelas" class="form-label"></label>
+                                        <input asp-for="Parcelas" class="form-control" type="number" min="1" max="60" required>
+                                        <span asp-validation-for="Parcelas" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="PercentualDesconto" class="form-label"></label>
+                                        <div class="input-group">
+                                            <input asp-for="PercentualDesconto" class="form-control" type="number" step="0.01" min="0" max="100">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                        <span asp-validation-for="PercentualDesconto" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="ValorFrete" class="form-label"></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input asp-for="ValorFrete" class="form-control" type="number" step="0.01" min="0">
+                                    </div>
+                                    <span asp-validation-for="ValorFrete" class="text-danger"></span>
+                                </div>
+
+                                <!-- Totais (somente leitura) -->
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Subtotal:</small><br>
+                                            <strong>@Model.SubTotal.ToString("C")</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Total:</small><br>
+                                            <strong class="text-success">@Model.ValorTotal.ToString("C")</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label asp-for="Observacoes" class="form-label"></label>
+                                <textarea asp-for="Observacoes" class="form-control" rows="3" placeholder="Observações sobre a compra..."></textarea>
+                                <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Itens da Compra -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Itens da Compra</h5>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="adicionarItem()">
+                                        <i class="fas fa-plus me-1"></i>Adicionar Item
+                                    </button>
+                                </div>
+
+                                <div id="itens-container">
+                                    @if (Model.Itens.Any())
+                                    {
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered" id="itens-table">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Produto</th>
+                                                        <th>Quantidade</th>
+                                                        <th>Valor Unitário</th>
+                                                        <th>Valor Total</th>
+                                                        <th width="80">Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @for (int i = 0; i < Model.Itens.Count; i++)
+                                                    {
+                                                        <tr data-index="@i">
+                                                            <td>
+                                                                <input asp-for="Itens[i].Id" type="hidden">
+                                                                @Html.DropDownListFor(m => m.Itens[i].ProdutoId, Model.Itens[i].Produtos, new { @class = "form-select", required = "required" })
+                                                            </td>
+                                                            <td>
+                                                                <input asp-for="Itens[i].Quantidade" class="form-control" type="number" step="0.01" min="0.01" required>
+                                                            </td>
+                                                            <td>
+                                                                <input asp-for="Itens[i].ValorUnitario" class="form-control" type="number" step="0.01" min="0.01" required>
+                                                            </td>
+                                                            <td>
+                                                                <span class="valor-total">@Model.Itens[i].ValorTotal.ToString("C")</span>
+                                                            </td>
+                                                            <td>
+                                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerItemLinha(@i)">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center py-4" id="sem-itens">
+                                            <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                                            <p class="text-muted">Nenhum item adicionado</p>
+                                            <button type="button" class="btn btn-primary" onclick="adicionarItem()">
+                                                <i class="fas fa-plus me-1"></i>Adicionar Primeiro Item
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let itemIndex = @Model.Itens.Count;
+        
+        function adicionarItem() {
+            // Implementar lógica para adicionar novo item dinamicamente
+            alert('Funcionalidade em desenvolvimento. Use a tela de detalhes para gerenciar itens.');
+        }
+        
+        function removerItemLinha(index) {
+            if (confirm('Deseja remover este item?')) {
+                $(`tr[data-index="${index}"]`).remove();
+                recalcularTotais();
+            }
+        }
+        
+        function recalcularTotais() {
+            // Implementar recálculo dos totais
+        }
+        
+        $(document).ready(function() {
+            // Máscara para valores monetários
+            $('#ValorFrete').mask('#.##0,00', {reverse: true});
+            
+            // Recalcular total quando alterar quantidade ou valor unitário
+            $(document).on('input', 'input[name$=".Quantidade"], input[name$=".ValorUnitario"]', function() {
+                var row = $(this).closest('tr');
+                var quantidade = parseFloat(row.find('input[name$=".Quantidade"]').val()) || 0;
+                var valorUnitario = parseFloat(row.find('input[name$=".ValorUnitario"]').val()) || 0;
+                var valorTotal = quantidade * valorUnitario;
+                
+                row.find('.valor-total').text(valorTotal.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }));
+            });
+        });
+    </script>
+}

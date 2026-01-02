@@ -1,0 +1,229 @@
+@model VendaViewModel
+@{
+    ViewData["Title"] = "Nova Venda";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-shopping-cart text-primary me-2"></i>Nova Venda</h2>
+        <p class="text-muted mb-0">Cadastre uma nova venda ou orçamento</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<form asp-action="Create" method="post" id="formVenda">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Dados da Venda -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Dados da Venda</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ClienteId" class="form-label"></label>
+                            <select asp-for="ClienteId" class="form-select" asp-items="ViewBag.Clientes">
+                                <option value="">Selecione um cliente</option>
+                            </select>
+                            <span asp-validation-for="ClienteId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="DataVenda" class="form-label"></label>
+                            <input asp-for="DataVenda" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="DataEntrega" class="form-label"></label>
+                            <input asp-for="DataEntrega" type="date" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="FormaPagamento" class="form-label"></label>
+                            <select asp-for="FormaPagamento" class="form-select" asp-items="Html.GetEnumSelectList<FormaPagamento>()"></select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label asp-for="Parcelas" class="form-label"></label>
+                            <input asp-for="Parcelas" type="number" min="1" max="48" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Observacoes" class="form-label"></label>
+                            <input asp-for="Observacoes" class="form-control" placeholder="Observações..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itens da Venda -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Itens da Venda</h5>
+                    <button type="button" class="btn btn-sm btn-success" onclick="adicionarItem()">
+                        <i class="fas fa-plus me-1"></i>Adicionar Item
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="tabelaItens">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%">Produto</th>
+                                    <th style="width: 15%">Qtd</th>
+                                    <th style="width: 15%">Preço</th>
+                                    <th style="width: 15%">Total</th>
+                                    <th style="width: 15%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="itensBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="semItens" class="text-center py-4 text-muted">
+                        <i class="fas fa-box-open fa-2x mb-2"></i>
+                        <p>Nenhum item adicionado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Resumo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">Desconto (%)</label>
+                        <input asp-for="PercentualDesconto" type="number" step="0.01" min="0" max="100" class="form-control form-control-sm" onchange="calcularTotais()" />
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Desconto:</span>
+                        <span id="desconto" class="text-danger">- R$ 0,00</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">Frete</label>
+                        <input asp-for="ValorFrete" type="number" step="0.01" min="0" class="form-control form-control-sm" onchange="calcularTotais()" />
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="total" class="text-success fs-4">R$ 0,00</strong>
+                    </div>
+                    <input type="hidden" asp-for="SubTotal" id="inputSubtotal" />
+                    <input type="hidden" asp-for="ValorDesconto" id="inputDesconto" />
+                    <input type="hidden" asp-for="ValorTotal" id="inputTotal" />
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar como Orçamento
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        var produtos = @Html.Raw(Json.Serialize(ViewBag.Produtos));
+        var itemIndex = 0;
+
+        function adicionarItem() {
+            document.getElementById('semItens').style.display = 'none';
+            var tbody = document.getElementById('itensBody');
+            var tr = document.createElement('tr');
+            tr.id = 'item_' + itemIndex;
+            tr.innerHTML = `
+                <td>
+                    <select name="Itens[${itemIndex}].ProdutoId" class="form-select form-select-sm" onchange="selecionarProduto(this, ${itemIndex})" required>
+                        <option value="">Selecione...</option>
+                        @foreach (var p in (SelectList)ViewBag.Produtos)
+                        {
+                            <option value="@p.Value">@p.Text</option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="Itens[${itemIndex}].Quantidade" class="form-control form-control-sm" value="1" min="0.01" step="0.01" onchange="calcularItemTotal(${itemIndex})" required />
+                </td>
+                <td>
+                    <input type="number" name="Itens[${itemIndex}].PrecoUnitario" class="form-control form-control-sm" value="0" min="0" step="0.01" onchange="calcularItemTotal(${itemIndex})" required />
+                </td>
+                <td>
+                    <input type="number" name="Itens[${itemIndex}].ValorTotal" class="form-control form-control-sm" readonly />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerItem(${itemIndex})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            itemIndex++;
+        }
+
+        function removerItem(index) {
+            var tr = document.getElementById('item_' + index);
+            tr.remove();
+            calcularTotais();
+            if (document.getElementById('itensBody').children.length === 0) {
+                document.getElementById('semItens').style.display = 'block';
+            }
+        }
+
+        function selecionarProduto(select, index) {
+            var produtoId = select.value;
+            if (produtoId) {
+                fetch('/Vendas/BuscarProduto?termo=' + produtoId)
+                    .then(r => r.json())
+                    .then(data => {
+                        var produto = data.find(p => p.id == produtoId);
+                        if (produto) {
+                            var tr = document.getElementById('item_' + index);
+                            tr.querySelector('[name$=".PrecoUnitario"]').value = produto.precoVenda.toFixed(2);
+                            calcularItemTotal(index);
+                        }
+                    });
+            }
+        }
+
+        function calcularItemTotal(index) {
+            var tr = document.getElementById('item_' + index);
+            var qtd = parseFloat(tr.querySelector('[name$=".Quantidade"]').value) || 0;
+            var preco = parseFloat(tr.querySelector('[name$=".PrecoUnitario"]').value) || 0;
+            var total = qtd * preco;
+            tr.querySelector('[name$=".ValorTotal"]').value = total.toFixed(2);
+            calcularTotais();
+        }
+
+        function calcularTotais() {
+            var subtotal = 0;
+            document.querySelectorAll('[name$=".ValorTotal"]').forEach(function(input) {
+                subtotal += parseFloat(input.value) || 0;
+            });
+
+            var percDesconto = parseFloat(document.getElementById('PercentualDesconto').value) || 0;
+            var desconto = subtotal * (percDesconto / 100);
+            var frete = parseFloat(document.getElementById('ValorFrete').value) || 0;
+            var total = subtotal - desconto + frete;
+
+            document.getElementById('subtotal').textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
+            document.getElementById('desconto').textContent = '- R$ ' + desconto.toFixed(2).replace('.', ',');
+            document.getElementById('total').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+
+            document.getElementById('inputSubtotal').value = subtotal.toFixed(2);
+            document.getElementById('inputDesconto').value = desconto.toFixed(2);
+            document.getElementById('inputTotal').value = total.toFixed(2);
+        }
+    </script>
+}

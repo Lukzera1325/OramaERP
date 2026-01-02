@@ -25,7 +25,22 @@ public class Usuario : BaseEntity
 
     public DateTime? UltimoLogin { get; set; }
 
+    public DateTime? DataUltimoAcesso { get; set; }
+
+    // Super Admin pode acessar todas as empresas
+    public bool IsSuperAdmin { get; set; }
+
+    // Multi-tenant - Empresa principal do usuário
+    public int EmpresaId { get; set; }
+    public virtual Empresa? Empresa { get; set; }
+
     // Relacionamentos
     public int PerfilId { get; set; }
     public virtual Perfil Perfil { get; set; } = null!;
+
+    // Empresas que o usuário pode acessar
+    public virtual ICollection<UsuarioEmpresa> Empresas { get; set; } = new List<UsuarioEmpresa>();
+
+    // Permissões do usuário (para API mobile)
+    public List<string> Permissoes { get; set; } = new List<string>();
 }

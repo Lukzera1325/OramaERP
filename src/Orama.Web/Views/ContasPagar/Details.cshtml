@@ -1,0 +1,130 @@
+@model ContaPagarViewModel
+@{
+    ViewData["Title"] = "Detalhes da Conta";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-file-invoice-dollar me-2"></i>@Model.Descricao</h2>
+        <p class="text-muted mb-0">Detalhes da conta a pagar</p>
+    </div>
+    <div>
+        @if (Model.Status != StatusConta.Paga && Model.Status != StatusConta.Cancelada)
+        {
+            <a asp-action="Pagar" asp-route-id="@Model.Id" class="btn btn-danger me-2">
+                <i class="fas fa-dollar-sign me-2"></i>Pagar
+            </a>
+        }
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Descrição</label>
+                        <p class="fw-bold">@Model.Descricao</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Nº Documento</label>
+                        <p>@(Model.NumeroDocumento ?? "-")</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Fornecedor</label>
+                        <p>@(Model.FornecedorNome ?? "-")</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Data Emissão</label>
+                        <p>@Model.DataEmissao.ToString("dd/MM/yyyy")</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Data Vencimento</label>
+                        <p class="@(Model.Vencida ? "text-danger fw-bold" : "")">
+                            @Model.DataVencimento.ToString("dd/MM/yyyy")
+                            @if (Model.Vencida)
+                            {
+                                <br><small>@Model.DiasAtraso dias de atraso</small>
+                            }
+                        </p>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Observacoes))
+                {
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Observações</label>
+                        <p>@Model.Observacoes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-@Model.StatusCor text-white">
+                <h6 class="mb-0"><i class="fas fa-wallet me-2"></i>Valores</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td>Valor Original:</td>
+                        <td class="text-end">@Model.ValorOriginal.ToString("C")</td>
+                    </tr>
+                    <tr>
+                        <td>Juros:</td>
+                        <td class="text-end">@Model.ValorJuros.ToString("C")</td>
+                    </tr>
+                    <tr>
+                        <td>Multa:</td>
+                        <td class="text-end">@Model.ValorMulta.ToString("C")</td>
+                    </tr>
+                    <tr>
+                        <td>Desconto:</td>
+                        <td class="text-end text-success">- @Model.ValorDesconto.ToString("C")</td>
+                    </tr>
+                    <tr class="table-primary">
+                        <td><strong>Valor Total:</strong></td>
+                        <td class="text-end"><strong>@Model.ValorTotal.ToString("C")</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Valor Pago:</td>
+                        <td class="text-end text-success">@Model.ValorPago.ToString("C")</td>
+                    </tr>
+                    <tr class="table-warning">
+                        <td><strong>Saldo Devedor:</strong></td>
+                        <td class="text-end"><strong class="text-danger">@Model.SaldoDevedor.ToString("C")</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Status</h6>
+            </div>
+            <div class="card-body text-center">
+                <span class="badge bg-@Model.StatusCor fs-5 mb-3">@Model.StatusDescricao</span>
+                @if (Model.DataPagamento.HasValue)
+                {
+                    <p class="mb-0">
+                        <small class="text-muted">Pago em:</small><br>
+                        @Model.DataPagamento.Value.ToString("dd/MM/yyyy")
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

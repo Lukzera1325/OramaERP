@@ -1,0 +1,404 @@
+@model ListaMateriaisViewModel
+
+@{
+    ViewData["Title"] = "Nova Lista de Materiais (BOM)";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus-circle"></i>
+                        Nova Lista de Materiais (BOM)
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="ListasMateriais" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+
+                <form asp-action="CriarListaMateriais" method="post" id="formListaMateriais">
+                    <div class="card-body">
+                        <!-- Informações Básicas -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ProdutoId" class="form-label">Produto Final *</label>
+                                    <select asp-for="ProdutoId" class="form-control select2" asp-items="ViewBag.Produtos" id="produtoSelect">
+                                        <option value="">Selecione o produto...</option>
+                                    </select>
+                                    <span asp-validation-for="ProdutoId" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="Versao" class="form-label">Versão</label>
+                                    <input asp-for="Versao" class="form-control" placeholder="Ex: 1.0, 2.1, etc." />
+                                    <span asp-validation-for="Versao" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Descricao" class="form-label">Descrição</label>
+                                    <textarea asp-for="Descricao" class="form-control" rows="3" placeholder="Descrição da lista de materiais..."></textarea>
+                                    <span asp-validation-for="Descricao" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input asp-for="Ativo" class="form-check-input" type="checkbox" checked />
+                                        <label asp-for="Ativo" class="form-check-label">
+                                            Lista Ativa
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Componentes/Materiais -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>
+                                    <i class="fas fa-boxes"></i> Componentes/Materiais
+                                    <button type="button" class="btn btn-success btn-sm ml-2" onclick="adicionarComponente()">
+                                        <i class="fas fa-plus"></i> Adicionar Componente
+                                    </button>
+                                </h5>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="componentesTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="30%">Material/Componente *</th>
+                                                <th width="12%">Quantidade *</th>
+                                                <th width="12%">Unidade</th>
+                                                <th width="12%">Tipo</th>
+                                                <th width="10%">% Perda</th>
+                                                <th width="12%">Qtd. Líquida</th>
+                                                <th width="8%">Crítico</th>
+                                                <th width="4%">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="componentesBody">
+                                            <!-- Componentes serão adicionados dinamicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="alert alert-info mt-3" id="alertaComponentes" style="display: none;">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Dica:</strong> Adicione pelo menos um componente para criar a lista de materiais.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumo de Custos -->
+                        <div class="row mt-4">
+                            <div class="col-md-8">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-calculator"></i> Resumo de Custos</h6>
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <small class="text-muted">Custo Material:</small><br>
+                                                <strong id="custoMaterial">R$ 0,00</strong>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted">Custo com Perdas:</small><br>
+                                                <strong id="custoComPerdas">R$ 0,00</strong>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted">Total de Componentes:</small><br>
+                                                <strong id="totalComponentes">0</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary" id="btnSalvar">
+                            <i class="fas fa-save"></i> Criar Lista de Materiais
+                        </button>
+                        <a asp-action="ListasMateriais" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="button" class="btn btn-info ml-2" onclick="calcularExplosao()" id="btnExplosao" style="display: none;">
+                            <i class="fas fa-sitemap"></i> Testar Explosão
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Componente -->
+<div class="modal fade" id="modalComponente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Adicionar Componente</h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formComponente">
+                    <div class="form-group">
+                        <label>Material/Componente *</label>
+                        <select id="componenteProdutoId" class="form-control select2" required>
+                            <option value="">Selecione o material...</option>
+                            @foreach (var produto in ViewBag.Produtos as SelectList)
+                            {
+                                <option value="@produto.Value" data-preco="@produto.GetType().GetProperty("DataTextField")?.GetValue(produto, null)">@produto.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Quantidade *</label>
+                                <input type="number" id="componenteQuantidade" class="form-control" step="0.001" min="0.001" required />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Unidade</label>
+                                <input type="text" id="componenteUnidade" class="form-control" placeholder="UN, KG, M, etc." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select id="componenteTipo" class="form-control">
+                                    <option value="Materia Prima">Matéria Prima</option>
+                                    <option value="Componente">Componente</option>
+                                    <option value="Embalagem">Embalagem</option>
+                                    <option value="Insumo">Insumo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>% Perda</label>
+                                <input type="number" id="componentePercentualPerda" class="form-control" step="0.1" min="0" max="100" value="0" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="componenteCritico" class="form-check-input" />
+                            <label for="componenteCritico" class="form-check-label">
+                                Componente Crítico
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="salvarComponente()">
+                    <i class="fas fa-plus"></i> Adicionar
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        var componenteIndex = 0;
+        var componentesData = [];
+
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Auto-generate version
+            if (!$('#Versao').val()) {
+                $('#Versao').val('1.0');
+            }
+
+            // Show alert if no components
+            verificarComponentes();
+
+            // Calculate quantities on input change
+            $(document).on('input', '#componenteQuantidade, #componentePercentualPerda', function() {
+                calcularQuantidadeLiquida();
+            });
+        });
+
+        function adicionarComponente() {
+            $('#formComponente')[0].reset();
+            $('#componenteProdutoId').val('').trigger('change');
+            $('#modalComponente').modal('show');
+        }
+
+        function salvarComponente() {
+            var form = $('#formComponente')[0];
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            var produtoId = $('#componenteProdutoId').val();
+            var produtoNome = $('#componenteProdutoId option:selected').text();
+            var quantidade = parseFloat($('#componenteQuantidade').val());
+            var unidade = $('#componenteUnidade').val() || 'UN';
+            var tipo = $('#componenteTipo').val();
+            var percentualPerda = parseFloat($('#componentePercentualPerda').val()) || 0;
+            var critico = $('#componenteCritico').is(':checked');
+
+            // Check if already exists
+            if (componentesData.find(c => c.produtoId === produtoId)) {
+                alert('Este componente já foi adicionado à lista.');
+                return;
+            }
+
+            var quantidadeLiquida = quantidade * (1 + percentualPerda / 100);
+
+            var componente = {
+                index: componenteIndex++,
+                produtoId: produtoId,
+                produtoNome: produtoNome,
+                quantidade: quantidade,
+                unidade: unidade,
+                tipo: tipo,
+                percentualPerda: percentualPerda,
+                quantidadeLiquida: quantidadeLiquida,
+                critico: critico
+            };
+
+            componentesData.push(componente);
+            adicionarLinhaComponente(componente);
+            
+            $('#modalComponente').modal('hide');
+            verificarComponentes();
+            calcularResumo();
+        }
+
+        function adicionarLinhaComponente(componente) {
+            var row = '<tr data-index="' + componente.index + '">' +
+                '<td>' +
+                    '<strong>' + componente.produtoNome + '</strong><br>' +
+                    '<small class="text-muted">' + componente.tipo + '</small>' +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].ProdutoId" value="' + componente.produtoId + '" />' +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].Tipo" value="' + componente.tipo + '" />' +
+                '</td>' +
+                '<td>' +
+                    componente.quantidade.toFixed(3) +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].Quantidade" value="' + componente.quantidade + '" />' +
+                '</td>' +
+                '<td>' +
+                    componente.unidade +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].Unidade" value="' + componente.unidade + '" />' +
+                '</td>' +
+                '<td>' + componente.tipo + '</td>' +
+                '<td>' +
+                    componente.percentualPerda.toFixed(1) + '%' +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].PercentualPerda" value="' + componente.percentualPerda + '" />' +
+                '</td>' +
+                '<td>' +
+                    '<strong>' + componente.quantidadeLiquida.toFixed(3) + '</strong>' +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].QuantidadeLiquida" value="' + componente.quantidadeLiquida + '" />' +
+                '</td>' +
+                '<td>' +
+                    (componente.critico ? '<span class="badge badge-danger">Sim</span>' : '<span class="badge badge-secondary">Não</span>') +
+                    '<input type="hidden" name="Componentes[' + componente.index + '].Critico" value="' + componente.critico + '" />' +
+                '</td>' +
+                '<td>' +
+                    '<button type="button" class="btn btn-danger btn-sm" onclick="removerComponente(' + componente.index + ')" title="Remover">' +
+                        '<i class="fas fa-trash"></i>' +
+                    '</button>' +
+                '</td>' +
+            '</tr>';
+
+            $('#componentesBody').append(row);
+        }
+
+        function removerComponente(index) {
+            if (confirm('Confirma a remoção deste componente?')) {
+                componentesData = componentesData.filter(c => c.index !== index);
+                $('tr[data-index="' + index + '"]').remove();
+                verificarComponentes();
+                calcularResumo();
+            }
+        }
+
+        function verificarComponentes() {
+            var temComponentes = componentesData.length > 0;
+            
+            if (temComponentes) {
+                $('#alertaComponentes').hide();
+                $('#btnExplosao').show();
+            } else {
+                $('#alertaComponentes').show();
+                $('#btnExplosao').hide();
+            }
+        }
+
+        function calcularQuantidadeLiquida() {
+            var quantidade = parseFloat($('#componenteQuantidade').val()) || 0;
+            var percentualPerda = parseFloat($('#componentePercentualPerda').val()) || 0;
+            var quantidadeLiquida = quantidade * (1 + percentualPerda / 100);
+            
+            // Visual feedback (could add a preview field)
+        }
+
+        function calcularResumo() {
+            var totalComponentes = componentesData.length;
+            var custoMaterial = 0; // Would need product prices from server
+            var custoComPerdas = 0; // Would need to calculate with losses
+            
+            $('#totalComponentes').text(totalComponentes);
+            $('#custoMaterial').text('R$ ' + custoMaterial.toFixed(2));
+            $('#custoComPerdas').text('R$ ' + custoComPerdas.toFixed(2));
+        }
+
+        function calcularExplosao() {
+            if (componentesData.length === 0) {
+                alert('Adicione pelo menos um componente para testar a explosão.');
+                return;
+            }
+            
+            var quantidade = prompt('Quantidade a produzir:', '1');
+            if (quantidade && parseFloat(quantidade) > 0) {
+                // Simulate explosion calculation
+                var resultado = 'Explosão para ' + quantidade + ' unidade(s):\n\n';
+                componentesData.forEach(function(comp) {
+                    var qtdNecessaria = comp.quantidadeLiquida * parseFloat(quantidade);
+                    resultado += '• ' + comp.produtoNome + ': ' + qtdNecessaria.toFixed(3) + ' ' + comp.unidade + '\n';
+                });
+                
+                alert(resultado);
+            }
+        }
+
+        // Form validation
+        $('#formListaMateriais').submit(function(e) {
+            if (componentesData.length === 0) {
+                e.preventDefault();
+                alert('Adicione pelo menos um componente à lista de materiais.');
+                return false;
+            }
+        });
+    </script>
+}

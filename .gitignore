@@ -408,3 +408,16 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Kiro IDE files
+.kiro/
+
+# Arquivos específicos do projeto
+orama_erp.db
+*.db-shm
+*.db-wal

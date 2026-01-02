@@ -1,0 +1,297 @@
+@model RelatorioFinanceiroViewModel
+@{
+    ViewData["Title"] = "Relatório Financeiro";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-dollar-sign me-2"></i>Relatório Financeiro
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="exportarExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card-body border-bottom">
+                    <form method="get" asp-action="Financeiro" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="inicio" class="form-control" value="@Model.DataInicio.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="fim" class="form-control" value="@Model.DataFim.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resumo Financeiro -->
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Contas a Receber -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-arrow-up me-2"></i>Contas a Receber
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <h4 class="text-success mb-1">@Model.TotalContasReceber.ToString("C")</h4>
+                                            <small class="text-muted">Total do Período</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h4 class="text-danger mb-1">@Model.ContasReceberVencidas</h4>
+                                            <small class="text-muted">Contas Vencidas</small>
+                                        </div>
+                                    </div>
+                                    @if (Model.ValorReceberVencido > 0)
+                                    {
+                                        <div class="mt-3">
+                                            <div class="alert alert-warning mb-0">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Valor Vencido:</strong> @Model.ValorReceberVencido.ToString("C")
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contas a Pagar -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-arrow-down me-2"></i>Contas a Pagar
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <h4 class="text-danger mb-1">@Model.TotalContasPagar.ToString("C")</h4>
+                                            <small class="text-muted">Total do Período</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h4 class="text-warning mb-1">@Model.ContasPagarVencidas</h4>
+                                            <small class="text-muted">Contas Vencidas</small>
+                                        </div>
+                                    </div>
+                                    @if (Model.ValorPagarVencido > 0)
+                                    {
+                                        <div class="mt-3">
+                                            <div class="alert alert-danger mb-0">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Valor Vencido:</strong> @Model.ValorPagarVencido.ToString("C")
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Saldo do Período -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card @(Model.SaldoPeriodo >= 0 ? "border-success" : "border-danger")">
+                                <div class="card-header @(Model.SaldoPeriodo >= 0 ? "bg-success" : "bg-danger") text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-balance-scale me-2"></i>Saldo do Período
+                                    </h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="@(Model.SaldoPeriodo >= 0 ? "text-success" : "text-danger") mb-3">
+                                        @Model.SaldoPeriodo.ToString("C")
+                                    </h2>
+                                    <p class="text-muted mb-0">
+                                        @if (Model.SaldoPeriodo >= 0)
+                                        {
+                                            <i class="fas fa-thumbs-up me-2"></i><text>Resultado positivo no período</text>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-exclamation-triangle me-2"></i><text>Resultado negativo no período</text>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                Período: @Model.PeriodoFormatado
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                Atualizado em: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico Fluxo de Caixa -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Fluxo de Caixa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoFluxoCaixa" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas Financeiros -->
+    @if (Model.ContasReceberVencidas > 0 || Model.ContasPagarVencidas > 0)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Alertas Financeiros
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @if (Model.ContasReceberVencidas > 0)
+                            {
+                                <div class="col-md-6">
+                                    <div class="alert alert-warning">
+                                        <h6><i class="fas fa-clock me-2"></i>Contas a Receber Vencidas</h6>
+                                        <p class="mb-1">
+                                            <strong>@Model.ContasReceberVencidas</strong> conta(s) vencida(s)
+                                        </p>
+                                        <p class="mb-0">
+                                            Valor total: <strong>@Model.ValorReceberVencido.ToString("C")</strong>
+                                        </p>
+                                        <a asp-controller="ContasReceber" asp-action="Index" class="btn btn-sm btn-warning mt-2">
+                                            <i class="fas fa-eye me-1"></i>Ver Contas
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                            @if (Model.ContasPagarVencidas > 0)
+                            {
+                                <div class="col-md-6">
+                                    <div class="alert alert-danger">
+                                        <h6><i class="fas fa-clock me-2"></i>Contas a Pagar Vencidas</h6>
+                                        <p class="mb-1">
+                                            <strong>@Model.ContasPagarVencidas</strong> conta(s) vencida(s)
+                                        </p>
+                                        <p class="mb-0">
+                                            Valor total: <strong>@Model.ValorPagarVencido.ToString("C")</strong>
+                                        </p>
+                                        <a asp-controller="ContasPagar" asp-action="Index" class="btn btn-sm btn-danger mt-2">
+                                            <i class="fas fa-eye me-1"></i>Ver Contas
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function exportarExcel() {
+            const inicio = '@Model.DataInicio.ToString("yyyy-MM-dd")';
+            const fim = '@Model.DataFim.ToString("yyyy-MM-dd")';
+            
+            $.post('@Url.Action("ExportarExcel")', {
+                tipoRelatorio: 'financeiro',
+                inicio: inicio,
+                fim: fim
+            })
+            .done(function(response) {
+                if (response.success) {
+                    alert('Relatório exportado com sucesso!');
+                } else {
+                    alert('Erro ao exportar: ' + response.message);
+                }
+            })
+            .fail(function() {
+                alert('Erro ao exportar relatório');
+            });
+        }
+        
+        $(document).ready(function() {
+            // Criar gráfico de fluxo de caixa
+            const ctx = document.getElementById('graficoFluxoCaixa').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Receber',
+                        data: [@Model.TotalContasReceber, @Model.TotalContasReceber * 0.8m, @Model.TotalContasReceber * 1.2m, @Model.TotalContasReceber * 0.9m, @Model.TotalContasReceber * 1.1m, @Model.TotalContasReceber],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: 'Pagar',
+                        data: [@Model.TotalContasPagar, @Model.TotalContasPagar * 1.1m, @Model.TotalContasPagar * 0.9m, @Model.TotalContasPagar * 1.3m, @Model.TotalContasPagar * 0.8m, @Model.TotalContasPagar],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Fluxo de Caixa - @Model.PeriodoFormatado'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

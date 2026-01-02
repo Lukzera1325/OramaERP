@@ -1,0 +1,73 @@
+@model ClienteViewModel
+@{
+    ViewData["Title"] = "Excluir Cliente";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1"><i class="fas fa-trash text-danger me-2"></i>Excluir Cliente</h2>
+        <p class="text-muted mb-0">Confirme a exclusão</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Voltar
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="alert alert-danger mb-4">
+            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Atenção!</h5>
+            <p class="mb-0">Você está prestes a excluir o cliente abaixo. Esta ação não pode ser desfeita.</p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-user me-2"></i>Dados do Cliente
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><small class="text-muted d-block">Nome/Razão Social</small><strong>@Model.Nome</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><small class="text-muted d-block">CPF/CNPJ</small><strong>@Model.CpfCnpj</strong></p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="col-md-6">
+                            <p class="mb-2"><small class="text-muted d-block">Email</small>@Model.Email</p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Telefone))
+                    {
+                        <div class="col-md-6">
+                            <p class="mb-2"><small class="text-muted d-block">Telefone</small>@Model.Telefone</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            O cliente será marcado como inativo.
+                        </p>
+                        <div>
+                            <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Confirmar Exclusão
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

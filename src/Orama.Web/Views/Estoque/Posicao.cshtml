@@ -1,0 +1,259 @@
+@model List<PosicaoEstoqueViewModel>
+@{
+    ViewData["Title"] = "Posição de Estoque";
+    var valorTotal = ViewBag.ValorTotalEstoque as decimal? ?? 0;
+    var produtosEstoqueBaixo = ViewBag.ProdutosEstoqueBaixo as int? ?? 0;
+    var produtosSemEstoque = ViewBag.ProdutosSemEstoque as int? ?? 0;
+}
+
+<div class="container-fluid">
+    <!-- Cards de Resumo -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@Model.Count</h4>
+                            <small>Total de Produtos</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-boxes fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@valorTotal.ToString("C")</h4>
+                            <small>Valor Total Estoque</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@produtosEstoqueBaixo</h4>
+                            <small>Estoque Baixo</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@produtosSemEstoque</h4>
+                            <small>Sem Estoque</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-times-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Posição -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-warehouse me-2"></i>Posição de Estoque
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="EstoqueBaixo" class="btn btn-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Estoque Baixo
+                        </a>
+                        <a asp-action="Ajustar" class="btn btn-info">
+                            <i class="fas fa-edit me-1"></i>Ajustar Estoque
+                        </a>
+                        <a asp-action="Inventario" class="btn btn-primary">
+                            <i class="fas fa-clipboard-list me-1"></i>Inventário
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="exportarRelatorio()">
+                            <i class="fas fa-file-excel me-1"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="tabelaEstoque">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Produto</th>
+                                        <th>Categoria</th>
+                                        <th>Estoque Atual</th>
+                                        <th>Estoque Mín.</th>
+                                        <th>Estoque Máx.</th>
+                                        <th>Preço Custo</th>
+                                        <th>Valor Total</th>
+                                        <th>Status</th>
+                                        <th width="120">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var produto in Model)
+                                    {
+                                        <tr class="@(produto.EstoqueAtual <= 0 ? "table-danger" : produto.EstoqueAtual <= produto.EstoqueMinimo ? "table-warning" : "")">
+                                            <td>
+                                                <strong>@produto.Codigo</strong>
+                                            </td>
+                                            <td>@produto.Nome</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(produto.Categoria))
+                                                {
+                                                    <span class="badge bg-secondary">@produto.Categoria</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong class="@(produto.EstoqueAtual <= 0 ? "text-danger" : produto.EstoqueAtual <= produto.EstoqueMinimo ? "text-warning" : "text-success")">
+                                                    @produto.EstoqueAtual.ToString("N2")
+                                                </strong>
+                                            </td>
+                                            <td>@produto.EstoqueMinimo.ToString("N2")</td>
+                                            <td>@produto.EstoqueMaximo.ToString("N2")</td>
+                                            <td>@produto.PrecoCusto.ToString("C")</td>
+                                            <td>
+                                                <strong class="text-success">@produto.ValorTotal.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge @produto.StatusBadgeClass">
+                                                    @produto.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="Historico" asp-route-id="@produto.Id" 
+                                                       class="btn btn-outline-info" title="Histórico">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                                    <a asp-action="Ajustar" asp-route-id="@produto.Id" 
+                                                       class="btn btn-outline-warning" title="Ajustar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum produto com controle de estoque</h5>
+                            <p class="text-muted">Configure produtos para controlar estoque</p>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Any())
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Total: @Model.Count produto(s) | 
+                                    Estoque Total: @Model.Sum(p => p.EstoqueAtual).ToString("N2") unidades
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <strong class="text-success">
+                                    Valor Total: @valorTotal.ToString("C")
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTable para busca e ordenação
+            $('#tabelaEstoque').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
+                },
+                pageLength: 25,
+                order: [[3, 'asc']], // Ordenar por estoque atual
+                columnDefs: [
+                    { targets: [6, 7], type: 'num-fmt' }, // Colunas de valores
+                    { targets: [3, 4, 5], type: 'num' }   // Colunas de quantidade
+                ]
+            });
+        });
+
+        function exportarRelatorio() {
+            // Preparar dados para exportação
+            const dados = [];
+            
+            // Cabeçalho
+            dados.push([
+                'Código', 'Produto', 'Categoria', 'Estoque Atual', 
+                'Estoque Mínimo', 'Estoque Máximo', 'Preço Custo', 
+                'Valor Total', 'Status'
+            ]);
+            
+            // Dados da tabela
+            $('#tabelaEstoque tbody tr').each(function() {
+                const linha = [];
+                $(this).find('td').each(function(index) {
+                    if (index < 9) { // Ignorar coluna de ações
+                        let texto = $(this).text().trim();
+                        // Limpar formatação de moeda
+                        if (index === 6 || index === 7) {
+                            texto = texto.replace('R$', '').replace(/\./g, '').replace(',', '.');
+                        }
+                        linha.push(texto);
+                    }
+                });
+                dados.push(linha);
+            });
+            
+            // Criar workbook e worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(dados);
+            
+            // Adicionar worksheet ao workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Posição Estoque');
+            
+            // Salvar arquivo
+            const nomeArquivo = `posicao_estoque_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, nomeArquivo);
+        }
+    </script>
+}

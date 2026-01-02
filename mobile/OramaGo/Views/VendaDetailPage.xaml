@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="OramaGo.Views.VendaDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:OramaGo.Models"
+             xmlns:converters="clr-namespace:OramaGo.Converters"
+             Title="{Binding Title}"
+             BackgroundColor="#F5F5F5">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Editar" 
+                     Command="{Binding EditVendaCommand}" 
+                     IconImageSource="edit.png"
+                     IsEnabled="{Binding CanEdit}" />
+        <ToolbarItem Text="Compartilhar" 
+                     Command="{Binding ShareVendaCommand}" 
+                     IconImageSource="share.png" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <StackLayout Padding="0" Spacing="0">
+
+            <!-- Cabeçalho da Venda -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                    
+                    <!-- Número e Cliente -->
+                    <StackLayout Grid.Row="0" Grid.Column="0">
+                        <Label Text="{Binding Venda.Numero}" 
+                               FontSize="24" 
+                               FontAttributes="Bold" 
+                               TextColor="#333" />
+                        <Label Text="{Binding Venda.Cliente.Nome}" 
+                               FontSize="18" 
+                               TextColor="#666" />
+                    </StackLayout>
+
+                    <!-- Status -->
+                    <Frame Grid.Row="0" Grid.Column="1" 
+                           Padding="12,6" 
+                           CornerRadius="15" 
+                           HorizontalOptions="End"
+                           VerticalOptions="Start">
+                        <Frame.BackgroundColor>
+                            <Binding Path="Venda.Status">
+                                <Binding.Converter>
+                                    <converters:StatusVendaToColorConverter />
+                                </Binding.Converter>
+                            </Binding>
+                        </Frame.BackgroundColor>
+                        
+                        <Label Text="{Binding Venda.StatusDescricao}" 
+                               FontSize="14" 
+                               TextColor="White" 
+                               FontAttributes="Bold" />
+                    </Frame>
+
+                    <!-- Informações Básicas -->
+                    <StackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                                 Spacing="10" 
+                                 Margin="0,20,0,0">
+                        
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                            <StackLayout Grid.Column="0">
+                                <Label Text="Data da Venda" FontSize="12" TextColor="Gray" />
+                                <Label Text="{Binding Venda.DataVenda, StringFormat='{0:dd/MM/yyyy}'}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold" 
+                                       TextColor="#333" />
+                            </StackLayout>
+                            
+                            <StackLayout Grid.Column="1">
+                                <Label Text="Forma de Pagamento" FontSize="12" TextColor="Gray" />
+                                <Label Text="{Binding Venda.FormaPagamentoDescricao}" 
+                                       FontSize="16" 
+                                       FontAttributes="Bold" 
+                                       TextColor="#333" />
+                            </StackLayout>
+                        </Grid>
+
+                        <StackLayout IsVisible="{Binding Venda.DataEntrega, Converter={StaticResource BoolToColorConverter}}">
+                            <Label Text="Data de Entrega" FontSize="12" TextColor="Gray" />
+                            <Label Text="{Binding Venda.DataEntrega, StringFormat='{0:dd/MM/yyyy}'}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#333" />
+                        </StackLayout>
+
+                    </StackLayout>
+
+                    <!-- Ações Rápidas -->
+                    <StackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" 
+                                 Orientation="Horizontal" 
+                                 Spacing="10" 
+                                 Margin="0,20,0,0"
+                                 HorizontalOptions="Center">
+                        
+                        <Button Text="✏️ Editar" 
+                                Command="{Binding EditVendaCommand}"
+                                BackgroundColor="#FF9800"
+                                TextColor="White"
+                                CornerRadius="8"
+                                IsVisible="{Binding Venda.PodeEditar}"
+                                IsEnabled="{Binding CanEdit}" />
+                        
+                        <Button Text="✅ Aprovar" 
+                                Command="{Binding AprovarVendaCommand}"
+                                BackgroundColor="#4CAF50"
+                                TextColor="White"
+                                CornerRadius="8"
+                                IsVisible="{Binding Venda.PodeAprovar}"
+                                IsEnabled="{Binding CanApprove}" />
+                        
+                        <Button Text="📄 Faturar" 
+                                Command="{Binding FaturarVendaCommand}"
+                                BackgroundColor="#2196F3"
+                                TextColor="White"
+                                CornerRadius="8"
+                                IsVisible="{Binding Venda.PodeFaturar}"
+                                IsEnabled="{Binding CanInvoice}" />
+                        
+                        <Button Text="❌ Cancelar" 
+                                Command="{Binding CancelarVendaCommand}"
+                                BackgroundColor="#F44336"
+                                TextColor="White"
+                                CornerRadius="8"
+                                IsVisible="{Binding Venda.PodeCancelar}"
+                                IsEnabled="{Binding CanCancel}" />
+                    </StackLayout>
+
+                </Grid>
+            </Frame>
+
+            <!-- Informações do Cliente -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0">
+                <StackLayout Spacing="15">
+                    <Label Text="👤 Informações do Cliente" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20" RowSpacing="10">
+                        <StackLayout Grid.Column="0" Grid.Row="0">
+                            <Label Text="Nome" FontSize="12" TextColor="Gray" />
+                            <Label Text="{Binding Venda.Cliente.Nome}" 
+                                   FontSize="16" 
+                                   TextColor="#333" />
+                        </StackLayout>
+                        
+                        <StackLayout Grid.Column="1" Grid.Row="0">
+                            <Label Text="CPF/CNPJ" FontSize="12" TextColor="Gray" />
+                            <Label Text="{Binding Venda.Cliente.CpfCnpj}" 
+                                   FontSize="16" 
+                                   TextColor="#333" />
+                        </StackLayout>
+                        
+                        <StackLayout Grid.Column="0" Grid.Row="1">
+                            <Label Text="Email" FontSize="12" TextColor="Gray" />
+                            <Label Text="{Binding Venda.Cliente.Email}" 
+                                   FontSize="16" 
+                                   TextColor="#333" />
+                        </StackLayout>
+                        
+                        <StackLayout Grid.Column="1" Grid.Row="1">
+                            <Label Text="Telefone" FontSize="12" TextColor="Gray" />
+                            <Label Text="{Binding Venda.Cliente.Telefone}" 
+                                   FontSize="16" 
+                                   TextColor="#333" />
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Itens da Venda -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0">
+                <StackLayout Spacing="15">
+                    <Label Text="📦 Itens da Venda" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <CollectionView ItemsSource="{Binding Itens}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:VendaItemLocal">
+                                <Frame BackgroundColor="#F5F5F5" 
+                                       CornerRadius="8" 
+                                       Padding="15" 
+                                       Margin="0,5">
+                                    
+                                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                                        
+                                        <!-- Produto -->
+                                        <StackLayout Grid.Row="0" Grid.Column="0">
+                                            <Label Text="{Binding Produto.Nome}" 
+                                                   FontSize="16" 
+                                                   FontAttributes="Bold" 
+                                                   TextColor="#333" />
+                                            <Label Text="{Binding Produto.Codigo}" 
+                                                   FontSize="12" 
+                                                   TextColor="Gray" />
+                                        </StackLayout>
+
+                                        <!-- Quantidade -->
+                                        <StackLayout Grid.Row="0" Grid.Column="1" HorizontalOptions="End">
+                                            <Label Text="{Binding QuantidadeFormatada}" 
+                                                   FontSize="14" 
+                                                   FontAttributes="Bold" 
+                                                   TextColor="#666"
+                                                   HorizontalOptions="End" />
+                                        </StackLayout>
+
+                                        <!-- Preços -->
+                                        <StackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                                                     Orientation="Horizontal" 
+                                                     Spacing="20" 
+                                                     Margin="0,10,0,0">
+                                            
+                                            <Label Text="{Binding PrecoUnitarioFormatado, StringFormat='Unit: {0}'}" 
+                                                   FontSize="12" 
+                                                   TextColor="Gray" />
+                                            
+                                            <Label Text="{Binding PercentualDesconto, StringFormat='Desc: {0:N1}%'}" 
+                                                   FontSize="12" 
+                                                   TextColor="Gray"
+                                                   IsVisible="{Binding PercentualDesconto, Converter={StaticResource BoolToColorConverter}}" />
+                                        </StackLayout>
+
+                                        <!-- Total do Item -->
+                                        <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                               Text="{Binding ValorTotalFormatado, StringFormat='Total: {0}'}" 
+                                               FontSize="18" 
+                                               FontAttributes="Bold" 
+                                               TextColor="#4CAF50"
+                                               HorizontalOptions="End"
+                                               Margin="0,10,0,0" />
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        
+                        <CollectionView.EmptyView>
+                            <StackLayout HorizontalOptions="Center" VerticalOptions="Center" Padding="30">
+                                <Label Text="📦" FontSize="32" HorizontalOptions="Center" />
+                                <Label Text="Nenhum item encontrado" 
+                                       FontSize="14" 
+                                       TextColor="Gray" 
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </StackLayout>
+            </Frame>
+
+            <!-- Totais da Venda -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0">
+                <StackLayout Spacing="15">
+                    <Label Text="💰 Resumo Financeiro" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <Grid ColumnDefinitions="*,Auto" RowSpacing="10">
+                        
+                        <Label Grid.Row="0" Grid.Column="0" 
+                               Text="Subtotal:" 
+                               FontSize="16" 
+                               TextColor="#666" />
+                        <Label Grid.Row="0" Grid.Column="1" 
+                               Text="{Binding Venda.SubTotal, StringFormat='{0:C2}'}" 
+                               FontSize="16" 
+                               FontAttributes="Bold" 
+                               TextColor="#333" />
+                        
+                        <Label Grid.Row="1" Grid.Column="0" 
+                               Text="Desconto:" 
+                               FontSize="16" 
+                               TextColor="#666"
+                               IsVisible="{Binding Venda.ValorDesconto, Converter={StaticResource BoolToColorConverter}}" />
+                        <Label Grid.Row="1" Grid.Column="1" 
+                               Text="{Binding Venda.ValorDesconto, StringFormat='- {0:C2}'}" 
+                               FontSize="16" 
+                               FontAttributes="Bold" 
+                               TextColor="#F44336"
+                               IsVisible="{Binding Venda.ValorDesconto, Converter={StaticResource BoolToColorConverter}}" />
+                        
+                        <Label Grid.Row="2" Grid.Column="0" 
+                               Text="Frete:" 
+                               FontSize="16" 
+                               TextColor="#666"
+                               IsVisible="{Binding Venda.ValorFrete, Converter={StaticResource BoolToColorConverter}}" />
+                        <Label Grid.Row="2" Grid.Column="1" 
+                               Text="{Binding Venda.ValorFrete, StringFormat='+ {0:C2}'}" 
+                               FontSize="16" 
+                               FontAttributes="Bold" 
+                               TextColor="#FF9800"
+                               IsVisible="{Binding Venda.ValorFrete, Converter={StaticResource BoolToColorConverter}}" />
+                        
+                        <BoxView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" 
+                                 HeightRequest="1" 
+                                 BackgroundColor="#E0E0E0" 
+                                 Margin="0,10" />
+                        
+                        <Label Grid.Row="4" Grid.Column="0" 
+                               Text="TOTAL:" 
+                               FontSize="20" 
+                               FontAttributes="Bold" 
+                               TextColor="#333" />
+                        <Label Grid.Row="4" Grid.Column="1" 
+                               Text="{Binding Venda.ValorTotal, StringFormat='{0:C2}'}" 
+                               FontSize="24" 
+                               FontAttributes="Bold" 
+                               TextColor="#4CAF50" />
+                    </Grid>
+
+                    <!-- Parcelas -->
+                    <StackLayout IsVisible="{Binding Venda.Parcelas, Converter={StaticResource BoolToColorConverter}}" 
+                                 Margin="0,15,0,0">
+                        <Label Text="Parcelamento" FontSize="14" TextColor="Gray" />
+                        <Label Text="{Binding Venda.Parcelas, StringFormat='{0}x de {1:C2}', ConverterParameter={Binding Venda.ValorTotal}}" 
+                               FontSize="16" 
+                               FontAttributes="Bold" 
+                               TextColor="#2196F3" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Observações -->
+            <Frame BackgroundColor="White" 
+                   HasShadow="True" 
+                   CornerRadius="0" 
+                   Padding="20" 
+                   Margin="0,10,0,20"
+                   IsVisible="{Binding Venda.Observacoes, Converter={StaticResource StringToBoolConverter}}">
+                <StackLayout Spacing="10">
+                    <Label Text="📝 Observações" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <Label Text="{Binding Venda.Observacoes}" 
+                           FontSize="14" 
+                           TextColor="#666" />
+                </StackLayout>
+            </Frame>
+
+        </StackLayout>
+    </ScrollView>
+
+    <!-- Loading Overlay -->
+    <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#80000000">
+        <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+            <Frame BackgroundColor="White" CornerRadius="10" Padding="30">
+                <StackLayout Orientation="Horizontal" Spacing="15">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" Color="#2196F3" />
+                    <Label Text="Carregando..." FontSize="16" TextColor="#333" VerticalOptions="Center" />
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </Grid>
+
+</ContentPage>

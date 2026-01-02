@@ -1,0 +1,162 @@
+@model IEnumerable<ContaReceberViewModel>
+@{
+    ViewData["Title"] = "Contas a Receber";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-clock text-warning me-2"></i>Contas a Receber</h2>
+        <p class="text-muted mb-0">Gerencie suas contas pendentes de recebimento</p>
+    </div>
+    <div>
+        <a asp-action="Recebidas" class="btn btn-outline-success me-2">
+            <i class="fas fa-check-circle"></i> Contas Recebidas
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nova Conta
+        </a>
+    </div>
+</div>
+
+<!-- Resumo -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Total a Receber</h6>
+                        <h3 class="mb-0">@ViewBag.TotalAReceber.ToString("C")</h3>
+                    </div>
+                    <i class="fas fa-hand-holding-usd fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Total Vencido</h6>
+                        <h3 class="mb-0">@ViewBag.TotalVencido.ToString("C")</h3>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Quantidade</h6>
+                        <h3 class="mb-0">@Model.Count()</h3>
+                    </div>
+                    <i class="fas fa-file-invoice-dollar fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <div class="btn-group" role="group">
+            <a asp-action="Index" asp-route-filtro="todas" class="btn btn-sm @(ViewBag.FiltroAtual == "todas" ? "btn-primary" : "btn-outline-primary")">Todas</a>
+            <a asp-action="Index" asp-route-filtro="abertas" class="btn btn-sm @(ViewBag.FiltroAtual == "abertas" ? "btn-warning" : "btn-outline-warning")">Abertas</a>
+            <a asp-action="Index" asp-route-filtro="vencidas" class="btn btn-sm @(ViewBag.FiltroAtual == "vencidas" ? "btn-danger" : "btn-outline-danger")">Vencidas</a>
+            <a asp-action="Index" asp-route-filtro="avencer" class="btn btn-sm @(ViewBag.FiltroAtual == "avencer" ? "btn-info" : "btn-outline-info")">A Vencer (7 dias)</a>
+            <a asp-action="Index" asp-route-filtro="recebidas" class="btn btn-sm @(ViewBag.FiltroAtual == "recebidas" ? "btn-success" : "btn-outline-success")">Recebidas</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-file-invoice fa-4x text-muted mb-3"></i>
+                <h5>Nenhuma conta a receber encontrada</h5>
+                <p class="text-muted">Cadastre sua primeira conta para começar</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Cadastrar Conta
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Vencimento</th>
+                            <th>Descrição</th>
+                            <th>Cliente</th>
+                            <th class="text-end">Valor</th>
+                            <th class="text-end">Saldo</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var conta in Model)
+                        {
+                            <tr class="@(conta.Vencida ? "table-danger" : "")">
+                                <td>
+                                    @conta.DataVencimento.ToString("dd/MM/yyyy")
+                                    @if (conta.Vencida)
+                                    {
+                                        <br><small class="text-danger">@conta.DiasAtraso dias de atraso</small>
+                                    }
+                                </td>
+                                <td>
+                                    <strong>@conta.Descricao</strong>
+                                    @if (!string.IsNullOrEmpty(conta.NumeroDocumento))
+                                    {
+                                        <br><small class="text-muted">Doc: @conta.NumeroDocumento</small>
+                                    }
+                                </td>
+                                <td>@(conta.ClienteNome ?? "-")</td>
+                                <td class="text-end">@conta.ValorTotal.ToString("C")</td>
+                                <td class="text-end">
+                                    <strong class="@(conta.SaldoDevedor > 0 ? "text-danger" : "text-success")">
+                                        @conta.SaldoDevedor.ToString("C")
+                                    </strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-@conta.StatusCor">@conta.StatusDescricao</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        @if (conta.Status != StatusConta.Paga && conta.Status != StatusConta.Cancelada)
+                                        {
+                                            <a asp-action="Receber" asp-route-id="@conta.Id" class="btn btn-success" title="Receber">
+                                                <i class="fas fa-dollar-sign"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="Details" asp-route-id="@conta.Id" class="btn btn-outline-info" title="Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (conta.Status != StatusConta.Paga && conta.Status != StatusConta.Cancelada)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@conta.Id" class="btn btn-outline-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@conta.Id" class="btn btn-outline-danger" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

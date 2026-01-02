@@ -1,0 +1,467 @@
+@model OrdemProducaoViewModel
+
+@{
+    ViewData["Title"] = $"Ordem de Produção {Model.Numero}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-cogs"></i>
+                        Ordem de Produção: @Model.Numero
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-@(Model.Status == StatusOrdemProducao.Finalizada ? "success" : Model.Status == StatusOrdemProducao.EmAndamento ? "warning" : Model.Status == StatusOrdemProducao.Liberada ? "info" : "secondary") badge-lg">
+                            @Model.Status
+                        </span>
+                        <a asp-action="OrdensProducao" class="btn btn-secondary btn-sm ml-2">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Informações Básicas -->
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-info-circle"></i> Informações Básicas</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Produto:</strong></td>
+                                    <td>@Model.ProdutoNome</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Quantidade:</strong></td>
+                                    <td>@Model.Quantidade.ToString("N2")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Prioridade:</strong></td>
+                                    <td>
+                                        <span class="badge badge-@(Model.Prioridade == PrioridadeOrdemProducao.Urgente ? "danger" : Model.Prioridade == PrioridadeOrdemProducao.Alta ? "warning" : Model.Prioridade == PrioridadeOrdemProducao.Normal ? "info" : "secondary")">
+                                            @Model.Prioridade.ToString()
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Data Criação:</strong></td>
+                                    <td>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Data Prevista:</strong></td>
+                                    <td>@Model.DataPrevista?.ToString("dd/MM/yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Data Limite:</strong></td>
+                                    <td>@(Model.DataLimite?.ToString("dd/MM/yyyy") ?? "Não definida")</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Custos e Status -->
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-calculator"></i> Custos e Progresso</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon bg-primary">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Custo Material</span>
+                                            <span class="info-box-number">R$ @Model.CustoMaterial.ToString("N2")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon bg-success">
+                                            <i class="fas fa-coins"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Custo Total</span>
+                                            <span class="info-box-number">R$ @Model.CustoTotal.ToString("N2")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="mt-3">
+                                <label>Progresso da Produção:</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-@(Model.Status == StatusOrdemProducao.Finalizada ? "success" : Model.Status == StatusOrdemProducao.EmAndamento ? "warning" : "info")" 
+                                         role="progressbar" 
+                                         style="width: @(Model.Status == StatusOrdemProducao.Finalizada ? "100" : Model.Status == StatusOrdemProducao.EmAndamento ? "50" : Model.Status == StatusOrdemProducao.Liberada ? "25" : "0")%">
+                                        @(Model.Status == StatusOrdemProducao.Finalizada ? "100" : Model.Status == StatusOrdemProducao.EmAndamento ? "50" : Model.Status == StatusOrdemProducao.Liberada ? "25" : "0")%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    @if (!string.IsNullOrEmpty(Model.Observacoes))
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h5><i class="fas fa-comment"></i> Observações</h5>
+                                <div class="alert alert-info">
+                                    @Model.Observacoes
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Action Buttons -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="btn-group" role="group">
+                                @if (Model.Status == StatusOrdemProducao.Planejada)
+                                {
+                                    <button type="button" class="btn btn-info" onclick="alterarStatus('@Model.Id', 'Liberada')">
+                                        <i class="fas fa-play"></i> Liberar
+                                    </button>
+                                }
+                                @if (Model.Status == StatusOrdemProducao.Liberada)
+                                {
+                                    <button type="button" class="btn btn-warning" onclick="alterarStatus('@Model.Id', 'Em Andamento')">
+                                        <i class="fas fa-cogs"></i> Iniciar Produção
+                                    </button>
+                                }
+                                @if (Model.Status == StatusOrdemProducao.EmAndamento)
+                                {
+                                    <button type="button" class="btn btn-success" onclick="alterarStatus('@Model.Id', 'Finalizada')">
+                                        <i class="fas fa-check"></i> Finalizar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="alterarStatus('@Model.Id', 'Pausada')">
+                                        <i class="fas fa-pause"></i> Pausar
+                                    </button>
+                                }
+                                @if (Model.Status == StatusOrdemProducao.Pausada)
+                                {
+                                    <button type="button" class="btn btn-warning" onclick="alterarStatus('@Model.Id', 'Em Andamento')">
+                                        <i class="fas fa-play"></i> Retomar
+                                    </button>
+                                }
+                                @if (Model.Status != StatusOrdemProducao.Finalizada && Model.Status != StatusOrdemProducao.Cancelada)
+                                {
+                                    <button type="button" class="btn btn-danger" onclick="alterarStatus('@Model.Id', 'Cancelada')">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </button>
+                                }
+                                <a asp-action="EditarOrdemProducao" asp-route-id="@Model.Id" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Materiais -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-list"></i> Lista de Materiais
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="materiaisTable">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Qtd. Unitária</th>
+                                    <th>Qtd. Total</th>
+                                    <th>Estoque Atual</th>
+                                    <th>Custo Unit.</th>
+                                    <th>Custo Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados carregados via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Etapas de Produção -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-tasks"></i> Etapas de Produção
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Etapas carregadas via AJAX -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apontamentos de Horas -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-clock"></i> Apontamentos de Horas
+                    </h4>
+                    <div class="card-tools">
+                        @if (Model.Status == StatusOrdemProducao.EmAndamento)
+                        {
+                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalApontamento">
+                                <i class="fas fa-plus"></i> Novo Apontamento
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm" id="apontamentosTable">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Funcionário</th>
+                                    <th>Tipo</th>
+                                    <th>Horas</th>
+                                    <th>Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados carregados via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Apontamento de Horas -->
+<div class="modal fade" id="modalApontamento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Novo Apontamento de Horas</h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="formApontamento">
+                <div class="modal-body">
+                    <input type="hidden" id="ordemProducaoId" value="@Model.Id" />
+                    
+                    <div class="form-group">
+                        <label>Tipo de Apontamento</label>
+                        <select id="tipoApontamento" class="form-control" required>
+                            <option value="">Selecione...</option>
+                            <option value="Producao">Produção</option>
+                            <option value="Setup">Setup</option>
+                            <option value="Manutencao">Manutenção</option>
+                            <option value="Parada">Parada</option>
+                            <option value="Qualidade">Qualidade</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Hora Início</label>
+                                <input type="datetime-local" id="horaInicio" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Hora Fim</label>
+                                <input type="datetime-local" id="horaFim" class="form-control" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="observacoesApontamento" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadListaMateriais();
+            loadEtapas();
+            loadApontamentos();
+
+            // Set default datetime for apontamento
+            var now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            $('#horaInicio').val(now.toISOString().slice(0, 16));
+            $('#horaFim').val(now.toISOString().slice(0, 16));
+        });
+
+        function alterarStatus(ordemId, novoStatus) {
+            if (confirm('Confirma a alteração do status para "' + novoStatus + '"?')) {
+                $.ajax({
+                    url: '@Url.Action("AlterarStatus", "Producao")',
+                    type: 'POST',
+                    data: { 
+                        id: ordemId, 
+                        status: novoStatus,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert('Erro: ' + result.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Erro ao alterar status');
+                    }
+                });
+            }
+        }
+
+        function loadListaMateriais() {
+            $.ajax({
+                url: '@Url.Action("ObterMateriaisOrdem", "Producao")',
+                type: 'GET',
+                data: { ordemId: '@Model.Id' },
+                success: function(data) {
+                    var tbody = $('#materiaisTable tbody');
+                    tbody.empty();
+                    
+                    if (data.length > 0) {
+                        $.each(data, function(index, item) {
+                            var statusClass = item.estoqueDisponivel >= item.quantidadeTotal ? 'success' : 'danger';
+                            var statusText = item.estoqueDisponivel >= item.quantidadeTotal ? 'Disponível' : 'Insuficiente';
+                            
+                            var row = '<tr>' +
+                                '<td>' + item.materialNome + '</td>' +
+                                '<td>' + item.quantidadeUnitaria.toFixed(2) + '</td>' +
+                                '<td>' + item.quantidadeTotal.toFixed(2) + '</td>' +
+                                '<td>' + item.estoqueDisponivel.toFixed(2) + '</td>' +
+                                '<td>R$ ' + item.custoUnitario.toFixed(2) + '</td>' +
+                                '<td>R$ ' + item.custoTotal.toFixed(2) + '</td>' +
+                                '<td><span class="badge badge-' + statusClass + '">' + statusText + '</span></td>' +
+                                '</tr>';
+                            tbody.append(row);
+                        });
+                    } else {
+                        tbody.append('<tr><td colspan="7" class="text-center text-muted">Nenhum material encontrado</td></tr>');
+                    }
+                }
+            });
+        }
+
+        function loadEtapas() {
+            $.ajax({
+                url: '@Url.Action("ObterEtapasOrdem", "Producao")',
+                type: 'GET',
+                data: { ordemId: '@Model.Id' },
+                success: function(data) {
+                    var timeline = $('.timeline');
+                    timeline.empty();
+                    
+                    if (data.length > 0) {
+                        $.each(data, function(index, etapa) {
+                            var statusClass = etapa.status == 'Finalizada' ? 'success' : 
+                                            etapa.status == 'Em Andamento' ? 'warning' : 'secondary';
+                            
+                            var timelineItem = '<div class="timeline-item">' +
+                                '<span class="time"><i class="fas fa-clock"></i> ' + etapa.tempoEstimado + 'h</span>' +
+                                '<h3 class="timeline-header">' +
+                                '<span class="badge badge-' + statusClass + '">' + etapa.status + '</span> ' +
+                                etapa.nome + '</h3>' +
+                                '<div class="timeline-body">' +
+                                '<p><strong>Responsável:</strong> ' + (etapa.responsavel || 'Não definido') + '</p>' +
+                                '<p><strong>Descrição:</strong> ' + (etapa.descricao || 'Sem descrição') + '</p>' +
+                                '</div>' +
+                                '</div>';
+                            timeline.append(timelineItem);
+                        });
+                    } else {
+                        timeline.append('<p class="text-muted">Nenhuma etapa definida</p>');
+                    }
+                }
+            });
+        }
+
+        function loadApontamentos() {
+            $.ajax({
+                url: '@Url.Action("ObterApontamentosOrdem", "Producao")',
+                type: 'GET',
+                data: { ordemId: '@Model.Id' },
+                success: function(data) {
+                    var tbody = $('#apontamentosTable tbody');
+                    tbody.empty();
+                    
+                    if (data.length > 0) {
+                        $.each(data, function(index, apontamento) {
+                            var row = '<tr>' +
+                                '<td>' + new Date(apontamento.dataHora).toLocaleString('pt-BR') + '</td>' +
+                                '<td>' + apontamento.funcionario + '</td>' +
+                                '<td>' + apontamento.tipo + '</td>' +
+                                '<td>' + apontamento.horas.toFixed(2) + 'h</td>' +
+                                '<td>' + (apontamento.observacoes || '-') + '</td>' +
+                                '</tr>';
+                            tbody.append(row);
+                        });
+                    } else {
+                        tbody.append('<tr><td colspan="5" class="text-center text-muted">Nenhum apontamento registrado</td></tr>');
+                    }
+                }
+            });
+        }
+
+        // Form apontamento
+        $('#formApontamento').submit(function(e) {
+            e.preventDefault();
+            
+            var data = {
+                ordemProducaoId: $('#ordemProducaoId').val(),
+                tipo: $('#tipoApontamento').val(),
+                horaInicio: $('#horaInicio').val(),
+                horaFim: $('#horaFim').val(),
+                observacoes: $('#observacoesApontamento').val(),
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            };
+            
+            $.ajax({
+                url: '@Url.Action("CriarApontamento", "Producao")',
+                type: 'POST',
+                data: data,
+                success: function(result) {
+                    if (result.success) {
+                        $('#modalApontamento').modal('hide');
+                        loadApontamentos();
+                        $('#formApontamento')[0].reset();
+                    } else {
+                        alert('Erro: ' + result.message);
+                    }
+                },
+                error: function() {
+                    alert('Erro ao salvar apontamento');
+                }
+            });
+        });
+    </script>
+}

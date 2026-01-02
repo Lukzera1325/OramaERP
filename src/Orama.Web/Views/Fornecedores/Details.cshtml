@@ -1,0 +1,229 @@
+@model FornecedorViewModel
+@{
+    ViewData["Title"] = "Detalhes do Fornecedor";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-truck me-2"></i>Detalhes do Fornecedor</h2>
+        <p class="text-muted mb-0">Informações completas do fornecedor</p>
+    </div>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Dados Principais -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Dados Principais</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Tipo de Pessoa</label>
+                        <div>
+                            <span class="badge bg-@(Model.TipoPessoa == TipoPessoa.Fisica ? "info" : "primary") fs-6">
+                                @(Model.TipoPessoa == TipoPessoa.Fisica ? "Pessoa Física" : "Pessoa Jurídica")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">@(Model.TipoPessoa == TipoPessoa.Fisica ? "CPF" : "CNPJ")</label>
+                        <div><code class="fs-5">@Model.CpfCnpj</code></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label text-muted">@(Model.TipoPessoa == TipoPessoa.Fisica ? "Nome Completo" : "Razão Social")</label>
+                        <div><strong class="fs-5">@Model.Nome</strong></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted">@(Model.TipoPessoa == TipoPessoa.Fisica ? "RG" : "Inscrição Estadual")</label>
+                        <div>@(Model.RgIe ?? "-")</div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.NomeFantasia))
+                {
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Nome Fantasia</label>
+                        <div><strong>@Model.NomeFantasia</strong></div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Endereço</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.Cep) || !string.IsNullOrEmpty(Model.Logradouro))
+                {
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">CEP</label>
+                            <div>@(Model.Cep ?? "-")</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Logradouro</label>
+                            <div>@(Model.Logradouro ?? "-")</div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Número</label>
+                            <div>@(Model.Numero ?? "-")</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Complemento</label>
+                            <div>@(Model.Complemento ?? "-")</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Bairro</label>
+                            <div>@(Model.Bairro ?? "-")</div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Cidade</label>
+                            <div>@(Model.Cidade ?? "-")</div>
+                        </div>
+                        <div class="col-md-1 mb-3">
+                            <label class="form-label text-muted">UF</label>
+                            <div>@(Model.Uf ?? "-")</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-map-marker-alt fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Endereço não informado</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Observacoes))
+        {
+            <!-- Observações -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Observações</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@Model.Observacoes</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Contato e Informações -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contato</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <div>
+                        @if (!string.IsNullOrEmpty(Model.Email))
+                        {
+                            <a href="mailto:@Model.Email" class="text-decoration-none">
+                                <i class="fas fa-envelope me-2"></i>@Model.Email
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Telefone</label>
+                    <div>
+                        @if (!string.IsNullOrEmpty(Model.Telefone))
+                        {
+                            <a href="tel:@Model.Telefone" class="text-decoration-none">
+                                <i class="fas fa-phone me-2"></i>@Model.Telefone
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted">Celular</label>
+                    <div>
+                        @if (!string.IsNullOrEmpty(Model.Celular))
+                        {
+                            <a href="tel:@Model.Celular" class="text-decoration-none">
+                                <i class="fas fa-mobile-alt me-2"></i>@Model.Celular
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações do Sistema</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">Cadastrado em:</small><br>
+                    <strong>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</strong>
+                </div>
+                @if (Model.DataAtualizacao.HasValue)
+                {
+                    <div class="mb-2">
+                        <small class="text-muted">Última atualização:</small><br>
+                        <strong>@Model.DataAtualizacao.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
+                }
+                <div>
+                    <small class="text-muted">Status:</small><br>
+                    <span class="badge bg-@(Model.Ativo ? "success" : "danger")">
+                        @(Model.Ativo ? "Ativo" : "Inativo")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Ações</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Editar Fornecedor
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Excluir Fornecedor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

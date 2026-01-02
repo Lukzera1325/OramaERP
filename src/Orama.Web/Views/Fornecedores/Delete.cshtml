@@ -1,0 +1,150 @@
+@model FornecedorViewModel
+@{
+    ViewData["Title"] = "Excluir Fornecedor";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-trash text-danger me-2"></i>Excluir Fornecedor</h2>
+        <p class="text-muted mb-0">Confirme a exclusão do fornecedor</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<div class="alert alert-warning" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <strong>Atenção!</strong> Esta ação não pode ser desfeita. O fornecedor será marcado como inativo no sistema.
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Dados do Fornecedor</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Tipo de Pessoa</label>
+                        <div>
+                            <span class="badge bg-@(Model.TipoPessoa == TipoPessoa.Fisica ? "info" : "primary") fs-6">
+                                @(Model.TipoPessoa == TipoPessoa.Fisica ? "Pessoa Física" : "Pessoa Jurídica")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">@(Model.TipoPessoa == TipoPessoa.Fisica ? "CPF" : "CNPJ")</label>
+                        <div><code class="fs-5">@Model.CpfCnpj</code></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label text-muted">@(Model.TipoPessoa == TipoPessoa.Fisica ? "Nome Completo" : "Razão Social")</label>
+                        <div><strong class="fs-5">@Model.Nome</strong></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted">@(Model.TipoPessoa == TipoPessoa.Fisica ? "RG" : "Inscrição Estadual")</label>
+                        <div>@(Model.RgIe ?? "-")</div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.NomeFantasia))
+                {
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Nome Fantasia</label>
+                        <div><strong>@Model.NomeFantasia</strong></div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Email) || !string.IsNullOrEmpty(Model.Telefone))
+                {
+                    <hr>
+                    <div class="row">
+                        @if (!string.IsNullOrEmpty(Model.Email))
+                        {
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted">Email</label>
+                                <div>@Model.Email</div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Telefone))
+                        {
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted">Telefone</label>
+                                <div>@Model.Telefone</div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Cidade))
+                {
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Cidade</label>
+                            <div>@Model.Cidade</div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Uf))
+                        {
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted">UF</label>
+                                <div>@Model.Uf</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirmação</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger">
+                    <strong>Tem certeza que deseja excluir este fornecedor?</strong>
+                </p>
+                <p class="text-muted small">
+                    O fornecedor será marcado como inativo e não aparecerá mais nas listagens, 
+                    mas seus dados serão preservados no sistema para fins de auditoria.
+                </p>
+
+                <form asp-action="Delete" method="post" class="d-grid gap-2">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Confirmar Exclusão
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+                        <i class="fas fa-eye me-2"></i>Ver Detalhes
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <strong>Cadastrado em:</strong><br>
+                    @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")<br><br>
+                    @if (Model.DataAtualizacao.HasValue)
+                    {
+                        <strong>Última atualização:</strong><br>
+                        @Model.DataAtualizacao.Value.ToString("dd/MM/yyyy HH:mm")
+                    }
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

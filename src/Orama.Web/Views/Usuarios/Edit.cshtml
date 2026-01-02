@@ -1,0 +1,137 @@
+@model UsuarioViewModel
+@{
+    ViewData["Title"] = "Editar Usuário";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-edit me-2"></i>Editar Usuário</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input asp-for="Id" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Nome" class="form-label"></label>
+                                <input asp-for="Nome" class="form-control" placeholder="Digite o nome completo" />
+                                <span asp-validation-for="Nome" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="Digite o email" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Telefone" class="form-label"></label>
+                                <input asp-for="Telefone" class="form-control" placeholder="(11) 99999-9999" />
+                                <span asp-validation-for="Telefone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="PerfilId" class="form-label"></label>
+                                <select asp-for="PerfilId" class="form-select" asp-items="ViewBag.Perfis">
+                                    <option value="">Selecione um perfil</option>
+                                </select>
+                                <span asp-validation-for="PerfilId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Alteração de Senha:</strong> Deixe os campos em branco para manter a senha atual.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Senha" class="form-label">Nova Senha (opcional)</label>
+                                <input asp-for="Senha" class="form-control" placeholder="Digite a nova senha" />
+                                <span asp-validation-for="Senha" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ConfirmarSenha" class="form-label">Confirmar Nova Senha</label>
+                                <input asp-for="ConfirmarSenha" class="form-control" placeholder="Confirme a nova senha" />
+                                <span asp-validation-for="ConfirmarSenha" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações do Usuário</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> @Model.Id</p>
+                <p><strong>Criado em:</strong> @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Status:</strong> 
+                    @if (Model.Ativo)
+                    {
+                        <span class="badge bg-success">Ativo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inativo</span>
+                    }
+                </p>
+                
+                <hr>
+                
+                <h6>Dicas de Segurança:</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-shield-alt text-primary me-2"></i>Use senhas fortes</li>
+                    <li><i class="fas fa-key text-primary me-2"></i>Altere senhas regularmente</li>
+                    <li><i class="fas fa-user-lock text-primary me-2"></i>Não compartilhe credenciais</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Máscara para telefone
+        document.getElementById('Telefone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                if (value.length < 14) {
+                    value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                }
+                e.target.value = value;
+            }
+        });
+    </script>
+}

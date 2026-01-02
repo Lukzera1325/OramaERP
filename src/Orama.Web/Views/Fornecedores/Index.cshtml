@@ -1,0 +1,113 @@
+@model IEnumerable<FornecedorViewModel>
+@{
+    ViewData["Title"] = "Fornecedores";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-truck me-2"></i>Fornecedores</h2>
+        <p class="text-muted mb-0">Gerencie os fornecedores da empresa</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Novo Fornecedor
+    </a>
+</div>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Sucesso"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome/Razão Social</th>
+                            <th>Nome Fantasia</th>
+                            <th>Tipo</th>
+                            <th>CPF/CNPJ</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Cidade</th>
+                            <th width="150">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fornecedor in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@fornecedor.Nome</strong>
+                                </td>
+                                <td>@(fornecedor.NomeFantasia ?? "-")</td>
+                                <td>
+                                    <span class="badge bg-@(fornecedor.TipoPessoa == TipoPessoa.Fisica ? "info" : "primary")">
+                                        @(fornecedor.TipoPessoa == TipoPessoa.Fisica ? "Pessoa Física" : "Pessoa Jurídica")
+                                    </span>
+                                </td>
+                                <td>
+                                    <code>@fornecedor.CpfCnpj</code>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(fornecedor.Email))
+                                    {
+                                        <a href="mailto:@fornecedor.Email">@fornecedor.Email</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(fornecedor.Telefone))
+                                    {
+                                        <a href="tel:@fornecedor.Telefone">@fornecedor.Telefone</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>@(fornecedor.Cidade ?? "-")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@fornecedor.Id" 
+                                           class="btn btn-sm btn-outline-info" title="Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@fornecedor.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@fornecedor.Id" 
+                                           class="btn btn-sm btn-outline-danger" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum fornecedor cadastrado</h5>
+                <p class="text-muted">Clique no botão "Novo Fornecedor" para começar.</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Cadastrar Primeiro Fornecedor
+                </a>
+            </div>
+        }
+    </div>
+</div>

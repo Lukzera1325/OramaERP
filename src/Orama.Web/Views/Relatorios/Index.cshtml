@@ -1,0 +1,384 @@
+@model BIDashboardViewModel
+@{
+    ViewData["Title"] = "Business Intelligence - Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-chart-line text-primary"></i> Business Intelligence</h2>
+                    <p class="text-muted mb-0">Dashboard executivo - @Model.PeriodoAtual</p>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted">Última atualização: @Model.DataAtualizacao.ToString("dd/MM/yyyy HH:mm")</small>
+                    <br>
+                    <button class="btn btn-outline-primary btn-sm" onclick="atualizarDashboard()">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Vendas do Mês
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.VendasMes.ToString("C")
+                            </div>
+                            <div class="mt-1">
+                                <span class="badge badge-@Model.StatusVendas">
+                                    <i class="fas @Model.IconeVendas"></i> @Model.CrescimentoVendas.ToString("N1")%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Lucro do Mês
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.LucroMes.ToString("C")
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">Margem: @Model.MargemLucro.ToString("N1")%</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Contas Vencidas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @(Model.ContasReceberVencidas + Model.ContasPagarVencidas)
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    Receber: @Model.ContasReceberVencidas | Pagar: @Model.ContasPagarVencidas
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Saldo Vencido
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @((Model.ValorReceberVencido - Model.ValorPagarVencido).ToString("C"))
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-success">+@Model.ValorReceberVencido.ToString("C")</small>
+                                <small class="text-danger">-@Model.ValorPagarVencido.ToString("C")</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-balance-scale fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mb-4">
+        <!-- Gráfico de Vendas -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Evolução de Vendas - Últimos 12 Meses</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow">
+                            <a class="dropdown-item" href="#" onclick="exportarGrafico('vendas')">Exportar PNG</a>
+                            <a class="dropdown-item" href="#" onclick="exportarDados('vendas')">Exportar Dados</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="graficoVendas" width="100%" height="40"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Produtos -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 5 Produtos</h6>
+                </div>
+                <div class="card-body">
+                    @foreach (var produto in Model.TopProdutos)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="font-weight-bold">@produto.Nome</span>
+                                <span class="text-success">@produto.Valor.ToString("C")</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                     style="width: @((produto.Vendas / (Model.TopProdutos.Max(p => p.Vendas) * 1.0)) * 100)%"></div>
+                            </div>
+                            <small class="text-muted">@produto.Vendas vendas</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Clientes e Ações Rápidas -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 5 Clientes</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th class="text-center">Vendas</th>
+                                    <th class="text-end">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cliente in Model.TopClientes)
+                                {
+                                    <tr>
+                                        <td>@cliente.Nome</td>
+                                        <td class="text-center">
+                                            <span class="badge badge-primary">@cliente.Vendas</span>
+                                        </td>
+                                        <td class="text-end font-weight-bold text-success">
+                                            @cliente.Valor.ToString("C")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ações Rápidas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <a href="@Url.Action("Vendas", "Relatorios")" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-chart-bar"></i><br>
+                                <small>Relatório Vendas</small>
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="@Url.Action("Financeiro", "Relatorios")" class="btn btn-outline-success btn-block">
+                                <i class="fas fa-money-bill-wave"></i><br>
+                                <small>Relatório Financeiro</small>
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="@Url.Action("Estoque", "Relatorios")" class="btn btn-outline-warning btn-block">
+                                <i class="fas fa-boxes"></i><br>
+                                <small>Relatório Estoque</small>
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="@Url.Action("DRE", "Relatorios")" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-calculator"></i><br>
+                                <small>DRE</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dados para o gráfico de vendas
+        const dadosVendas = @Html.Raw(Json.Serialize(Model.VendasUltimos12Meses.Select(v => new { 
+            mes = v.Mes, 
+            valor = v.Valor 
+        })));
+
+        // Configuração do gráfico de vendas
+        const ctx = document.getElementById('graficoVendas').getContext('2d');
+        const graficoVendas = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dadosVendas.map(d => d.mes),
+                datasets: [{
+                    label: 'Vendas (R$)',
+                    data: dadosVendas.map(d => d.valor),
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR');
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 4,
+                        hoverRadius: 6
+                    }
+                }
+            }
+        });
+
+        // Função para atualizar dashboard
+        function atualizarDashboard() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+            btn.disabled = true;
+
+            fetch('@Url.Action("DadosDashboard", "Relatorios")')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        alert('Erro ao atualizar: ' + data.erro);
+                    } else {
+                        // Atualizar dados na tela
+                        console.log('Dashboard atualizado:', data);
+                        location.reload(); // Por simplicidade, recarrega a página
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao atualizar dashboard');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        // Funções de exportação
+        function exportarGrafico(tipo) {
+            if (tipo === 'vendas') {
+                const link = document.createElement('a');
+                link.download = 'grafico-vendas.png';
+                link.href = graficoVendas.toBase64Image();
+                link.click();
+            }
+        }
+
+        function exportarDados(tipo) {
+            alert('Funcionalidade de exportação será implementada em breve!');
+        }
+
+        // Auto-refresh a cada 5 minutos
+        setInterval(() => {
+            fetch('@Url.Action("DadosDashboard", "Relatorios")')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        // Atualizar apenas os dados que mudam frequentemente
+                        console.log('Dashboard atualizado automaticamente');
+                    }
+                })
+                .catch(error => console.log('Erro no auto-refresh:', error));
+        }, 300000); // 5 minutos
+    </script>
+}
+
+<style>
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+    .chart-area {
+        position: relative;
+        height: 300px;
+    }
+    .badge-success {
+        background-color: #1cc88a;
+    }
+    .badge-danger {
+        background-color: #e74a3b;
+    }
+</style>

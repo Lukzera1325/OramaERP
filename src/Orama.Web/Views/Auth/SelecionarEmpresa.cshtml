@@ -1,0 +1,158 @@
+@model SelecionarEmpresaViewModel
+@{
+    ViewData["Title"] = "Selecionar Empresa";
+    Layout = "_LoginLayout";
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="~/images/icone.png" alt="Orama ERP" class="login-logo">
+            <h2>Selecionar Empresa</h2>
+            <p class="text-muted">Olá, @Model.NomeUsuario! Selecione a empresa para acessar:</p>
+        </div>
+
+        <form asp-action="SelecionarEmpresa" method="post" class="login-form">
+            <input type="hidden" asp-for="ReturnUrl" />
+            
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="form-group mb-4">
+                <label class="form-label">Empresas Disponíveis:</label>
+                <div class="empresa-list">
+                    @foreach (var empresa in Model.Empresas)
+                    {
+                        <div class="empresa-item">
+                            <input type="radio" 
+                                   id="empresa_@empresa.Id" 
+                                   name="EmpresaSelecionada" 
+                                   value="@empresa.Id" 
+                                   class="form-check-input empresa-radio">
+                            <label for="empresa_@empresa.Id" class="empresa-label">
+                                <div class="empresa-info">
+                                    <h5 class="empresa-nome">@empresa.Nome</h5>
+                                    <small class="empresa-cnpj text-muted">CNPJ: @empresa.Cnpj</small>
+                                </div>
+                                <i class="fas fa-building empresa-icon"></i>
+                            </label>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="EmpresaSelecionada" class="text-danger"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Acessar Sistema
+                </button>
+                <a asp-action="Logout" class="btn btn-outline-secondary btn-block mt-2">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Voltar ao Login
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.empresa-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.empresa-item {
+    margin-bottom: 10px;
+}
+
+.empresa-item:last-child {
+    margin-bottom: 0;
+}
+
+.empresa-radio {
+    display: none;
+}
+
+.empresa-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border: 2px solid #e0e6ed;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.empresa-label:hover {
+    border-color: #4a90e2;
+    background: #f8fbff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+}
+
+.empresa-radio:checked + .empresa-label {
+    border-color: #4a90e2;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+}
+
+.empresa-radio:checked + .empresa-label .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.empresa-info {
+    flex: 1;
+}
+
+.empresa-nome {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.empresa-cnpj {
+    font-size: 0.9rem;
+}
+
+.empresa-icon {
+    font-size: 1.5rem;
+    opacity: 0.7;
+}
+
+.empresa-radio:checked + .empresa-label .empresa-icon {
+    opacity: 1;
+    color: white;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.btn-block {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.btn-block + .btn-block {
+    margin-top: 10px;
+}
+</style>
+
+@section Scripts {
+    <script>
+        // Auto-selecionar primeira empresa se houver apenas uma
+        $(document).ready(function() {
+            const empresas = $('.empresa-radio');
+            if (empresas.length === 1) {
+                empresas.first().prop('checked', true);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,136 @@
+@model IEnumerable<VendaViewModel>
+@{
+    ViewData["Title"] = "Vendas";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-shopping-cart text-primary me-2"></i>Vendas</h2>
+        <p class="text-muted mb-0">Gerencie suas vendas e orçamentos</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nova Venda
+    </a>
+</div>
+
+<!-- Resumo -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Vendas (30 dias)</h6>
+                        <h3 class="mb-0">@ViewBag.TotalVendas.ToString("C")</h3>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Orçamentos</h6>
+                        <h3 class="mb-0">@Model.Count(v => v.Status == StatusVenda.Orcamento)</h3>
+                    </div>
+                    <i class="fas fa-file-alt fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Total de Registros</h6>
+                        <h3 class="mb-0">@Model.Count()</h3>
+                    </div>
+                    <i class="fas fa-list fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <div class="btn-group" role="group">
+            <a asp-action="Index" asp-route-filtro="todas" class="btn btn-sm @(ViewBag.FiltroAtual == "todas" ? "btn-primary" : "btn-outline-primary")">Todas</a>
+            <a asp-action="Index" asp-route-filtro="orcamentos" class="btn btn-sm @(ViewBag.FiltroAtual == "orcamentos" ? "btn-secondary" : "btn-outline-secondary")">Orçamentos</a>
+            <a asp-action="Index" asp-route-filtro="aprovadas" class="btn btn-sm @(ViewBag.FiltroAtual == "aprovadas" ? "btn-info" : "btn-outline-info")">Aprovadas</a>
+            <a asp-action="Index" asp-route-filtro="faturadas" class="btn btn-sm @(ViewBag.FiltroAtual == "faturadas" ? "btn-success" : "btn-outline-success")">Faturadas</a>
+            <a asp-action="Index" asp-route-filtro="canceladas" class="btn btn-sm @(ViewBag.FiltroAtual == "canceladas" ? "btn-danger" : "btn-outline-danger")">Canceladas</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                <h5>Nenhuma venda encontrada</h5>
+                <p class="text-muted">Cadastre sua primeira venda para começar</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nova Venda
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Data</th>
+                            <th>Cliente</th>
+                            <th class="text-end">Valor</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var venda in Model)
+                        {
+                            <tr>
+                                <td><strong>#@venda.Numero</strong></td>
+                                <td>@venda.DataVenda.ToString("dd/MM/yyyy")</td>
+                                <td>@venda.ClienteNome</td>
+                                <td class="text-end"><strong>@venda.ValorTotal.ToString("C")</strong></td>
+                                <td class="text-center">
+                                    <span class="badge bg-@venda.StatusCor">@venda.StatusDescricao</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@venda.Id" class="btn btn-outline-info" title="Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (venda.Status == StatusVenda.Orcamento || venda.Status == StatusVenda.Aprovado)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@venda.Id" class="btn btn-outline-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        @if (venda.Status == StatusVenda.Orcamento)
+                                        {
+                                            <a asp-action="Delete" asp-route-id="@venda.Id" class="btn btn-outline-danger" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

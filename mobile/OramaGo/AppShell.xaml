@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="OramaGo.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:OramaGo.Views"
+    Shell.FlyoutBehavior="Flyout"
+    Title="Órama Go">
+
+    <!-- Definir cores do tema -->
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#2196F3</Color>
+            <Color x:Key="PrimaryDark">#1976D2</Color>
+            <Color x:Key="Accent">#FF4081</Color>
+            <Style x:Key="BaseStyle" TargetType="Element">
+                <Setter Property="Shell.BackgroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.ForegroundColor" Value="White" />
+                <Setter Property="Shell.TitleColor" Value="White" />
+                <Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />
+                <Setter Property="Shell.UnselectedColor" Value="#95FFFFFF" />
+                <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="White"/>
+                <Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF"/>
+                <Setter Property="Shell.TabBarTitleColor" Value="White"/>
+            </Style>
+        </ResourceDictionary>
+    </Shell.Resources>
+
+    <!-- Flyout Header -->
+    <Shell.FlyoutHeader>
+        <Grid BackgroundColor="{StaticResource Primary}" HeightRequest="200">
+            <StackLayout Orientation="Vertical" HorizontalOptions="Center" VerticalOptions="Center">
+                <Label Text="Órama Go" FontSize="24" FontAttributes="Bold" TextColor="White" />
+                <Label Text="Força de Vendas" FontSize="16" TextColor="White" Opacity="0.8" />
+                <Label Text="Versão 1.0" FontSize="12" TextColor="White" Opacity="0.6" />
+            </StackLayout>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- Menu Principal -->
+    <FlyoutItem Title="Dashboard" Icon="home.png">
+        <ShellContent Title="Dashboard" ContentTemplate="{DataTemplate views:DashboardPage}" Route="dashboard" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Clientes" Icon="people.png">
+        <ShellContent Title="Lista de Clientes" ContentTemplate="{DataTemplate views:ClientesListPage}" Route="clientes" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Produtos" Icon="box.png">
+        <ShellContent Title="Catálogo de Produtos" Route="produtos" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Vendas" Icon="cart.png">
+        <ShellContent Title="Minhas Vendas" Route="vendas" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Atividades" Icon="calendar.png">
+        <ShellContent Title="Atividades em Campo" Route="atividades" />
+    </FlyoutItem>
+
+    <!-- Separador -->
+    <MenuItem Text="Sincronizar" IconImageSource="sync.png" Command="{Binding SyncCommand}" />
+    <MenuItem Text="Configurações" IconImageSource="settings.png" Command="{Binding SettingsCommand}" />
+    <MenuItem Text="Sair" IconImageSource="logout.png" Command="{Binding LogoutCommand}" />
+
+</Shell>

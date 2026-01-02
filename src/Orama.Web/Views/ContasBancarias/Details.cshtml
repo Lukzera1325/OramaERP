@@ -1,0 +1,98 @@
+@model ContaBancariaViewModel
+@{
+    ViewData["Title"] = "Detalhes da Conta";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-university me-2"></i>@Model.Descricao</h2>
+        <p class="text-muted mb-0">Detalhes da conta bancária</p>
+    </div>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+            <i class="fas fa-edit me-2"></i>Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações da Conta</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Descrição</label>
+                        <p class="fw-bold">@Model.Descricao</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Tipo de Conta</label>
+                        <p><span class="badge bg-secondary">@Model.TipoContaDescricao</span></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted">Banco</label>
+                        <p>@(Model.Banco ?? "-")</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted">Agência</label>
+                        <p>@(Model.Agencia ?? "-")</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted">Número da Conta</label>
+                        <p>@(Model.NumeroConta ?? "-")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="fas fa-wallet me-2"></i>Saldo</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted">Saldo Inicial</label>
+                    <h5>@Model.SaldoInicial.ToString("C")</h5>
+                </div>
+                <hr />
+                <div>
+                    <label class="form-label text-muted">Saldo Atual</label>
+                    <h3 class="@(Model.SaldoAtual >= 0 ? "text-success" : "text-danger")">
+                        @Model.SaldoAtual.ToString("C")
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Status</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    @if (Model.ContaPadrao)
+                    {
+                        <span class="badge bg-warning"><i class="fas fa-star me-1"></i>Conta Padrão</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Conta Secundária</span>
+                    }
+                </p>
+                <p class="mb-0">
+                    <small class="text-muted">Cadastrada em:</small><br />
+                    @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

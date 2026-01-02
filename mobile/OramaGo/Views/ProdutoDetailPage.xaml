@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="OramaGo.Views.ProdutoDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:OramaGo.Converters"
+             Title="{Binding Title}"
+             BackgroundColor="#F5F5F5">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Editar" 
+                     Command="{Binding EditProdutoCommand}" 
+                     IconImageSource="edit.png"
+                     IsEnabled="{Binding CanEditProduto}" />
+        <ToolbarItem Text="Compartilhar" 
+                     Command="{Binding ShareProdutoCommand}" 
+                     IconImageSource="share.png" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <StackLayout Padding="0" Spacing="0">
+
+            <!-- Cabeçalho com Imagem -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="120,*" ColumnSpacing="20">
+                    
+                    <!-- Imagem do Produto -->
+                    <Frame Grid.Row="0" Grid.Column="0" Grid.RowSpan="3"
+                           BackgroundColor="#F5F5F5"
+                           CornerRadius="15"
+                           Padding="20"
+                           WidthRequest="120"
+                           HeightRequest="120"
+                           VerticalOptions="Start">
+                        
+                        <Grid>
+                            <!-- Placeholder quando não há imagem -->
+                            <Label Text="📦" 
+                                   FontSize="48" 
+                                   HorizontalOptions="Center" 
+                                   VerticalOptions="Center"
+                                   TextColor="#2196F3"
+                                   IsVisible="{Binding HasImage, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Invert}" />
+                            
+                            <!-- Imagem do produto (quando disponível) -->
+                            <Image Source="{Binding Produto.ImagemUrl}"
+                                   Aspect="AspectFit"
+                                   IsVisible="{Binding HasImage}">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ViewImageCommand}" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                        </Grid>
+                    </Frame>
+
+                    <!-- Nome e Código -->
+                    <StackLayout Grid.Row="0" Grid.Column="1" Spacing="8">
+                        <Label Text="{Binding Produto.Nome}" 
+                               FontSize="20" 
+                               FontAttributes="Bold" 
+                               TextColor="#333"
+                               LineBreakMode="WordWrap" />
+                        
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Label Text="{Binding Produto.Codigo}" 
+                                   FontSize="14" 
+                                   TextColor="Gray"
+                                   VerticalOptions="Center" />
+                            
+                            <Button Text="📋" 
+                                    Command="{Binding CopyCodigoCommand}"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#2196F3"
+                                    FontSize="14"
+                                    WidthRequest="30"
+                                    HeightRequest="30"
+                                    ToolTipProperties.Text="Copiar código" />
+                        </StackLayout>
+                    </StackLayout>
+
+                    <!-- Status do Estoque -->
+                    <Frame Grid.Row="1" Grid.Column="1"
+                           BackgroundColor="{Binding StatusEstoqueColor}"
+                           Padding="12,6"
+                           CornerRadius="15"
+                           HorizontalOptions="Start"
+                           Margin="0,10,0,0">
+                        <Label Text="{Binding StatusEstoque}" 
+                               FontSize="12" 
+                               TextColor="White" 
+                               FontAttributes="Bold" />
+                    </Frame>
+
+                    <!-- Categoria -->
+                    <Label Grid.Row="2" Grid.Column="1"
+                           Text="{Binding Produto.Categoria}" 
+                           FontSize="14" 
+                           TextColor="#2196F3"
+                           FontAttributes="Bold"
+                           Margin="0,10,0,0"
+                           IsVisible="{Binding Produto.Categoria, Converter={StaticResource StringToBoolConverter}}" />
+                </Grid>
+            </Frame>
+
+            <!-- Informações de Preço -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0">
+                <StackLayout Spacing="15">
+                    <Label Text="💰 Informações de Preço" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                        <!-- Preço de Venda -->
+                        <StackLayout Grid.Column="0">
+                            <Label Text="Preço de Venda" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.PrecoVenda, StringFormat='{0:C2}'}" 
+                                   FontSize="24" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#4CAF50" />
+                        </StackLayout>
+                        
+                        <!-- Preço de Custo -->
+                        <StackLayout Grid.Column="1">
+                            <Label Text="Preço de Custo" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.PrecoCusto, StringFormat='{0:C2}'}" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#FF9800" />
+                        </StackLayout>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                        <!-- Preço Mínimo -->
+                        <StackLayout Grid.Column="0">
+                            <Label Text="Preço Mínimo" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.PrecoMinimo, StringFormat='{0:C2}'}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#F44336" />
+                        </StackLayout>
+                        
+                        <!-- Margem de Lucro -->
+                        <StackLayout Grid.Column="1">
+                            <Label Text="Margem de Lucro" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.MargemLucro, StringFormat='{0:N2}%'}" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#2196F3" />
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Informações de Estoque -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0">
+                <StackLayout Spacing="15">
+                    <Label Text="📦 Informações de Estoque" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                        <!-- Estoque Atual -->
+                        <StackLayout Grid.Column="0">
+                            <Label Text="Estoque Atual" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.EstoqueAtual, StringFormat='{0:N2}'}" 
+                                   FontSize="24" 
+                                   FontAttributes="Bold" 
+                                   TextColor="{Binding StatusEstoqueColor}" />
+                            <Label Text="{Binding Produto.Unidade}" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                        </StackLayout>
+                        
+                        <!-- Estoque Mínimo -->
+                        <StackLayout Grid.Column="1">
+                            <Label Text="Estoque Mínimo" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.EstoqueMinimo, StringFormat='{0:N2}'}" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold" 
+                                   TextColor="#FF9800" />
+                            <Label Text="{Binding Produto.Unidade}" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                        </StackLayout>
+                    </Grid>
+
+                    <!-- Controla Estoque -->
+                    <StackLayout Orientation="Horizontal" Spacing="10">
+                        <CheckBox IsChecked="{Binding Produto.ControlaEstoque}" 
+                                  Color="#2196F3" 
+                                  IsEnabled="False" />
+                        <Label Text="Controla Estoque" 
+                               FontSize="14" 
+                               TextColor="#333" 
+                               VerticalOptions="Center" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Informações Técnicas -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0">
+                <StackLayout Spacing="15">
+                    <Label Text="🔧 Informações Técnicas" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <!-- Marca -->
+                    <StackLayout IsVisible="{Binding Produto.Marca, Converter={StaticResource StringToBoolConverter}}">
+                        <Label Text="Marca" 
+                               FontSize="12" 
+                               TextColor="Gray" />
+                        <Label Text="{Binding Produto.Marca}" 
+                               FontSize="16" 
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <!-- Código de Barras -->
+                    <StackLayout IsVisible="{Binding Produto.CodigoBarras, Converter={StaticResource StringToBoolConverter}}">
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Label Text="Código de Barras" 
+                                   FontSize="12" 
+                                   TextColor="Gray"
+                                   VerticalOptions="Center" />
+                            
+                            <Button Text="📋" 
+                                    Command="{Binding CopyCodigoBarrasCommand}"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#2196F3"
+                                    FontSize="12"
+                                    WidthRequest="25"
+                                    HeightRequest="25"
+                                    ToolTipProperties.Text="Copiar código de barras" />
+                        </StackLayout>
+                        <Label Text="{Binding Produto.CodigoBarras}" 
+                               FontSize="16" 
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <!-- Peso e Dimensões -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                        <!-- Peso -->
+                        <StackLayout Grid.Column="0" IsVisible="{Binding Produto.Peso, Converter={StaticResource StringToBoolConverter}}">
+                            <Label Text="Peso" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.Peso, StringFormat='{0:N3} kg'}" 
+                                   FontSize="16" 
+                                   TextColor="#333" />
+                        </StackLayout>
+                        
+                        <!-- Dimensões -->
+                        <StackLayout Grid.Column="1" IsVisible="{Binding Produto.Dimensoes, Converter={StaticResource StringToBoolConverter}}">
+                            <Label Text="Dimensões" 
+                                   FontSize="12" 
+                                   TextColor="Gray" />
+                            <Label Text="{Binding Produto.Dimensoes}" 
+                                   FontSize="16" 
+                                   TextColor="#333" />
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Descrição Detalhada -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0"
+                   IsVisible="{Binding Produto.DescricaoDetalhada, Converter={StaticResource StringToBoolConverter}}">
+                <StackLayout Spacing="10">
+                    <Label Text="📝 Descrição Detalhada" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <Label Text="{Binding Produto.DescricaoDetalhada}" 
+                           FontSize="14" 
+                           TextColor="#666"
+                           LineBreakMode="WordWrap" />
+                </StackLayout>
+            </Frame>
+
+            <!-- Observações -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,0"
+                   IsVisible="{Binding Produto.Observacoes, Converter={StaticResource StringToBoolConverter}}">
+                <StackLayout Spacing="10">
+                    <Label Text="💬 Observações" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <Label Text="{Binding Produto.Observacoes}" 
+                           FontSize="14" 
+                           TextColor="#666"
+                           LineBreakMode="WordWrap" />
+                </StackLayout>
+            </Frame>
+
+            <!-- Status de Ativação -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="0" Padding="20" Margin="0,10,0,20">
+                <StackLayout Spacing="15">
+                    <Label Text="⚙️ Status" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+                    
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                        <!-- Produto Ativo -->
+                        <StackLayout Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                            <CheckBox IsChecked="{Binding Produto.Ativo}" 
+                                      Color="#4CAF50" 
+                                      IsEnabled="False" />
+                            <Label Text="Produto Ativo" 
+                                   FontSize="14" 
+                                   TextColor="#333" 
+                                   VerticalOptions="Center" />
+                        </StackLayout>
+                        
+                        <!-- Ativo para Venda -->
+                        <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                            <CheckBox IsChecked="{Binding Produto.AtivoVenda}" 
+                                      Color="#2196F3" 
+                                      IsEnabled="False" />
+                            <Label Text="Ativo para Venda" 
+                                   FontSize="14" 
+                                   TextColor="#333" 
+                                   VerticalOptions="Center" />
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+        </StackLayout>
+    </ScrollView>
+
+    <!-- Loading Overlay -->
+    <Grid IsVisible="{Binding IsBusy}" BackgroundColor="#80000000">
+        <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+            <Frame BackgroundColor="White" CornerRadius="10" Padding="30">
+                <StackLayout Orientation="Horizontal" Spacing="15">
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" Color="#2196F3" />
+                    <Label Text="Carregando..." FontSize="16" TextColor="#333" VerticalOptions="Center" />
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </Grid>
+
+</ContentPage>

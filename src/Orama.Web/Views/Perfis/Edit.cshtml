@@ -1,0 +1,149 @@
+@model PerfilViewModel
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-edit me-2"></i>Editar Perfil
+                    </h2>
+                    <p class="text-muted mb-0">Altere as informações do perfil <strong>@Model.Nome</strong></p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                        
+                        <!-- Validação Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Nome" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>@Html.DisplayNameFor(m => m.Nome)
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Nome" class="form-control" placeholder="Ex: Financeiro, Vendas, etc." />
+                                    <span asp-validation-for="Nome" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Descricao" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i>@Html.DisplayNameFor(m => m.Descricao)
+                                    </label>
+                                    <input asp-for="Descricao" class="form-control" placeholder="Descrição do perfil (opcional)" />
+                                    <span asp-validation-for="Descricao" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informações do Perfil -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-info-circle me-2"></i>Informações do Perfil
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <small class="text-muted">Data de Criação:</small><br>
+                                                <strong>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</strong>
+                                            </div>
+                                            @if (Model.DataAtualizacao.HasValue)
+                                            {
+                                                <div class="col-md-4">
+                                                    <small class="text-muted">Última Atualização:</small><br>
+                                                    <strong>@Model.DataAtualizacao.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                                                </div>
+                                            }
+                                            <div class="col-md-4">
+                                                <small class="text-muted">Status:</small><br>
+                                                @if (Model.Ativo)
+                                                {
+                                                    <span class="badge bg-success">Ativo</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Inativo</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ações Rápidas -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>Ações Rápidas:</strong>
+                                    <a href="@Url.Action("Permissoes", new { id = Model.Id })" class="btn btn-sm btn-outline-warning ms-2">
+                                        <i class="fas fa-key me-1"></i>Gerenciar Permissões
+                                    </a>
+                                    <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-sm btn-outline-info ms-1">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalhes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Salvar Alterações
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Focus no primeiro campo
+            $('#Nome').focus();
+            
+            // Validação em tempo real
+            $('#Nome').on('input', function() {
+                var nome = $(this).val().trim();
+                if (nome.length > 0) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                } else {
+                    $(this).removeClass('is-valid').addClass('is-invalid');
+                }
+            });
+        });
+    </script>
+}

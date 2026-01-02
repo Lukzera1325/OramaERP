@@ -1,0 +1,282 @@
+@{
+    ViewData["Title"] = "Relatório de Estoque";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-boxes me-2"></i>Relatório de Estoque
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="exportarExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body" id="relatorioEstoque">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Carregando relatório de estoque...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos de Estoque -->
+    <div class="row mt-4" id="graficosEstoque" style="display: none;">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Distribuição por Categoria
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoCategoria" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Produtos com Maior Valor
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoValor" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function exportarExcel() {
+            $.post('@Url.Action("ExportarExcel")', {
+                tipoRelatorio: 'estoque',
+                inicio: new Date().toISOString().split('T')[0],
+                fim: new Date().toISOString().split('T')[0]
+            })
+            .done(function(response) {
+                if (response.success) {
+                    alert('Relatório exportado com sucesso!');
+                } else {
+                    alert('Erro ao exportar: ' + response.message);
+                }
+            })
+            .fail(function() {
+                alert('Erro ao exportar relatório');
+            });
+        }
+        
+        $(document).ready(function() {
+            carregarRelatorioEstoque();
+        });
+        
+        function carregarRelatorioEstoque() {
+            $.get('@Url.Action("GerarRelatorio", "Estoque")')
+                .done(function(response) {
+                    if (response.success) {
+                        exibirRelatorio(response.data);
+                    } else {
+                        exibirErro(response.message);
+                    }
+                })
+                .fail(function() {
+                    exibirErro('Erro ao carregar relatório de estoque');
+                });
+        }
+        
+        function exibirRelatorio(dados) {
+            const container = $('#relatorioEstoque');
+            
+            // Calcular totais
+            const totalProdutos = dados.length;
+            const valorTotalEstoque = dados.reduce((sum, item) => sum + (item.estoqueAtual * item.precoCusto), 0);
+            const produtosEstoqueBaixo = dados.filter(item => item.estoqueAtual <= item.estoqueMinimo).length;
+            const produtosSemEstoque = dados.filter(item => item.estoqueAtual <= 0).length;
+            
+            const html = `
+                <!-- Resumo -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <h4 class="text-primary mb-1">${totalProdutos}</h4>
+                                <small class="text-muted">Total de Produtos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h4 class="text-success mb-1">R$ ${valorTotalEstoque.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</h4>
+                                <small class="text-muted">Valor Total Estoque</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <h4 class="text-warning mb-1">${produtosEstoqueBaixo}</h4>
+                                <small class="text-muted">Estoque Baixo</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-danger">
+                            <div class="card-body text-center">
+                                <h4 class="text-danger mb-1">${produtosSemEstoque}</h4>
+                                <small class="text-muted">Sem Estoque</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabela de Produtos -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th>Estoque Atual</th>
+                                <th>Estoque Mínimo</th>
+                                <th>Preço Custo</th>
+                                <th>Valor Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${dados.map(item => `
+                                <tr class="${item.estoqueAtual <= 0 ? 'table-danger' : item.estoqueAtual <= item.estoqueMinimo ? 'table-warning' : ''}">
+                                    <td><strong>${item.codigo}</strong></td>
+                                    <td>${item.nome}</td>
+                                    <td>${item.categoria || '-'}</td>
+                                    <td>${item.estoqueAtual.toFixed(2)}</td>
+                                    <td>${item.estoqueMinimo.toFixed(2)}</td>
+                                    <td>R$ ${item.precoCusto.toFixed(2)}</td>
+                                    <td><strong>R$ ${(item.estoqueAtual * item.precoCusto).toFixed(2)}</strong></td>
+                                    <td>
+                                        ${item.estoqueAtual <= 0 ? 
+                                            '<span class="badge bg-danger">Sem Estoque</span>' : 
+                                            item.estoqueAtual <= item.estoqueMinimo ? 
+                                                '<span class="badge bg-warning">Estoque Baixo</span>' : 
+                                                '<span class="badge bg-success">Normal</span>'
+                                        }
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.html(html);
+            $('#graficosEstoque').show();
+            
+            // Criar gráficos
+            criarGraficos(dados);
+        }
+        
+        function exibirErro(mensagem) {
+            const container = $('#relatorioEstoque');
+            container.html(`
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h5 class="text-danger">Erro ao carregar relatório</h5>
+                    <p class="text-muted">${mensagem}</p>
+                    <button type="button" class="btn btn-primary" onclick="carregarRelatorioEstoque()">
+                        <i class="fas fa-redo me-1"></i>Tentar Novamente
+                    </button>
+                </div>
+            `);
+        }
+        
+        function criarGraficos(dados) {
+            // Gráfico por categoria
+            const categorias = {};
+            dados.forEach(item => {
+                const cat = item.categoria || 'Sem Categoria';
+                if (!categorias[cat]) {
+                    categorias[cat] = 0;
+                }
+                categorias[cat] += item.estoqueAtual * item.precoCusto;
+            });
+            
+            const ctxCategoria = document.getElementById('graficoCategoria').getContext('2d');
+            new Chart(ctxCategoria, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categorias),
+                    datasets: [{
+                        data: Object.values(categorias),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico produtos com maior valor
+            const produtosOrdenados = dados
+                .map(item => ({
+                    nome: item.nome,
+                    valor: item.estoqueAtual * item.precoCusto
+                }))
+                .sort((a, b) => b.valor - a.valor)
+                .slice(0, 10);
+            
+            const ctxValor = document.getElementById('graficoValor').getContext('2d');
+            new Chart(ctxValor, {
+                type: 'bar',
+                data: {
+                    labels: produtosOrdenados.map(p => p.nome.length > 20 ? p.nome.substring(0, 20) + '...' : p.nome),
+                    datasets: [{
+                        label: 'Valor em Estoque (R$)',
+                        data: produtosOrdenados.map(p => p.valor),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+}

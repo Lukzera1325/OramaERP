@@ -1,0 +1,28 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:OramaGo"
+             xmlns:converters="clr-namespace:OramaGo.Converters"
+             x:Class="OramaGo.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Value Converters -->
+            <converters:StringToBoolConverter x:Key="StringToBoolConverter" />
+            <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+            <converters:CreditoToColorConverter x:Key="CreditoToColorConverter" />
+            <converters:SyncStatusToColorConverter x:Key="SyncStatusToColorConverter" />
+            <converters:SyncStatusToTextConverter x:Key="SyncStatusToTextConverter" />
+            <converters:SyncStatusToIconConverter x:Key="SyncStatusToIconConverter" />
+            <converters:SyncStatusToVisibilityConverter x:Key="SyncStatusToVisibilityConverter" />
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <converters:EstoqueToColorConverter x:Key="EstoqueToColorConverter" />
+            <converters:StatusVendaToColorConverter x:Key="StatusVendaToColorConverter" />
+            <converters:StatusVendaToStringConverter x:Key="StatusVendaToStringConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

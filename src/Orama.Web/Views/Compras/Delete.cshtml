@@ -1,0 +1,182 @@
+@model CompraViewModel
+@{
+    ViewData["Title"] = $"Excluir Compra {Model.NumeroCompra}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Excluir Compra
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita. Tem certeza que deseja excluir esta compra?
+                    </div>
+
+                    <div class="row">
+                        <!-- Informações da Compra -->
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2 mb-3">Informações da Compra</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Número:</dt>
+                                <dd class="col-sm-8">@Model.NumeroCompra</dd>
+
+                                <dt class="col-sm-4">Fornecedor:</dt>
+                                <dd class="col-sm-8">@Model.FornecedorNome</dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge @Model.StatusBadgeClass">
+                                        @Model.StatusDescricao
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-4">Data Compra:</dt>
+                                <dd class="col-sm-8">@Model.DataCompra.ToString("dd/MM/yyyy")</dd>
+
+                                @if (Model.DataEntrega.HasValue)
+                                {
+                                    <dt class="col-sm-4">Data Entrega:</dt>
+                                    <dd class="col-sm-8">@Model.DataEntrega.Value.ToString("dd/MM/yyyy")</dd>
+                                }
+
+                                @if (!string.IsNullOrEmpty(Model.NumeroNF))
+                                {
+                                    <dt class="col-sm-4">Número NF:</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-info">@Model.NumeroNF</span>
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+
+                        <!-- Informações Financeiras -->
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2 mb-3">Informações Financeiras</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Subtotal:</dt>
+                                <dd class="col-sm-8">@Model.SubTotal.ToString("C")</dd>
+
+                                @if (Model.PercentualDesconto > 0)
+                                {
+                                    <dt class="col-sm-4">Desconto:</dt>
+                                    <dd class="col-sm-8">
+                                        @Model.PercentualDesconto.ToString("N2")% 
+                                        (@Model.ValorDesconto.ToString("C"))
+                                    </dd>
+                                }
+
+                                @if (Model.ValorFrete > 0)
+                                {
+                                    <dt class="col-sm-4">Frete:</dt>
+                                    <dd class="col-sm-8">@Model.ValorFrete.ToString("C")</dd>
+                                }
+
+                                <dt class="col-sm-4">Forma Pagamento:</dt>
+                                <dd class="col-sm-8">@Model.FormaPagamentoDescricao</dd>
+
+                                <dt class="col-sm-4">Parcelas:</dt>
+                                <dd class="col-sm-8">@Model.Parcelas</dd>
+
+                                <dt class="col-sm-4"><strong>Total:</strong></dt>
+                                <dd class="col-sm-8">
+                                    <strong class="text-success fs-5">@Model.ValorTotal.ToString("C")</strong>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Observacoes))
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Observações</h5>
+                                <p class="text-muted">@Model.Observacoes</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Itens da Compra -->
+                    @if (Model.Itens.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Itens da Compra</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Produto</th>
+                                                <th>Quantidade</th>
+                                                <th>Valor Unitário</th>
+                                                <th>Valor Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.Itens)
+                                            {
+                                                <tr>
+                                                    <td>@item.ProdutoCodigo</td>
+                                                    <td>@item.ProdutoNome</td>
+                                                    <td>@item.Quantidade.ToString("N2")</td>
+                                                    <td>@item.ValorUnitario.ToString("C")</td>
+                                                    <td>@item.ValorTotal.ToString("C")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="4" class="text-end">Total:</th>
+                                                <th>@Model.Itens.Sum(i => i.ValorTotal).ToString("C")</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.EstaRecebida)
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="fas fa-ban me-2"></i>
+                            <strong>Não é possível excluir!</strong> Esta compra já foi recebida e afetou o estoque.
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        
+                        @if (!Model.EstaRecebida)
+                        {
+                            <form asp-action="Delete" method="post" class="d-inline">
+                                <input asp-for="Id" type="hidden">
+                                <button type="submit" class="btn btn-danger" 
+                                        onclick="return confirm('Tem certeza que deseja excluir esta compra? Esta ação não pode ser desfeita.')">
+                                    <i class="fas fa-trash me-1"></i>Confirmar Exclusão
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-danger" disabled>
+                                <i class="fas fa-ban me-1"></i>Não é Possível Excluir
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

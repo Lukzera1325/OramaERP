@@ -1,0 +1,90 @@
+@model UsuarioViewModel
+@{
+    ViewData["Title"] = "Excluir Usuário";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-times me-2 text-danger"></i>Excluir Usuário</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Voltar
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmação de Exclusão
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita. O usuário será desativado no sistema.
+                </div>
+
+                <h6>Você tem certeza que deseja excluir este usuário?</h6>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nome:</strong></td>
+                                <td>@Model.Nome</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>@Model.Email</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Perfil:</strong></td>
+                                <td><span class="badge bg-info">@Model.NomePerfil</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Criado em:</strong></td>
+                                <td>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <div class="avatar-circle-large mb-3">
+                            @Model.Nome.Substring(0, 1).ToUpper()
+                        </div>
+                        <h5>@Model.Nome</h5>
+                        <p class="text-muted">@Model.Email</p>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                    <form asp-action="Delete" method="post" class="d-inline">
+                        <input asp-for="Id" type="hidden" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?')">
+                            <i class="fas fa-trash me-2"></i>Confirmar Exclusão
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--santorini-blue) 0%, var(--santorini-light-blue) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 2rem;
+        margin: 0 auto;
+    }
+</style>

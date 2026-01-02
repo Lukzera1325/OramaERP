@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="OramaGo.Views.DashboardPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:OramaGo.Views.Components"
+             Title="{Binding Title}"
+             BackgroundColor="#F5F5F5">
+
+    <Grid>
+        <!-- Indicador de conectividade -->
+        <components:ConnectivityIndicator 
+            HorizontalOptions="End"
+            VerticalOptions="Start"
+            Margin="16,8"
+            ZIndex="1000"/>
+
+        <ScrollView>
+        <StackLayout Padding="20" Spacing="20">
+            
+            <!-- Header -->
+            <Frame BackgroundColor="#2196F3" HasShadow="True" CornerRadius="10">
+                <StackLayout Orientation="Vertical" Spacing="10">
+                    <Label Text="Bem-vindo ao Órama Go!" 
+                           FontSize="24" 
+                           FontAttributes="Bold" 
+                           TextColor="White" 
+                           HorizontalOptions="Center" />
+                    <Label Text="Sua força de vendas mobile" 
+                           FontSize="16" 
+                           TextColor="White" 
+                           Opacity="0.8" 
+                           HorizontalOptions="Center" />
+                </StackLayout>
+            </Frame>
+
+            <!-- Cards de Estatísticas -->
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="15" ColumnSpacing="15">
+                
+                <!-- Card Clientes -->
+                <Frame Grid.Row="0" Grid.Column="0" BackgroundColor="White" HasShadow="True" CornerRadius="10">
+                    <StackLayout Spacing="5">
+                        <Label Text="👥" FontSize="30" HorizontalOptions="Center" />
+                        <Label Text="{Binding TotalClientes}" 
+                               FontSize="24" 
+                               FontAttributes="Bold" 
+                               TextColor="#2196F3" 
+                               HorizontalOptions="Center" />
+                        <Label Text="Clientes" 
+                               FontSize="14" 
+                               TextColor="Gray" 
+                               HorizontalOptions="Center" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- Card Produtos -->
+                <Frame Grid.Row="0" Grid.Column="1" BackgroundColor="White" HasShadow="True" CornerRadius="10">
+                    <StackLayout Spacing="5">
+                        <Label Text="📦" FontSize="30" HorizontalOptions="Center" />
+                        <Label Text="{Binding TotalProdutos}" 
+                               FontSize="24" 
+                               FontAttributes="Bold" 
+                               TextColor="#4CAF50" 
+                               HorizontalOptions="Center" />
+                        <Label Text="Produtos" 
+                               FontSize="14" 
+                               TextColor="Gray" 
+                               HorizontalOptions="Center" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- Card Vendas -->
+                <Frame Grid.Row="1" Grid.Column="0" BackgroundColor="White" HasShadow="True" CornerRadius="10">
+                    <StackLayout Spacing="5">
+                        <Label Text="🛒" FontSize="30" HorizontalOptions="Center" />
+                        <Label Text="{Binding TotalVendas}" 
+                               FontSize="24" 
+                               FontAttributes="Bold" 
+                               TextColor="#FF9800" 
+                               HorizontalOptions="Center" />
+                        <Label Text="Vendas" 
+                               FontSize="14" 
+                               TextColor="Gray" 
+                               HorizontalOptions="Center" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- Card Sincronização -->
+                <Frame Grid.Row="1" Grid.Column="1" BackgroundColor="White" HasShadow="True" CornerRadius="10">
+                    <StackLayout Spacing="5">
+                        <Label Text="🔄" FontSize="30" HorizontalOptions="Center" />
+                        <Label Text="{Binding StatusSync}" 
+                               FontSize="14" 
+                               FontAttributes="Bold" 
+                               TextColor="#9C27B0" 
+                               HorizontalOptions="Center" />
+                        <Label Text="Sincronização" 
+                               FontSize="14" 
+                               TextColor="Gray" 
+                               HorizontalOptions="Center" />
+                    </StackLayout>
+                </Frame>
+            </Grid>
+
+            <!-- Ações Rápidas -->
+            <Label Text="Ações Rápidas" FontSize="18" FontAttributes="Bold" TextColor="#333" />
+            
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
+                
+                <Button Grid.Row="0" Grid.Column="0"
+                        Text="Ver Clientes"
+                        BackgroundColor="#2196F3"
+                        TextColor="White"
+                        CornerRadius="8"
+                        Command="{Binding NavigateToClientesCommand}" />
+
+                <Button Grid.Row="0" Grid.Column="1"
+                        Text="Catálogo"
+                        BackgroundColor="#4CAF50"
+                        TextColor="White"
+                        CornerRadius="8"
+                        Command="{Binding NavigateToProdutosCommand}" />
+
+                <Button Grid.Row="1" Grid.Column="0"
+                        Text="Nova Venda"
+                        BackgroundColor="#FF9800"
+                        TextColor="White"
+                        CornerRadius="8"
+                        Command="{Binding NovaVendaCommand}" />
+
+                <Button Grid.Row="1" Grid.Column="1"
+                        Text="Sincronizar"
+                        BackgroundColor="#9C27B0"
+                        TextColor="White"
+                        CornerRadius="8"
+                        Command="{Binding SincronizarCommand}" />
+            </Grid>
+
+            <!-- Status do Banco de Dados -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="10">
+                <StackLayout Spacing="10">
+                    <Label Text="Status do Sistema" FontSize="16" FontAttributes="Bold" TextColor="#333" />
+                    <StackLayout Orientation="Horizontal">
+                        <Label Text="Banco de dados:" TextColor="Gray" />
+                        <Label Text="{Binding DatabaseStatus}" TextColor="#4CAF50" FontAttributes="Bold" />
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal">
+                        <Label Text="Última sincronização:" TextColor="Gray" />
+                        <Label Text="{Binding UltimaSincronizacao}" TextColor="Gray" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" Color="#2196F3" />
+
+        </StackLayout>
+    </ScrollView>
+
+    </Grid>
+
+</ContentPage>

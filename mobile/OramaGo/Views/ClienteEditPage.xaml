@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="OramaGo.Views.ClienteEditPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="{Binding Title}"
+             BackgroundColor="#F5F5F5">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Salvar" 
+                     Command="{Binding SaveCommand}" 
+                     IconImageSource="save.png" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="20">
+
+            <!-- Mensagem de Validação -->
+            <Frame BackgroundColor="#FFEBEE" 
+                   BorderColor="#F44336" 
+                   CornerRadius="8" 
+                   Padding="15"
+                   IsVisible="{Binding HasValidationErrors}">
+                <Label Text="{Binding ValidationMessage}" 
+                       TextColor="#D32F2F" 
+                       FontSize="14" />
+            </Frame>
+
+            <!-- Informações Básicas -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="👤 Informações Básicas" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Nome *" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding Nome}" 
+                               Placeholder="Digite o nome completo"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="CPF/CNPJ" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding CpfCnpj}" 
+                               Placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                               Keyboard="Numeric"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="RG/IE" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding RgIe}" 
+                               Placeholder="Digite o RG ou Inscrição Estadual"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Data de Nascimento" FontSize="14" TextColor="Gray" />
+                        <DatePicker Date="{Binding DataNascimento}" 
+                                    BackgroundColor="#F5F5F5"
+                                    TextColor="#333" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Contato -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="📞 Contato" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Email" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding Email}" 
+                               Placeholder="email@exemplo.com"
+                               Keyboard="Email"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Telefone" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding Telefone}" 
+                               Placeholder="(11) 3333-4444"
+                               Keyboard="Telephone"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Celular" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding Celular}" 
+                               Placeholder="(11) 99999-8888"
+                               Keyboard="Telephone"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Endereço -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="🏠 Endereço" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Entry Grid.Column="0"
+                               Text="{Binding Cep}" 
+                               Placeholder="00000-000"
+                               Keyboard="Numeric"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                        <Button Grid.Column="1"
+                                Text="🔍"
+                                Command="{Binding SearchCepCommand}"
+                                BackgroundColor="#2196F3"
+                                TextColor="White"
+                                WidthRequest="50" />
+                    </Grid>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Endereço" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding Endereco}" 
+                               Placeholder="Rua, Avenida, etc."
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <Grid ColumnDefinitions="*,100" ColumnSpacing="10">
+                        <StackLayout Grid.Column="0" Spacing="10">
+                            <Label Text="Número" FontSize="14" TextColor="Gray" />
+                            <Entry Text="{Binding Numero}" 
+                                   Placeholder="123"
+                                   BackgroundColor="#F5F5F5"
+                                   TextColor="#333" />
+                        </StackLayout>
+                        
+                        <StackLayout Grid.Column="1" Spacing="10">
+                            <Label Text="Complemento" FontSize="14" TextColor="Gray" />
+                            <Entry Text="{Binding Complemento}" 
+                                   Placeholder="Apto 45"
+                                   BackgroundColor="#F5F5F5"
+                                   TextColor="#333" />
+                        </StackLayout>
+                    </Grid>
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Bairro" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding Bairro}" 
+                               Placeholder="Nome do bairro"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <Grid ColumnDefinitions="*,80" ColumnSpacing="10">
+                        <StackLayout Grid.Column="0" Spacing="10">
+                            <Label Text="Cidade" FontSize="14" TextColor="Gray" />
+                            <Entry Text="{Binding Cidade}" 
+                                   Placeholder="Nome da cidade"
+                                   BackgroundColor="#F5F5F5"
+                                   TextColor="#333" />
+                        </StackLayout>
+                        
+                        <StackLayout Grid.Column="1" Spacing="10">
+                            <Label Text="Estado" FontSize="14" TextColor="Gray" />
+                            <Entry Text="{Binding Estado}" 
+                                   Placeholder="SP"
+                                   MaxLength="2"
+                                   BackgroundColor="#F5F5F5"
+                                   TextColor="#333" />
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Informações Financeiras -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="💰 Informações Financeiras" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <StackLayout Spacing="10">
+                        <Label Text="Limite de Crédito" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding LimiteCredito}" 
+                               Placeholder="0,00"
+                               Keyboard="Numeric"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+
+                    <StackLayout Spacing="10">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <CheckBox Grid.Column="0" IsChecked="{Binding Bloqueado}" Color="Red" />
+                            <Label Grid.Column="1" Text="Cliente Bloqueado" FontSize="16" TextColor="#333" VerticalOptions="Center" />
+                        </Grid>
+                    </StackLayout>
+
+                    <StackLayout Spacing="10" IsVisible="{Binding Bloqueado}">
+                        <Label Text="Motivo do Bloqueio" FontSize="14" TextColor="Gray" />
+                        <Entry Text="{Binding MotivoBloqueio}" 
+                               Placeholder="Descreva o motivo do bloqueio"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Observações -->
+            <Frame BackgroundColor="White" HasShadow="True" CornerRadius="15" Padding="20">
+                <StackLayout Spacing="15">
+                    <Label Text="📝 Observações" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="#333" />
+
+                    <Editor Text="{Binding Observacoes}" 
+                            Placeholder="Observações adicionais sobre o cliente..."
+                            HeightRequest="100"
+                            BackgroundColor="#F5F5F5"
+                            TextColor="#333" />
+                </StackLayout>
+            </Frame>
+
+            <!-- Botões -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,20,0,40">
+                <Button Grid.Column="0"
+                        Text="Cancelar"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        CornerRadius="8"
+                        HeightRequest="50" />
+                
+                <Button Grid.Column="1"
+                        Text="Salvar"
+                        Command="{Binding SaveCommand}"
+                        BackgroundColor="#2196F3"
+                        TextColor="White"
+                        CornerRadius="8"
+                        HeightRequest="50" />
+            </Grid>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsVisible="{Binding IsBusy}" 
+                               IsRunning="{Binding IsBusy}" 
+                               Color="#2196F3" />
+
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>

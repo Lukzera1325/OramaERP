@@ -1,0 +1,222 @@
+@model RelatorioComprasViewModel
+@{
+    ViewData["Title"] = "Relatório de Compras";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-truck me-2"></i>Relatório de Compras
+                    </h3>
+                    <div class="btn-group">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="exportarExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card-body border-bottom">
+                    <form method="get" asp-action="Compras" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="inicio" class="form-control" value="@Model.DataInicio.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="fim" class="form-control" value="@Model.DataFim.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resumo -->
+                <div class="card-body border-bottom">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="border-end">
+                                <h4 class="text-info mb-1">@Model.TotalCompras.ToString("C")</h4>
+                                <small class="text-muted">Total de Compras</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-1">@Model.QuantidadeCompras</h4>
+                                <small class="text-muted">Quantidade de Compras</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h4 class="text-success mb-1">@Model.TicketMedio.ToString("C")</h4>
+                            <small class="text-muted">Ticket Médio</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Compras -->
+                <div class="card-body p-0">
+                    @if (Model.Compras.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Fornecedor</th>
+                                        <th>Data</th>
+                                        <th>Valor Total</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var compra in Model.Compras)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@compra.NumeroCompra</strong>
+                                            </td>
+                                            <td>@compra.FornecedorNome</td>
+                                            <td>@compra.DataCompra.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                <strong>@compra.ValorTotal.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(compra.Status == "Recebida" ? "bg-success" : compra.Status == "Cancelada" ? "bg-danger" : "bg-warning")">
+                                                    @compra.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Compras" asp-action="Details" asp-route-id="@compra.Id" 
+                                                   class="btn btn-sm btn-outline-info" title="Ver Detalhes">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhuma compra encontrada</h5>
+                            <p class="text-muted">Não há compras no período selecionado</p>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Compras.Any())
+                {
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Período: @Model.PeriodoFormatado
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small class="text-muted">
+                                    @Model.Compras.Count compra(s) encontrada(s)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Compras -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area me-2"></i>Evolução das Compras
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoCompras" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function exportarExcel() {
+            const inicio = '@Model.DataInicio.ToString("yyyy-MM-dd")';
+            const fim = '@Model.DataFim.ToString("yyyy-MM-dd")';
+            
+            $.post('@Url.Action("ExportarExcel")', {
+                tipoRelatorio: 'compras',
+                inicio: inicio,
+                fim: fim
+            })
+            .done(function(response) {
+                if (response.success) {
+                    alert('Relatório exportado com sucesso!');
+                } else {
+                    alert('Erro ao exportar: ' + response.message);
+                }
+            })
+            .fail(function() {
+                alert('Erro ao exportar relatório');
+            });
+        }
+        
+        $(document).ready(function() {
+            // Criar gráfico de compras
+            const ctx = document.getElementById('graficoCompras').getContext('2d');
+            
+            const dadosCompras = @Html.Raw(Json.Serialize(Model.Compras.GroupBy(c => c.DataCompra.ToString("MM/yyyy")).Select(g => new { mes = g.Key, valor = g.Sum(c => c.ValorTotal) })));
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dadosCompras.map(d => d.mes),
+                    datasets: [{
+                        label: 'Compras (R$)',
+                        data: dadosCompras.map(d => d.valor),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Evolução das Compras - @Model.PeriodoFormatado'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

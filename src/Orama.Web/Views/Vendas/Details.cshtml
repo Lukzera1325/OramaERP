@@ -1,0 +1,161 @@
+@model VendaViewModel
+@{
+    ViewData["Title"] = "Venda #" + Model.Numero;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-file-invoice me-2"></i>Venda #@Model.Numero</h2>
+        <p class="text-muted mb-0">Detalhes da venda</p>
+    </div>
+    <div>
+        @if (Model.Status == StatusVenda.Orcamento)
+        {
+            <form asp-action="Aprovar" asp-route-id="@Model.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-info me-2">
+                    <i class="fas fa-check me-2"></i>Aprovar
+                </button>
+            </form>
+        }
+        @if (Model.Status == StatusVenda.Orcamento || Model.Status == StatusVenda.Aprovado)
+        {
+            <a asp-action="Faturar" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                <i class="fas fa-file-invoice-dollar me-2"></i>Faturar
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+        }
+        @if (Model.Status != StatusVenda.Cancelado)
+        {
+            <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja cancelar esta venda?')">
+                <button type="submit" class="btn btn-outline-danger me-2">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+            </form>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Informações -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Cliente</label>
+                        <p class="fw-bold">@Model.ClienteNome</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Data da Venda</label>
+                        <p>@Model.DataVenda.ToString("dd/MM/yyyy")</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Data de Entrega</label>
+                        <p>@(Model.DataEntrega?.ToString("dd/MM/yyyy") ?? "-")</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label text-muted">Forma de Pagamento</label>
+                        <p>@Model.FormaPagamentoDescricao</p>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label text-muted">Parcelas</label>
+                        <p>@Model.Parcelas x</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Observações</label>
+                        <p>@(Model.Observacoes ?? "-")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itens -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Itens da Venda</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-end">Preço Unit.</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Itens)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.ProdutoCodigo</strong><br>
+                                        <small class="text-muted">@item.ProdutoNome</small>
+                                    </td>
+                                    <td class="text-center">@item.Quantidade</td>
+                                    <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
+                                    <td class="text-end"><strong>@item.ValorTotal.ToString("C")</strong></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-@Model.StatusCor text-white">
+                <h5 class="mb-0"><i class="fas fa-tag me-2"></i>Status</h5>
+            </div>
+            <div class="card-body text-center">
+                <span class="badge bg-@Model.StatusCor fs-4">@Model.StatusDescricao</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Valores</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td class="text-end">@Model.SubTotal.ToString("C")</td>
+                    </tr>
+                    @if (Model.ValorDesconto > 0)
+                    {
+                        <tr>
+                            <td>Desconto (@Model.PercentualDesconto%):</td>
+                            <td class="text-end text-danger">- @Model.ValorDesconto.ToString("C")</td>
+                        </tr>
+                    }
+                    @if (Model.ValorFrete > 0)
+                    {
+                        <tr>
+                            <td>Frete:</td>
+                            <td class="text-end">@Model.ValorFrete.ToString("C")</td>
+                        </tr>
+                    }
+                    <tr class="table-success">
+                        <td><strong>Total:</strong></td>
+                        <td class="text-end"><strong class="fs-4">@Model.ValorTotal.ToString("C")</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+{
+    "dotnet.defaultSolution": "Orama.sln",
+    "omnisharp.enableEditorConfigSupport": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/.vs": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/node_modules": true
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "csharp.semanticHighlighting.enabled": true,
+    "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "*.cs": "${capture}.*.cs",
+        "*.cshtml": "${capture}.cshtml.cs"
+    }
+}
