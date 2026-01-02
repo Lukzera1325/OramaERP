@@ -201,21 +201,21 @@ dotnet run --project src/Orama.Web
 
 ---
 
-## 📚 **DOCUMENTAÇÃO DETALHADA**
-
-### **📋 [DOCUMENTACAO.md](DOCUMENTACAO.md) - Índice Completo da Documentação**
+## 📚 **DOCUMENTAÇÃO COMPLETA**
 
 ### **📖 Para Desenvolvedores**
-- **[ERP_BACKEND.md](ERP_BACKEND.md)** - Documentação completa do backend (.NET 8)
-- **[MOBILE_APP.md](MOBILE_APP.md)** - Documentação do app mobile (.NET MAUI)
+- **[Documentação Técnica](docs/README.md)** - Visão geral completa
+- **[Backend](docs/backend.md)** - Sistema web (.NET 8)
+- **[Mobile](docs/mobile.md)** - App mobile (.NET MAUI)
+- **[Arquitetura](docs/arquitetura.md)** - Padrões e estrutura
 
-### **📋 Para Usuários**
-- **[INSTALACAO.md](INSTALACAO.md)** - Guia de instalação e configuração
-- **Manual do Usuário** - Em desenvolvimento
+### **👨‍🎓 Para Novos Desenvolvedores**
+- **[Guia do Estagiário](docs/guia-estagiario.md)** - Onboarding completo
+- **[Fluxos de Negócio](docs/fluxos-negocio.md)** - Como o sistema funciona
 
 ### **🔧 Para DevOps**
+- **[Instalação](INSTALACAO.md)** - Setup e configuração
 - **docker-compose.yml** - Containerização completa
-- **scripts/init-db.sql** - Scripts de inicialização do banco
 - **executar-sistema.ps1** - Script de execução automática
 
 ---
