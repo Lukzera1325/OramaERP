@@ -1,298 +1,217 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Orama.Application.Services;
 using Orama.Domain.Entities;
 using Orama.Web.Models;
 
-namespace Orama.Web.Controllers
+namespace Orama.Web.Controllers;
+
+/// <summary>
+/// Controller extremamente simples para Produção Industrial
+/// Recebe request -> Chama service -> Retorna response
+/// </summary>
+public class ProducaoController : BaseController
 {
-    [Authorize]
-    public class ProducaoController : BaseController
+    private readonly IOrdemProducaoService _ordemProducaoService;
+    private readonly IEstruturaProdutoService _estruturaService;
+    private readonly IProdutoService _produtoService;
+
+    public ProducaoController(
+        IOrdemProducaoService ordemProducaoService,
+        IEstruturaProdutoService estruturaService,
+        IProdutoService produtoService)
     {
-        private readonly IOrdemProducaoService _ordemProducaoService;
-        private readonly IListaMateriaisService _listaMateriaisService;
-        private readonly IProdutoService _produtoService;
+        _ordemProducaoService = ordemProducaoService;
+        _estruturaService = estruturaService;
+        _produtoService = produtoService;
+    }
 
-        public ProducaoController(
-            IOrdemProducaoService ordemProducaoService,
-            IListaMateriaisService listaMateriaisService,
-            IProdutoService produtoService)
-        {
-            _ordemProducaoService = ordemProducaoService;
-            _listaMateriaisService = listaMateriaisService;
-            _produtoService = produtoService;
-        }
+    // GET: Producao (Dashboard de produção)
+    public async Task<IActionResult> Index()
+    {
+        var empresaId = ObterEmpresaId();
+        
+        var ordensEmProducao = await _ordemProducaoService.ObterPorStatusAsync(StatusOrdemProducao.EmAndamento, empresaId);
+        var ordensAtrasadas = await _ordemProducaoService.ObterOrdensAtrasadasAsync(empresaId);
+        
+        ViewBag.OrdensEmProducao = ordensEmProducao.Count();
+        ViewBag.OrdensAtrasadas = ordensAtrasadas.Count();
+        
+        return View(ordensEmProducao);
+    }
 
-        public async Task<IActionResult> Index()
-        {
-            var empresaId = ObterEmpresaId();
-            
-            ViewBag.OrdensAtivas = await _ordemProducaoService.ObterQuantidadeOrdensAtivasAsync(empresaId);
-            ViewBag.OrdensAtrasadas = await _ordemProducaoService.ObterQuantidadeOrdensAtrasadasAsync(empresaId);
-            ViewBag.CustoMes = await _ordemProducaoService.ObterCustoProducaoMesAsync(empresaId, DateTime.Now.Month, DateTime.Now.Year);
-            
-            return View();
-        }
+    // GET: Producao/OrdensProducao (Lista de ordens)
+    public async Task<IActionResult> OrdensProducao()
+    {
+        var empresaId = ObterEmpresaId();
+        var ordens = await _ordemProducaoService.ObterTodosAsync(empresaId);
+        return View(ordens);
+    }
 
-        public async Task<IActionResult> OrdensProducao()
-        {
-            var empresaId = ObterEmpresaId();
-            var ordens = await _ordemProducaoService.ObterTodosAsync(empresaId);
-            
-            var viewModel = ordens.Select(o => new OrdemProducaoViewModel
-            {
-                Id = o.Id,
-                Numero = o.Numero,
-                ProdutoDescricao = o.Produto.Descricao,
-                QuantidadePlanejada = o.QuantidadePlanejada,
-                QuantidadeProduzida = o.QuantidadeProduzida,
-                DataPlanejada = o.DataPlanejada,
-                DataInicio = o.DataInicio,
-                DataFim = o.DataFim,
-                Status = o.Status,
-                Prioridade = o.Prioridade,
-                CustoMaterial = o.CustoMaterial,
-                CustoMaoObra = o.CustoMaoObra,
-                DataCriacao = o.DataCriacao,
-                UsuarioCriacao = o.UsuarioCriacao.Nome
-            }).ToList();
-            
-            return View(viewModel);
-        }
+    // GET: Producao/CriarOrdemProducao (Formulário para criar ordem)
+    public async Task<IActionResult> CriarOrdemProducao()
+    {
+        var empresaId = ObterEmpresaId();
+        var produtos = await _produtoService.ObterTodosAsync(empresaId);
+        var produtosProduzíveis = produtos.Where(p => p.EhProduzivel());
+        
+        ViewBag.Produtos = new SelectList(produtosProduzíveis, "Id", "CodigoFormatado");
+        return View(new OrdemProducaoViewModel());
+    }
 
-        public async Task<IActionResult> CriarOrdemProducao()
+    // POST: Producao/CriarOrdemProducao (Processar criação)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CriarOrdemProducao(OrdemProducaoViewModel model)
+    {
+        if (!ModelState.IsValid)
         {
             var empresaId = ObterEmpresaId();
             var produtos = await _produtoService.ObterTodosAsync(empresaId);
-            
-            var viewModel = new OrdemProducaoViewModel
-            {
-                DataPlanejada = DateTime.Today.AddDays(1),
-                Prioridade = PrioridadeOrdemProducao.Normal,
-                Produtos = new SelectList(produtos, "Id", "Descricao")
-            };
-            
-            return View(viewModel);
+            var produtosProduzíveis = produtos.Where(p => p.EhProduzivel());
+            ViewBag.Produtos = new SelectList(produtosProduzíveis, "Id", "CodigoFormatado");
+            return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CriarOrdemProducao(OrdemProducaoViewModel viewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var empresaId = ObterEmpresaId();
-                    var usuarioId = UsuarioLogado?.Id ?? 1;
-                    
-                    var ordem = new OrdemProducao
-                    {
-                        EmpresaId = empresaId,
-                        ProdutoId = viewModel.ProdutoId,
-                        QuantidadePlanejada = viewModel.QuantidadePlanejada,
-                        DataPlanejada = viewModel.DataPlanejada,
-                        Prioridade = viewModel.Prioridade,
-                        Observacoes = viewModel.Observacoes,
-                        UsuarioCriacaoId = usuarioId
-                    };
-                    
-                    await _ordemProducaoService.CriarAsync(ordem);
-                    
-                    TempData["Sucesso"] = "Ordem de produção criada com sucesso!";
-                    return RedirectToAction(nameof(OrdensProducao));
-                }
-                catch (Exception ex)
-                {
-                    TempData["Erro"] = $"Erro ao criar ordem de produção: {ex.Message}";
-                }
-            }
-            
-            // Recarregar dados em caso de erro
-            var empresaIdReload = ObterEmpresaId();
-            var produtosReload = await _produtoService.ObterTodosAsync(empresaIdReload);
-            viewModel.Produtos = new SelectList(produtosReload, "Id", "Descricao");
-            
-            return View(viewModel);
-        }
-
-        public async Task<IActionResult> DetalhesOrdemProducao(int id)
+        try
         {
             var empresaId = ObterEmpresaId();
-            var ordem = await _ordemProducaoService.ObterPorIdAsync(id, empresaId);
+            var usuarioId = 1; // TODO: Obter do contexto
+
+            var ordem = await _ordemProducaoService.CriarAsync(
+                model.ProdutoId, 
+                model.QuantidadePlanejada, 
+                model.Observacoes, 
+                empresaId, 
+                usuarioId);
+
+            TempData["Sucesso"] = $"Ordem de Produção {ordem.Numero} criada com sucesso!";
+            return RedirectToAction(nameof(DetalhesOrdemProducao), new { id = ordem.Id });
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = $"Erro ao criar ordem: {ex.Message}";
             
-            if (ordem == null)
-            {
-                TempData["Erro"] = "Ordem de produção não encontrada.";
-                return RedirectToAction(nameof(OrdensProducao));
-            }
-            
-            var viewModel = new OrdemProducaoViewModel
-            {
-                Id = ordem.Id,
-                Numero = ordem.Numero,
-                ProdutoId = ordem.ProdutoId,
-                ProdutoDescricao = ordem.Produto.Descricao,
-                QuantidadePlanejada = ordem.QuantidadePlanejada,
-                QuantidadeProduzida = ordem.QuantidadeProduzida,
-                DataPlanejada = ordem.DataPlanejada,
-                DataInicio = ordem.DataInicio,
-                DataFim = ordem.DataFim,
-                Status = ordem.Status,
-                Prioridade = ordem.Prioridade,
-                Observacoes = ordem.Observacoes,
-                CustoMaterial = ordem.CustoMaterial,
-                CustoMaoObra = ordem.CustoMaoObra,
-                DataCriacao = ordem.DataCriacao,
-                UsuarioCriacao = ordem.UsuarioCriacao.Nome,
-                
-                Itens = ordem.Itens.Select(i => new OrdemProducaoItemViewModel
-                {
-                    Id = i.Id,
-                    ProdutoId = i.ProdutoId,
-                    ProdutoDescricao = i.Produto.Descricao,
-                    QuantidadeNecessaria = i.QuantidadeNecessaria,
-                    QuantidadeConsumida = i.QuantidadeConsumida,
-                    CustoUnitario = i.CustoUnitario,
-                    Tipo = i.Tipo,
-                    Observacoes = i.Observacoes
-                }).ToList(),
-                
-                Etapas = ordem.Etapas.Select(e => new OrdemProducaoEtapaViewModel
-                {
-                    Id = e.Id,
-                    Nome = e.Nome,
-                    Descricao = e.Descricao,
-                    Sequencia = e.Sequencia,
-                    TempoEstimado = e.TempoEstimado,
-                    TempoRealizado = e.TempoRealizado,
-                    DataInicio = e.DataInicio,
-                    DataFim = e.DataFim,
-                    Status = e.Status,
-                    ResponsavelNome = e.Responsavel?.Nome,
-                    Observacoes = e.Observacoes
-                }).OrderBy(e => e.Sequencia).ToList(),
-                
-                ApontamentosHoras = ordem.ApontamentosHoras.Select(ah => new ApontamentoHorasViewModel
-                {
-                    Id = ah.Id,
-                    EtapaNome = ah.Etapa?.Nome,
-                    FuncionarioNome = ah.Funcionario.Nome,
-                    DataInicio = ah.DataInicio,
-                    DataFim = ah.DataFim,
-                    HorasTrabalhadas = ah.HorasTrabalhadas,
-                    ValorHora = ah.ValorHora,
-                    Tipo = ah.Tipo,
-                    Observacoes = ah.Observacoes
-                }).OrderByDescending(ah => ah.DataInicio).ToList(),
-                
-                InspecoesQualidade = ordem.InspecoesQualidade.Select(iq => new InspecaoQualidadeViewModel
-                {
-                    Id = iq.Id,
-                    EtapaNome = iq.Etapa?.Nome,
-                    Titulo = iq.Titulo,
-                    Tipo = iq.Tipo,
-                    QuantidadeInspecionada = iq.QuantidadeInspecionada,
-                    QuantidadeAprovada = iq.QuantidadeAprovada,
-                    QuantidadeRejeitada = iq.QuantidadeRejeitada,
-                    Resultado = iq.Resultado,
-                    DataInspecao = iq.DataInspecao,
-                    InspetorNome = iq.Inspetor.Nome,
-                    Observacoes = iq.Observacoes
-                }).OrderByDescending(iq => iq.DataInspecao).ToList()
-            };
-            
-            return View(viewModel);
+            var empresaId = ObterEmpresaId();
+            var produtos = await _produtoService.ObterTodosAsync(empresaId);
+            var produtosProduzíveis = produtos.Where(p => p.EhProduzivel());
+            ViewBag.Produtos = new SelectList(produtosProduzíveis, "Id", "CodigoFormatado");
+            return View(model);
+        }
+    }
+
+    // GET: Producao/DetalhesOrdemProducao/5 (Detalhes da ordem)
+    public async Task<IActionResult> DetalhesOrdemProducao(int id)
+    {
+        var empresaId = ObterEmpresaId();
+        var ordem = await _ordemProducaoService.ObterPorIdAsync(id, empresaId);
+        
+        if (ordem == null)
+            return NotFound();
+
+        return View(ordem);
+    }
+
+    // POST: Producao/LiberarProducao/5 (Liberar ordem)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LiberarProducao(int id)
+    {
+        try
+        {
+            var empresaId = ObterEmpresaId();
+            var usuarioId = 1; // TODO: Obter do contexto
+
+            var sucesso = await _ordemProducaoService.LiberarAsync(id, empresaId, usuarioId);
+
+            if (sucesso)
+                TempData["Sucesso"] = "Ordem liberada para produção!";
+            else
+                TempData["Erro"] = "Ordem não encontrada.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = $"Erro ao liberar ordem: {ex.Message}";
         }
 
-        [HttpPost]
-        public async Task<IActionResult> LiberarOrdem(int id)
+        return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+    }
+
+    // POST: Producao/IniciarProducao/5 (Iniciar ordem)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> IniciarProducao(int id)
+    {
+        try
         {
-            try
-            {
-                var empresaId = ObterEmpresaId();
-                var usuarioId = UsuarioLogado?.Id ?? 1;
-                
-                var sucesso = await _ordemProducaoService.LiberarOrdemAsync(id, empresaId, usuarioId);
-                
-                if (sucesso)
-                {
-                    TempData["Sucesso"] = "Ordem de produção liberada com sucesso!";
-                }
-                else
-                {
-                    TempData["Erro"] = "Não foi possível liberar a ordem. Verifique a disponibilidade de materiais.";
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Erro"] = $"Erro ao liberar ordem: {ex.Message}";
-            }
-            
-            return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+            var empresaId = ObterEmpresaId();
+            var usuarioId = 1; // TODO: Obter do contexto
+
+            var sucesso = await _ordemProducaoService.IniciarAsync(id, empresaId, usuarioId);
+
+            if (sucesso)
+                TempData["Sucesso"] = "Produção iniciada com sucesso!";
+            else
+                TempData["Erro"] = "Ordem não encontrada.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = $"Erro ao iniciar produção: {ex.Message}";
         }
 
-        [HttpPost]
-        public async Task<IActionResult> IniciarProducao(int id)
+        return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+    }
+
+    // POST: Producao/FinalizarProducao/5 (Finalizar ordem)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> FinalizarProducao(int id, decimal quantidadeProduzida)
+    {
+        try
         {
-            try
-            {
-                var empresaId = ObterEmpresaId();
-                var usuarioId = UsuarioLogado?.Id ?? 1;
-                
-                var sucesso = await _ordemProducaoService.IniciarProducaoAsync(id, empresaId, usuarioId);
-                
-                if (sucesso)
-                {
-                    TempData["Sucesso"] = "Produção iniciada com sucesso!";
-                }
-                else
-                {
-                    TempData["Erro"] = "Não foi possível iniciar a produção.";
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Erro"] = $"Erro ao iniciar produção: {ex.Message}";
-            }
-            
-            return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+            var empresaId = ObterEmpresaId();
+            var usuarioId = 1; // TODO: Obter do contexto
+
+            var sucesso = await _ordemProducaoService.FinalizarAsync(id, quantidadeProduzida, empresaId, usuarioId);
+
+            if (sucesso)
+                TempData["Sucesso"] = "Produção finalizada com sucesso! Estoque atualizado automaticamente.";
+            else
+                TempData["Erro"] = "Ordem não encontrada.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = $"Erro ao finalizar produção: {ex.Message}";
         }
 
-        [HttpPost]
-        public async Task<IActionResult> FinalizarProducao(int id, decimal quantidadeProduzida)
+        return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+    }
+
+    // AJAX: Obter estrutura de um produto
+    [HttpGet]
+    public async Task<IActionResult> ObterEstruturaProduto(int produtoId)
+    {
+        try
         {
-            try
+            var empresaId = ObterEmpresaId();
+            var estrutura = await _estruturaService.ObterEstruturaPorProdutoAsync(produtoId, empresaId);
+
+            var resultado = estrutura.Select(e => new
             {
-                var empresaId = ObterEmpresaId();
-                var usuarioId = UsuarioLogado?.Id ?? 1;
-                
-                // Atualizar quantidade produzida
-                var ordem = await _ordemProducaoService.ObterPorIdAsync(id, empresaId);
-                if (ordem != null)
-                {
-                    ordem.QuantidadeProduzida = quantidadeProduzida;
-                    await _ordemProducaoService.AtualizarAsync(ordem);
-                }
-                
-                var sucesso = await _ordemProducaoService.FinalizarProducaoAsync(id, empresaId, usuarioId);
-                
-                if (sucesso)
-                {
-                    TempData["Sucesso"] = "Produção finalizada com sucesso!";
-                }
-                else
-                {
-                    TempData["Erro"] = "Não foi possível finalizar a produção.";
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Erro"] = $"Erro ao finalizar produção: {ex.Message}";
-            }
-            
-            return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+                id = e.Id,
+                componenteId = e.ProdutoComponenteId,
+                componenteNome = e.ProdutoComponente.Descricao,
+                componenteCodigo = e.ProdutoComponente.Codigo,
+                quantidade = e.QuantidadeNecessaria,
+                unidade = e.Unidade,
+                estoqueDisponivel = e.ProdutoComponente.EstoqueAtual
+            });
+
+            return Json(new { success = true, data = resultado });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
         }
     }
 }

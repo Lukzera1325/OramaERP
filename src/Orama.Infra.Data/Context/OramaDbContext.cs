@@ -55,6 +55,9 @@ public class OramaDbContext : DbContext
     public DbSet<ListaMateriais> ListasMateriais { get; set; }
     public DbSet<ListaMateriaisItem> ListaMateriaisItens { get; set; }
 
+    // Produção Industrial - Estrutura de Produto (BOM)
+    public DbSet<EstruturaProduto> EstruturasProdutos { get; set; }
+
     // Fiscal
     public DbSet<NotaFiscal> NotasFiscais { get; set; }
     public DbSet<NotaFiscalItem> NotasFiscaisItens { get; set; }

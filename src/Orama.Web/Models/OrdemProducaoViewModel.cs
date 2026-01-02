@@ -4,6 +4,17 @@ using Orama.Domain.Entities;
 
 namespace Orama.Web.Models
 {
+    /// <summary>
+    /// Tipo de item na produção
+    /// </summary>
+    public enum TipoItemProducao
+    {
+        MateriaPrima = 1,
+        Componente = 2,
+        Embalagem = 3,
+        Insumo = 4
+    }
+
     public class OrdemProducaoViewModel
     {
         public int Id { get; set; }

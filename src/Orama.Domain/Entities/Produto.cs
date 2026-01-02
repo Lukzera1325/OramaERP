@@ -3,6 +3,18 @@ using System.ComponentModel.DataAnnotations;
 namespace Orama.Domain.Entities;
 
 /// <summary>
+/// Tipos de produto para produção industrial
+/// </summary>
+public enum TipoProduto
+{
+    Mercadoria = 1,        // Produto comprado para revenda
+    Revenda = 2,           // Produto para revenda direta
+    MateriaPrima = 3,      // Componente/insumo para produção
+    ProdutoEmProcesso = 4, // Produto sendo produzido
+    ProdutoAcabado = 5     // Produto final produzido
+}
+
+/// <summary>
 /// Entidade que representa um produto
 /// </summary>
 public class Produto : BaseEntity
@@ -28,6 +40,10 @@ public class Produto : BaseEntity
     [Required(ErrorMessage = "Unidade é obrigatória")]
     [StringLength(10, ErrorMessage = "Unidade deve ter no máximo 10 caracteres")]
     public string Unidade { get; set; } = string.Empty;
+
+    // Classificação de Produto
+    [Display(Name = "Tipo de Produto")]
+    public TipoProduto TipoProduto { get; set; } = TipoProduto.Mercadoria;
 
     // Classificação Fiscal
     [StringLength(10, ErrorMessage = "NCM deve ter no máximo 10 caracteres")]
@@ -145,6 +161,22 @@ public class Produto : BaseEntity
     {
         if (!PrecisaReposicao()) return 0;
         return EstoqueMaximo - EstoqueAtual;
+    }
+
+    // Métodos de negócio para produção
+    public bool EhProduzivel()
+    {
+        return TipoProduto == TipoProduto.ProdutoAcabado;
+    }
+
+    public bool EhComponente()
+    {
+        return TipoProduto == TipoProduto.MateriaPrima;
+    }
+
+    public bool PodeSerUsadoNaProducao()
+    {
+        return TipoProduto == TipoProduto.MateriaPrima || TipoProduto == TipoProduto.ProdutoEmProcesso;
     }
 }
 
