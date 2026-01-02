@@ -1,0 +1,59 @@
+@model Orama.Web.Models.OrdemProducaoViewModel
+@{
+    ViewData["Title"] = "Nova Ordem de Produção";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                </div>
+                <form asp-action="Criar" method="post">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ProdutoId" class="form-label">Produto</label>
+                                    <select asp-for="ProdutoId" class="form-select" asp-items="ViewBag.Produtos">
+                                        <option value="">Selecione um produto</option>
+                                    </select>
+                                    <span asp-validation-for="ProdutoId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="QuantidadePlanejada" class="form-label">Quantidade</label>
+                                    <input asp-for="QuantidadePlanejada" class="form-control" type="number" step="0.01" min="0.01" />
+                                    <span asp-validation-for="QuantidadePlanejada" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label asp-for="Observacoes" class="form-label">Observações</label>
+                                    <textarea asp-for="Observacoes" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Observacoes" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Criar Ordem
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

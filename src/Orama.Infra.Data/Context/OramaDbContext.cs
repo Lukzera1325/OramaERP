@@ -45,15 +45,9 @@ public class OramaDbContext : DbContext
     // Estoque
     public DbSet<MovimentacaoEstoque> MovimentacoesEstoque { get; set; }
     
-    // Produção
+    // Produção SIMPLIFICADA
     public DbSet<OrdemProducao> OrdensProducao { get; set; }
     public DbSet<OrdemProducaoItem> OrdemProducaoItens { get; set; }
-    public DbSet<OrdemProducaoEtapa> OrdemProducaoEtapas { get; set; }
-    public DbSet<ApontamentoHoras> ApontamentosHoras { get; set; }
-    public DbSet<InspecaoQualidade> InspecoesQualidade { get; set; }
-    public DbSet<NaoConformidade> NaoConformidades { get; set; }
-    public DbSet<ListaMateriais> ListasMateriais { get; set; }
-    public DbSet<ListaMateriaisItem> ListaMateriaisItens { get; set; }
 
     // Produção Industrial - Estrutura de Produto (BOM)
     public DbSet<EstruturaProduto> EstruturasProdutos { get; set; }
@@ -269,153 +263,9 @@ public class OramaDbContext : DbContext
             .HasForeignKey(opi => opi.ProdutoId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // OrdemProducaoEtapa -> OrdemProducao
-        modelBuilder.Entity<OrdemProducaoEtapa>()
-            .HasOne(ope => ope.OrdemProducao)
-            .WithMany(op => op.Etapas)
-            .HasForeignKey(ope => ope.OrdemProducaoId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // OrdemProducaoEtapa -> Usuario (Responsável - opcional)
-        modelBuilder.Entity<OrdemProducaoEtapa>()
-            .HasOne(ope => ope.Responsavel)
-            .WithMany()
-            .HasForeignKey(ope => ope.ResponsavelId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // ApontamentoHoras -> OrdemProducao
-        modelBuilder.Entity<ApontamentoHoras>()
-            .HasOne(ah => ah.OrdemProducao)
-            .WithMany(op => op.ApontamentosHoras)
-            .HasForeignKey(ah => ah.OrdemProducaoId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // ApontamentoHoras -> OrdemProducaoEtapa (opcional)
-        modelBuilder.Entity<ApontamentoHoras>()
-            .HasOne(ah => ah.Etapa)
-            .WithMany(ope => ope.ApontamentosHoras)
-            .HasForeignKey(ah => ah.EtapaId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // ApontamentoHoras -> Usuario (Funcionário)
-        modelBuilder.Entity<ApontamentoHoras>()
-            .HasOne(ah => ah.Funcionario)
-            .WithMany()
-            .HasForeignKey(ah => ah.FuncionarioId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ApontamentoHoras -> Usuario (Criação)
-        modelBuilder.Entity<ApontamentoHoras>()
-            .HasOne(ah => ah.UsuarioCriacao)
-            .WithMany()
-            .HasForeignKey(ah => ah.UsuarioCriacaoId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // InspecaoQualidade -> OrdemProducao
-        modelBuilder.Entity<InspecaoQualidade>()
-            .HasOne(iq => iq.OrdemProducao)
-            .WithMany(op => op.InspecoesQualidade)
-            .HasForeignKey(iq => iq.OrdemProducaoId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // InspecaoQualidade -> OrdemProducaoEtapa (opcional)
-        modelBuilder.Entity<InspecaoQualidade>()
-            .HasOne(iq => iq.Etapa)
-            .WithMany()
-            .HasForeignKey(iq => iq.EtapaId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // InspecaoQualidade -> Usuario (Inspetor)
-        modelBuilder.Entity<InspecaoQualidade>()
-            .HasOne(iq => iq.Inspetor)
-            .WithMany()
-            .HasForeignKey(iq => iq.InspetorId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // NaoConformidade -> Empresa
-        modelBuilder.Entity<NaoConformidade>()
-            .HasOne(nc => nc.Empresa)
-            .WithMany()
-            .HasForeignKey(nc => nc.EmpresaId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // NaoConformidade -> InspecaoQualidade (opcional)
-        modelBuilder.Entity<NaoConformidade>()
-            .HasOne(nc => nc.InspecaoQualidade)
-            .WithMany(iq => iq.NaoConformidades)
-            .HasForeignKey(nc => nc.InspecaoQualidadeId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // NaoConformidade -> OrdemProducao (opcional)
-        modelBuilder.Entity<NaoConformidade>()
-            .HasOne(nc => nc.OrdemProducao)
-            .WithMany()
-            .HasForeignKey(nc => nc.OrdemProducaoId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // NaoConformidade -> Produto (opcional)
-        modelBuilder.Entity<NaoConformidade>()
-            .HasOne(nc => nc.Produto)
-            .WithMany()
-            .HasForeignKey(nc => nc.ProdutoId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // NaoConformidade -> Usuario (Detectado Por)
-        modelBuilder.Entity<NaoConformidade>()
-            .HasOne(nc => nc.DetectadoPor)
-            .WithMany()
-            .HasForeignKey(nc => nc.DetectadoPorId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // NaoConformidade -> Usuario (Responsável - opcional)
-        modelBuilder.Entity<NaoConformidade>()
-            .HasOne(nc => nc.Responsavel)
-            .WithMany()
-            .HasForeignKey(nc => nc.ResponsavelId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // ListaMateriais -> Empresa
-        modelBuilder.Entity<ListaMateriais>()
-            .HasOne(lm => lm.Empresa)
-            .WithMany()
-            .HasForeignKey(lm => lm.EmpresaId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ListaMateriais -> Produto
-        modelBuilder.Entity<ListaMateriais>()
-            .HasOne(lm => lm.Produto)
-            .WithMany()
-            .HasForeignKey(lm => lm.ProdutoId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ListaMateriais -> Usuario (Criação)
-        modelBuilder.Entity<ListaMateriais>()
-            .HasOne(lm => lm.UsuarioCriacao)
-            .WithMany()
-            .HasForeignKey(lm => lm.UsuarioCriacaoId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ListaMateriaisItem -> ListaMateriais
-        modelBuilder.Entity<ListaMateriaisItem>()
-            .HasOne(lmi => lmi.ListaMateriais)
-            .WithMany(lm => lm.Itens)
-            .HasForeignKey(lmi => lmi.ListaMateriaisId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // ListaMateriaisItem -> Produto
-        modelBuilder.Entity<ListaMateriaisItem>()
-            .HasOne(lmi => lmi.Produto)
-            .WithMany()
-            .HasForeignKey(lmi => lmi.ProdutoId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // Índices únicos
         modelBuilder.Entity<OrdemProducao>()
             .HasIndex(op => new { op.EmpresaId, op.Numero })
-            .IsUnique();
-
-        modelBuilder.Entity<NaoConformidade>()
-            .HasIndex(nc => new { nc.EmpresaId, nc.Numero })
             .IsUnique();
 
         // === RELACIONAMENTOS FISCAIS ===

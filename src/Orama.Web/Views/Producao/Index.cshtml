@@ -1,305 +1,66 @@
+@model IEnumerable<Orama.Domain.Entities.OrdemProducao>
 @{
-    ViewData["Title"] = "Módulo de Produção";
+    ViewData["Title"] = "Ordens de Produção";
 }
 
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0 font-size-18">Módulo de Produção</h4>
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="/">Home</a></li>
-                        <li class="breadcrumb-item active">Produção</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cards de Resumo -->
-    <div class="row">
-        <div class="col-xl-3 col-md-6">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <div class="flex-1 overflow-hidden">
-                            <p class="text-truncate font-size-14 mb-2">Ordens Ativas</p>
-                            <h4 class="mb-0">@ViewBag.OrdensAtivas</h4>
-                        </div>
-                        <div class="text-primary">
-                            <i class="bx bx-cog font-size-24"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body border-top py-3">
-                    <div class="text-truncate">
-                        <a href="@Url.Action("OrdensProducao")" class="text-muted">
-                            <i class="mdi mdi-arrow-right text-primary me-1"></i> Ver todas
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <div class="flex-1 overflow-hidden">
-                            <p class="text-truncate font-size-14 mb-2">Ordens Atrasadas</p>
-                            <h4 class="mb-0 text-danger">@ViewBag.OrdensAtrasadas</h4>
-                        </div>
-                        <div class="text-danger">
-                            <i class="bx bx-time-five font-size-24"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body border-top py-3">
-                    <div class="text-truncate">
-                        <span class="text-muted">
-                            <i class="mdi mdi-alert text-danger me-1"></i> Requer atenção
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <div class="flex-1 overflow-hidden">
-                            <p class="text-truncate font-size-14 mb-2">Custo do Mês</p>
-                            <h4 class="mb-0">@ViewBag.CustoMes.ToString("C2")</h4>
-                        </div>
-                        <div class="text-success">
-                            <i class="bx bx-money font-size-24"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body border-top py-3">
-                    <div class="text-truncate">
-                        <span class="text-muted">
-                            <i class="mdi mdi-calendar text-primary me-1"></i> @DateTime.Now.ToString("MMMM/yyyy")
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <div class="flex-1 overflow-hidden">
-                            <p class="text-truncate font-size-14 mb-2">Eficiência</p>
-                            <h4 class="mb-0 text-success">85%</h4>
-                        </div>
-                        <div class="text-success">
-                            <i class="bx bx-trending-up font-size-24"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body border-top py-3">
-                    <div class="text-truncate">
-                        <span class="text-muted">
-                            <i class="mdi mdi-arrow-up text-success me-1"></i> +5% vs mês anterior
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Menu de Funcionalidades -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Funcionalidades do Módulo de Produção</h4>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <a asp-action="Criar" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nova Ordem
+                    </a>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <!-- Ordens de Produção -->
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border h-100">
-                                <div class="card-body text-center">
-                                    <div class="avatar-sm mx-auto mb-4">
-                                        <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-16">
-                                            <i class="bx bx-cog"></i>
-                                        </span>
-                                    </div>
-                                    <h5 class="font-size-15 mb-1">Ordens de Produção</h5>
-                                    <p class="text-muted mb-3">Gerencie ordens de produção, controle status e acompanhe o progresso</p>
-                                    <div class="d-grid">
-                                        <a href="@Url.Action("OrdensProducao")" class="btn btn-primary btn-sm">
-                                            <i class="bx bx-list-ul me-1"></i> Gerenciar Ordens
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Produto</th>
+                                        <th>Quantidade</th>
+                                        <th>Status</th>
+                                        <th>Data Criação</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ordem in Model)
+                                    {
+                                        <tr>
+                                            <td>@ordem.Numero</td>
+                                            <td>@ordem.Produto.Descricao</td>
+                                            <td>@ordem.QuantidadePlanejada.ToString("N2")</td>
+                                            <td>
+                                                <span class="@ordem.StatusDescricao">
+                                                    @ordem.StatusDescricao
+                                                </span>
+                                            </td>
+                                            <td>@ordem.DataCriacao.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                <a asp-action="Detalhes" asp-route-id="@ordem.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
-
-                        <!-- Lista de Materiais -->
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border h-100">
-                                <div class="card-body text-center">
-                                    <div class="avatar-sm mx-auto mb-4">
-                                        <span class="avatar-title rounded-circle bg-success bg-soft text-success font-size-16">
-                                            <i class="bx bx-list-check"></i>
-                                        </span>
-                                    </div>
-                                    <h5 class="font-size-15 mb-1">Lista de Materiais (BOM)</h5>
-                                    <p class="text-muted mb-3">Configure estruturas de produtos e componentes necessários</p>
-                                    <div class="d-grid">
-                                        <a href="@Url.Action("ListasMateriais")" class="btn btn-success btn-sm">
-                                            <i class="bx bx-package me-1"></i> Gerenciar BOMs
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Nenhuma ordem de produção encontrada.
                         </div>
-
-                        <!-- Explosão de Materiais -->
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border h-100">
-                                <div class="card-body text-center">
-                                    <div class="avatar-sm mx-auto mb-4">
-                                        <span class="avatar-title rounded-circle bg-info bg-soft text-info font-size-16">
-                                            <i class="bx bx-sitemap"></i>
-                                        </span>
-                                    </div>
-                                    <h5 class="font-size-15 mb-1">Explosão de Materiais</h5>
-                                    <p class="text-muted mb-3">Calcule necessidades de materiais para produção</p>
-                                    <div class="d-grid">
-                                        <a href="@Url.Action("ExplosaoMateriais")" class="btn btn-info btn-sm">
-                                            <i class="bx bx-calculator me-1"></i> Calcular Materiais
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Apontamento de Horas -->
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border h-100">
-                                <div class="card-body text-center">
-                                    <div class="avatar-sm mx-auto mb-4">
-                                        <span class="avatar-title rounded-circle bg-warning bg-soft text-warning font-size-16">
-                                            <i class="bx bx-time"></i>
-                                        </span>
-                                    </div>
-                                    <h5 class="font-size-15 mb-1">Apontamento de Horas</h5>
-                                    <p class="text-muted mb-3">Controle horas trabalhadas e custos de mão de obra</p>
-                                    <div class="d-grid">
-                                        <a href="#" class="btn btn-warning btn-sm">
-                                            <i class="bx bx-stopwatch me-1"></i> Apontar Horas
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Controle de Qualidade -->
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border h-100">
-                                <div class="card-body text-center">
-                                    <div class="avatar-sm mx-auto mb-4">
-                                        <span class="avatar-title rounded-circle bg-danger bg-soft text-danger font-size-16">
-                                            <i class="bx bx-shield-quarter"></i>
-                                        </span>
-                                    </div>
-                                    <h5 class="font-size-15 mb-1">Controle de Qualidade</h5>
-                                    <p class="text-muted mb-3">Inspeções, não conformidades e certificados</p>
-                                    <div class="d-grid">
-                                        <a href="#" class="btn btn-danger btn-sm">
-                                            <i class="bx bx-check-shield me-1"></i> Qualidade
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Relatórios -->
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border h-100">
-                                <div class="card-body text-center">
-                                    <div class="avatar-sm mx-auto mb-4">
-                                        <span class="avatar-title rounded-circle bg-dark bg-soft text-dark font-size-16">
-                                            <i class="bx bx-bar-chart-alt-2"></i>
-                                        </span>
-                                    </div>
-                                    <h5 class="font-size-15 mb-1">Relatórios de Produção</h5>
-                                    <p class="text-muted mb-3">Análises de produtividade, custos e eficiência</p>
-                                    <div class="d-grid">
-                                        <a href="#" class="btn btn-dark btn-sm">
-                                            <i class="bx bx-chart me-1"></i> Ver Relatórios
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ordens Recentes -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        <h4 class="card-title mb-0 flex-grow-1">Ordens de Produção Recentes</h4>
-                        <div class="flex-shrink-0">
-                            <a href="@Url.Action("CriarOrdemProducao")" class="btn btn-primary btn-sm">
-                                <i class="bx bx-plus me-1"></i> Nova Ordem
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-nowrap align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Número</th>
-                                    <th>Produto</th>
-                                    <th>Quantidade</th>
-                                    <th>Data Planejada</th>
-                                    <th>Status</th>
-                                    <th>Prioridade</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
-                                        <i class="bx bx-info-circle me-1"></i>
-                                        Nenhuma ordem de produção encontrada. 
-                                        <a href="@Url.Action("CriarOrdemProducao")">Criar primeira ordem</a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            // Carregar ordens recentes via AJAX
-            carregarOrdensRecentes();
-        });
-
-        function carregarOrdensRecentes() {
-            // Implementar carregamento via AJAX se necessário
-        }
-    </script>
-}

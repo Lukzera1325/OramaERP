@@ -3,29 +3,20 @@ using System.ComponentModel.DataAnnotations;
 namespace Orama.Domain.Entities;
 
 /// <summary>
-/// Status simples da Ordem de Produção (adaptado para simplicidade)
+/// Status simples da Ordem de Produção
 /// </summary>
 public enum StatusOrdemProducao
 {
-    Planejada = 1,    // Criada (compatível com original)
+    Planejada = 1,    // Criada
     Liberada = 2,     // Liberada para produção
     EmAndamento = 3,  // Em produção
-    Pausada = 4,      // Pausada
     Finalizada = 5,   // Finalizada
     Cancelada = 6     // Cancelada
 }
 
-public enum PrioridadeOrdemProducao
-{
-    Baixa = 1,
-    Normal = 2,
-    Alta = 3,
-    Urgente = 4
-}
-
 /// <summary>
-/// Ordem de Produção - Versão simplificada e compatível
-/// Mantém compatibilidade com estrutura existente mas com métodos de negócio
+/// Ordem de Produção - SIMPLIFICADA
+/// Centraliza todas as regras de produção industrial
 /// </summary>
 public class OrdemProducao
 {
@@ -53,14 +44,11 @@ public class OrdemProducao
 
     [Required]
     public StatusOrdemProducao Status { get; set; } = StatusOrdemProducao.Planejada;
-    public PrioridadeOrdemProducao Prioridade { get; set; } = PrioridadeOrdemProducao.Normal;
 
     [StringLength(500)]
     public string? Observacoes { get; set; }
 
     public decimal CustoMaterial { get; set; }
-    public decimal CustoMaoObra { get; set; }
-    public decimal CustoTotal => CustoMaterial + CustoMaoObra;
 
     public DateTime DataCriacao { get; set; } = DateTime.Now;
     public DateTime? DataAtualizacao { get; set; }
@@ -68,11 +56,8 @@ public class OrdemProducao
     public int UsuarioCriacaoId { get; set; }
     public virtual Usuario UsuarioCriacao { get; set; } = null!;
 
-    // Relacionamentos (mantendo compatibilidade)
+    // Relacionamentos essenciais
     public virtual ICollection<OrdemProducaoItem> Itens { get; set; } = new List<OrdemProducaoItem>();
-    public virtual ICollection<OrdemProducaoEtapa> Etapas { get; set; } = new List<OrdemProducaoEtapa>();
-    public virtual ICollection<ApontamentoHoras> ApontamentosHoras { get; set; } = new List<ApontamentoHoras>();
-    public virtual ICollection<InspecaoQualidade> InspecoesQualidade { get; set; } = new List<InspecaoQualidade>();
 
     // Propriedades calculadas
     public string StatusDescricao => Status switch
@@ -80,7 +65,6 @@ public class OrdemProducao
         StatusOrdemProducao.Planejada => "Planejada",
         StatusOrdemProducao.Liberada => "Liberada",
         StatusOrdemProducao.EmAndamento => "Em Andamento",
-        StatusOrdemProducao.Pausada => "Pausada",
         StatusOrdemProducao.Finalizada => "Finalizada",
         StatusOrdemProducao.Cancelada => "Cancelada",
         _ => "Desconhecido"
@@ -95,7 +79,76 @@ public class OrdemProducao
         }
     }
 
-    // Métodos de negócio simplificados
+    // REGRAS DE NEGÓCIO CENTRALIZADAS NA ENTIDADE
+
+    /// <summary>
+    /// Valida se a ordem pode ser criada
+    /// </summary>
+    public static (bool Valida, List<string> Erros) ValidarCriacao(Produto produto, decimal quantidade, IEnumerable<EstruturaProduto> estrutura)
+    {
+        var erros = new List<string>();
+
+        if (!produto.EhProduzivel())
+            erros.Add($"Produto '{produto.Descricao}' não é produzível");
+
+        if (!estrutura.Any())
+            erros.Add($"Produto '{produto.Descricao}' não possui estrutura de produção");
+
+        foreach (var item in estrutura)
+        {
+            if (!item.ComponenteTemEstoqueSuficiente(quantidade))
+            {
+                var necessario = item.CalcularQuantidadeTotal(quantidade);
+                var disponivel = item.ProdutoComponente.EstoqueAtual;
+                erros.Add($"Estoque insuficiente: {item.ProdutoComponente.Descricao}. Necessário: {necessario:N2}, Disponível: {disponivel:N2}");
+            }
+        }
+
+        return (erros.Count == 0, erros);
+    }
+
+    /// <summary>
+    /// Gera número da OP
+    /// </summary>
+    public static string GerarNumero(int empresaId, int proximoNumero)
+    {
+        var ano = DateTime.Now.Year;
+        return $"OP{empresaId:D3}{ano}{proximoNumero:D6}";
+    }
+
+    /// <summary>
+    /// Calcula custo de produção
+    /// </summary>
+    public static decimal CalcularCusto(decimal quantidade, IEnumerable<EstruturaProduto> estrutura)
+    {
+        return estrutura.Sum(item => item.CalcularQuantidadeTotal(quantidade) * item.ProdutoComponente.PrecoCusto);
+    }
+
+    /// <summary>
+    /// Cria itens da ordem baseado na estrutura
+    /// </summary>
+    public List<OrdemProducaoItem> CriarItens(decimal quantidade, IEnumerable<EstruturaProduto> estrutura)
+    {
+        var itens = new List<OrdemProducaoItem>();
+
+        foreach (var estruturaItem in estrutura)
+        {
+            var item = new OrdemProducaoItem
+            {
+                OrdemProducaoId = Id,
+                ProdutoId = estruturaItem.ProdutoComponenteId,
+                QuantidadePlanejada = estruturaItem.CalcularQuantidadeTotal(quantidade),
+                CustoUnitario = estruturaItem.ProdutoComponente.PrecoCusto
+            };
+            itens.Add(item);
+        }
+
+        return itens;
+    }
+
+    /// <summary>
+    /// Liberar ordem para produção
+    /// </summary>
     public void Liberar()
     {
         if (Status != StatusOrdemProducao.Planejada)
@@ -105,6 +158,9 @@ public class OrdemProducao
         DataAtualizacao = DateTime.Now;
     }
 
+    /// <summary>
+    /// Iniciar produção
+    /// </summary>
     public void Iniciar()
     {
         if (Status != StatusOrdemProducao.Liberada)
@@ -115,6 +171,9 @@ public class OrdemProducao
         DataAtualizacao = DateTime.Now;
     }
 
+    /// <summary>
+    /// Finalizar produção
+    /// </summary>
     public void Finalizar(decimal quantidadeProduzida)
     {
         if (Status != StatusOrdemProducao.EmAndamento)
@@ -127,8 +186,17 @@ public class OrdemProducao
         QuantidadeProduzida = quantidadeProduzida;
         DataFim = DateTime.Now;
         DataAtualizacao = DateTime.Now;
+
+        // Atualizar quantidades consumidas nos itens
+        foreach (var item in Itens)
+        {
+            item.QuantidadeConsumida = (item.QuantidadePlanejada / QuantidadePlanejada) * quantidadeProduzida;
+        }
     }
 
+    /// <summary>
+    /// Cancelar ordem
+    /// </summary>
     public void Cancelar(string motivo)
     {
         if (Status == StatusOrdemProducao.Finalizada)
@@ -139,36 +207,14 @@ public class OrdemProducao
         DataAtualizacao = DateTime.Now;
     }
 
-    public void Pausar(string motivo)
-    {
-        if (Status != StatusOrdemProducao.EmAndamento)
-            throw new InvalidOperationException("Apenas ordens em andamento podem ser pausadas");
-
-        Status = StatusOrdemProducao.Pausada;
-        Observacoes = $"PAUSADA: {motivo}";
-        DataAtualizacao = DateTime.Now;
-    }
-
-    public void Retomar()
-    {
-        if (Status != StatusOrdemProducao.Pausada)
-            throw new InvalidOperationException("Apenas ordens pausadas podem ser retomadas");
-
-        Status = StatusOrdemProducao.EmAndamento;
-        DataAtualizacao = DateTime.Now;
-    }
-
-    // Validações de estado
+    // Validações de estado simples
     public bool PodeLiberar() => Status == StatusOrdemProducao.Planejada;
     public bool PodeIniciar() => Status == StatusOrdemProducao.Liberada;
     public bool PodeFinalizar() => Status == StatusOrdemProducao.EmAndamento;
-    public bool PodeCancelar() => Status != StatusOrdemProducao.Finalizada;
-    public bool PodePausar() => Status == StatusOrdemProducao.EmAndamento;
-    public bool PodeRetomar() => Status == StatusOrdemProducao.Pausada;
 }
 
 /// <summary>
-/// Item da Ordem de Produção (compatível com estrutura existente)
+/// Item da Ordem de Produção - SIMPLIFICADO
 /// </summary>
 public class OrdemProducaoItem
 {
@@ -192,5 +238,4 @@ public class OrdemProducaoItem
     public decimal CustoTotal => QuantidadeConsumida * CustoUnitario;
 
     public DateTime DataCriacao { get; set; } = DateTime.Now;
-    public DateTime? DataAtualizacao { get; set; }
 }

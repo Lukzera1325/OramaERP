@@ -7,7 +7,7 @@ using Orama.Web.Models;
 namespace Orama.Web.Controllers;
 
 /// <summary>
-/// Controller extremamente simples para Produção Industrial
+/// Controller SIMPLIFICADO para Produção Industrial
 /// Recebe request -> Chama service -> Retorna response
 /// </summary>
 public class ProducaoController : BaseController
@@ -26,30 +26,16 @@ public class ProducaoController : BaseController
         _produtoService = produtoService;
     }
 
-    // GET: Producao (Dashboard de produção)
+    // GET: Producao (Lista de ordens)
     public async Task<IActionResult> Index()
-    {
-        var empresaId = ObterEmpresaId();
-        
-        var ordensEmProducao = await _ordemProducaoService.ObterPorStatusAsync(StatusOrdemProducao.EmAndamento, empresaId);
-        var ordensAtrasadas = await _ordemProducaoService.ObterOrdensAtrasadasAsync(empresaId);
-        
-        ViewBag.OrdensEmProducao = ordensEmProducao.Count();
-        ViewBag.OrdensAtrasadas = ordensAtrasadas.Count();
-        
-        return View(ordensEmProducao);
-    }
-
-    // GET: Producao/OrdensProducao (Lista de ordens)
-    public async Task<IActionResult> OrdensProducao()
     {
         var empresaId = ObterEmpresaId();
         var ordens = await _ordemProducaoService.ObterTodosAsync(empresaId);
         return View(ordens);
     }
 
-    // GET: Producao/CriarOrdemProducao (Formulário para criar ordem)
-    public async Task<IActionResult> CriarOrdemProducao()
+    // GET: Producao/Criar (Formulário para criar ordem)
+    public async Task<IActionResult> Criar()
     {
         var empresaId = ObterEmpresaId();
         var produtos = await _produtoService.ObterTodosAsync(empresaId);
@@ -59,10 +45,10 @@ public class ProducaoController : BaseController
         return View(new OrdemProducaoViewModel());
     }
 
-    // POST: Producao/CriarOrdemProducao (Processar criação)
+    // POST: Producao/Criar (Processar criação)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CriarOrdemProducao(OrdemProducaoViewModel model)
+    public async Task<IActionResult> Criar(OrdemProducaoViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -86,7 +72,7 @@ public class ProducaoController : BaseController
                 usuarioId);
 
             TempData["Sucesso"] = $"Ordem de Produção {ordem.Numero} criada com sucesso!";
-            return RedirectToAction(nameof(DetalhesOrdemProducao), new { id = ordem.Id });
+            return RedirectToAction(nameof(Detalhes), new { id = ordem.Id });
         }
         catch (Exception ex)
         {
@@ -100,8 +86,8 @@ public class ProducaoController : BaseController
         }
     }
 
-    // GET: Producao/DetalhesOrdemProducao/5 (Detalhes da ordem)
-    public async Task<IActionResult> DetalhesOrdemProducao(int id)
+    // GET: Producao/Detalhes/5 (Detalhes da ordem)
+    public async Task<IActionResult> Detalhes(int id)
     {
         var empresaId = ObterEmpresaId();
         var ordem = await _ordemProducaoService.ObterPorIdAsync(id, empresaId);
@@ -112,10 +98,10 @@ public class ProducaoController : BaseController
         return View(ordem);
     }
 
-    // POST: Producao/LiberarProducao/5 (Liberar ordem)
+    // POST: Producao/Liberar/5 (Liberar ordem)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> LiberarProducao(int id)
+    public async Task<IActionResult> Liberar(int id)
     {
         try
         {
@@ -134,13 +120,13 @@ public class ProducaoController : BaseController
             TempData["Erro"] = $"Erro ao liberar ordem: {ex.Message}";
         }
 
-        return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+        return RedirectToAction(nameof(Detalhes), new { id });
     }
 
-    // POST: Producao/IniciarProducao/5 (Iniciar ordem)
+    // POST: Producao/Iniciar/5 (Iniciar ordem)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> IniciarProducao(int id)
+    public async Task<IActionResult> Iniciar(int id)
     {
         try
         {
@@ -159,13 +145,13 @@ public class ProducaoController : BaseController
             TempData["Erro"] = $"Erro ao iniciar produção: {ex.Message}";
         }
 
-        return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+        return RedirectToAction(nameof(Detalhes), new { id });
     }
 
-    // POST: Producao/FinalizarProducao/5 (Finalizar ordem)
+    // POST: Producao/Finalizar/5 (Finalizar ordem)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> FinalizarProducao(int id, decimal quantidadeProduzida)
+    public async Task<IActionResult> Finalizar(int id, decimal quantidadeProduzida)
     {
         try
         {
@@ -184,7 +170,32 @@ public class ProducaoController : BaseController
             TempData["Erro"] = $"Erro ao finalizar produção: {ex.Message}";
         }
 
-        return RedirectToAction(nameof(DetalhesOrdemProducao), new { id });
+        return RedirectToAction(nameof(Detalhes), new { id });
+    }
+
+    // POST: Producao/Cancelar/5 (Cancelar ordem)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancelar(int id, string motivo)
+    {
+        try
+        {
+            var empresaId = ObterEmpresaId();
+            var usuarioId = 1; // TODO: Obter do contexto
+
+            var sucesso = await _ordemProducaoService.CancelarAsync(id, motivo, empresaId, usuarioId);
+
+            if (sucesso)
+                TempData["Sucesso"] = "Ordem cancelada com sucesso!";
+            else
+                TempData["Erro"] = "Ordem não encontrada.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Erro"] = $"Erro ao cancelar ordem: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(Detalhes), new { id });
     }
 
     // AJAX: Obter estrutura de um produto
@@ -198,12 +209,9 @@ public class ProducaoController : BaseController
 
             var resultado = estrutura.Select(e => new
             {
-                id = e.Id,
-                componenteId = e.ProdutoComponenteId,
                 componenteNome = e.ProdutoComponente.Descricao,
                 componenteCodigo = e.ProdutoComponente.Codigo,
                 quantidade = e.QuantidadeNecessaria,
-                unidade = e.Unidade,
                 estoqueDisponivel = e.ProdutoComponente.EstoqueAtual
             });
 

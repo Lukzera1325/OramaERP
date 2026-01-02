@@ -116,18 +116,10 @@ builder.Services.AddScoped<IEstoqueService, EstoqueService>();
 
 // Domain Services - Lógica de negócio complexa
 builder.Services.AddScoped<Orama.Domain.Services.VendaProcessingService>();
-builder.Services.AddScoped<Orama.Domain.Services.ProducaoProcessingService>();
 
-// Serviços de Produção Industrial
+// Serviços de Produção Industrial SIMPLIFICADOS
 builder.Services.AddScoped<IEstruturaProdutoService, EstruturaProdutoService>();
 builder.Services.AddScoped<IOrdemProducaoService, OrdemProducaoService>();
-
-// Serviços de Produção
-builder.Services.AddScoped<IOrdemProducaoService, OrdemProducaoService>();
-builder.Services.AddScoped<IListaMateriaisService, ListaMateriaisService>();
-builder.Services.AddScoped<IApontamentoHorasService, ApontamentoHorasService>();
-builder.Services.AddScoped<IInspecaoQualidadeService, InspecaoQualidadeService>();
-builder.Services.AddScoped<INaoConformidadeService, NaoConformidadeService>();
 
 // Serviços Fiscais
 // builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
