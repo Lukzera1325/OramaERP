@@ -1,0 +1,254 @@
+@model IEnumerable<Orama.Domain.Entities.ExplicacaoResultado>
+
+@{
+    ViewData["Title"] = "Explicações da Venda";
+    var venda = Model.FirstOrDefault()?.Venda;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        Explicações da Venda @(venda?.Numero ?? ViewBag.VendaId.ToString())
+                    </h3>
+                    <div>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                        @if (venda != null)
+                        {
+                            <a href="/Vendas/Detalhes/@venda.Id" class="btn btn-info btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Ver Venda
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (venda != null)
+                    {
+                        <!-- Resumo da Venda -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-shopping-cart"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Venda</span>
+                                        <span class="info-box-number">@venda.Numero</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-primary">
+                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Valor Total</span>
+                                        <span class="info-box-number">@venda.ValorTotal.ToString("C")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box @(venda.LucroTotal < 0 ? "bg-danger" : "bg-success")">
+                                    <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Resultado</span>
+                                        <span class="info-box-number">@venda.LucroTotal.ToString("C")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box @(venda.MargemPercentual < 0 ? "bg-danger" : venda.MargemPercentual < 10 ? "bg-warning" : "bg-success")">
+                                    <span class="info-box-icon"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Margem</span>
+                                        <span class="info-box-number">@venda.MargemPercentual.ToString("N1")%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Nenhuma explicação encontrada para esta venda.
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Resumo das Explicações -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-lightbulb"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Explicações</span>
+                                        <span class="info-box-number">@Model.Count()</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-danger">
+                                    <span class="info-box-icon"><i class="fas fa-arrow-down"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Prejuízo</span>
+                                        <span class="info-box-number">@Model.Count(e => e.Tipo == TipoResultado.Prejuizo)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-orange">
+                                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Atenção</span>
+                                        <span class="info-box-number">@Model.Count(e => e.Tipo == TipoResultado.Atencao)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-arrow-up"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Lucro</span>
+                                        <span class="info-box-number">@Model.Count(e => e.Tipo == TipoResultado.Lucro)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Explicações -->
+                        <div class="row">
+                            @foreach (var explicacao in Model.OrderBy(e => e.Tipo).ThenByDescending(e => e.DataExplicacao))
+                            {
+                                <div class="col-md-12 mb-3">
+                                    <div class="card @explicacao.CssClass">
+                                        <div class="card-header">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-8">
+                                                    <h5 class="mb-0">
+                                                        <i class="@explicacao.Icone"></i>
+                                                        @explicacao.TipoDescricao - @explicacao.CategoriaDescricao
+                                                    </h5>
+                                                </div>
+                                                <div class="col-md-4 text-right">
+                                                    @if (explicacao.Produto != null)
+                                                    {
+                                                        <span class="badge badge-secondary">
+                                                            @explicacao.Produto.Codigo
+                                                        </span>
+                                                    }
+                                                    <small class="text-muted ml-2">
+                                                        @explicacao.DataExplicacao.ToString("dd/MM/yyyy HH:mm")
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <!-- Resumo -->
+                                                    <h6><strong>@explicacao.ResumoExplicacao</strong></h6>
+                                                    
+                                                    <!-- Explicação Completa -->
+                                                    <p class="mb-3">@explicacao.TextoExplicacao</p>
+
+                                                    @if (explicacao.Produto != null)
+                                                    {
+                                                        <!-- Informações do Produto -->
+                                                        <div class="mb-2">
+                                                            <strong>Produto:</strong> 
+                                                            <span class="badge badge-info">@explicacao.Produto.Codigo</span>
+                                                            @explicacao.Produto.Descricao
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <!-- Dados Financeiros -->
+                                                    <div class="text-center">
+                                                        <div class="row">
+                                                            <div class="col-6">
+                                                                <small class="text-muted">Valor</small><br>
+                                                                <strong>@explicacao.ValorVenda.ToString("C")</strong>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <small class="text-muted">Custo</small><br>
+                                                                <strong>@explicacao.CustoTotal.ToString("C")</strong>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mt-2">
+                                                            <div class="col-6">
+                                                                <small class="text-muted">Resultado</small><br>
+                                                                <strong class="@(explicacao.LucroCalculado < 0 ? "text-danger" : "text-success")">
+                                                                    @explicacao.LucroCalculado.ToString("C")
+                                                                </strong>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <small class="text-muted">Margem</small><br>
+                                                                <span class="badge @(explicacao.MargemPercentual < 0 ? "badge-danger" : explicacao.MargemPercentual < 10 ? "badge-warning" : "badge-success")">
+                                                                    @explicacao.MargemPercentual.ToString("N1")%
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer text-right">
+                                            <a href="@Url.Action("Detalhes", new { id = explicacao.Id })" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> Ver Detalhes
+                                            </a>
+                                            @if (explicacao.Produto != null)
+                                            {
+                                                <a href="/Produtos/Detalhes/@explicacao.ProdutoId" 
+                                                   class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-box"></i> Ver Produto
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Ações da Venda -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-tools"></i> Ações Relacionadas</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="btn-group" role="group">
+                                            @if (venda != null)
+                                            {
+                                                <a href="/Vendas/Detalhes/@venda.Id" class="btn btn-info">
+                                                    <i class="fas fa-shopping-cart"></i> Ver Venda Completa
+                                                </a>
+                                            }
+                                            <a href="/Alertas/Index" class="btn btn-warning">
+                                                <i class="fas fa-exclamation-triangle"></i> Ver Alertas
+                                            </a>
+                                            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                                <i class="fas fa-list"></i> Todas as Explicações
+                                            </a>
+                                            <form method="post" action="@Url.Action("RegenerarExplicacoes", new { vendaId = ViewBag.VendaId })" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-primary" 
+                                                        onclick="return confirm('Tem certeza que deseja regenerar as explicações?')">
+                                                    <i class="fas fa-sync"></i> Regenerar Explicações
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

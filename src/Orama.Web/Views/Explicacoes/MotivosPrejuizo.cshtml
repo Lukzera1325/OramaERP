@@ -1,0 +1,207 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Principais Motivos de Prejuízo";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-search text-danger"></i>
+                        Principais Motivos de Prejuízo
+                    </h3>
+                    <div>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                        <a href="@Url.Action("ProdutosPrejuizo")" class="btn btn-warning btn-sm">
+                            <i class="fas fa-box"></i> Produtos Prejuízo
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros -->
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Data Início:</label>
+                                <input type="date" name="dataInicio" class="form-control" value="@ViewBag.DataInicio">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Data Fim:</label>
+                                <input type="date" name="dataFim" class="form-control" value="@ViewBag.DataFim">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Excelente!</strong> Não foram encontrados motivos de prejuízo no período selecionado.
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Resumo Executivo -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="info-box bg-danger">
+                                    <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Categorias</span>
+                                        <span class="info-box-number">@Model.Count()</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-list"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Casos</span>
+                                        <span class="info-box-number">@Model.Sum(m => m.Quantidade)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-box bg-red">
+                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Prejuízo Total</span>
+                                        <span class="info-box-number">@Model.Sum(m => m.PrejuizoTotal).ToString("C")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Motivos -->
+                        <div class="row">
+                            @foreach (var motivo in Model.OrderByDescending(m => m.PrejuizoTotal))
+                            {
+                                <div class="col-md-6 mb-4">
+                                    <div class="card border-danger">
+                                        <div class="card-header bg-danger text-white">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                @motivo.CategoriaDescricao
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Estatísticas -->
+                                            <div class="row text-center mb-3">
+                                                <div class="col-4">
+                                                    <h4 class="text-danger">@motivo.Quantidade</h4>
+                                                    <small class="text-muted">Casos</small>
+                                                </div>
+                                                <div class="col-8">
+                                                    <h4 class="text-danger">@motivo.PrejuizoTotal.ToString("C")</h4>
+                                                    <small class="text-muted">Prejuízo Total</small>
+                                                </div>
+                                            </div>
+
+                                            <!-- Exemplos -->
+                                            <div class="mb-3">
+                                                <h6><strong>Exemplos de Problemas:</strong></h6>
+                                                <ul class="list-unstyled">
+                                                    @foreach (var exemplo in motivo.ExemplosResumo)
+                                                    {
+                                                        <li class="mb-1">
+                                                            <i class="fas fa-arrow-right text-muted"></i>
+                                                            @exemplo
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+
+                                            <!-- Percentual do Total -->
+                                            @{
+                                                var percentualTotal = Model.Sum(m => m.PrejuizoTotal) > 0 
+                                                    ? (motivo.PrejuizoTotal / Model.Sum(m => m.PrejuizoTotal)) * 100 
+                                                    : 0;
+                                            }
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-danger" role="progressbar" 
+                                                     style="width: @percentualTotal.ToString("N1")%" 
+                                                     aria-valuenow="@percentualTotal" aria-valuemin="0" aria-valuemax="100">
+                                                    @percentualTotal.ToString("N1")% do prejuízo total
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="@Url.Action("Index", new { tipo = TipoResultado.Prejuizo })" 
+                                               class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-list"></i> Ver Todas as Explicações
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Recomendações -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-lightbulb"></i>
+                                            Recomendações para Reduzir Prejuízos
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            @if (Model.Any(m => m.Categoria.ToString() == "PrecoVsCusto"))
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="alert alert-warning">
+                                                        <h6><i class="fas fa-balance-scale"></i> Preço vs Custo</h6>
+                                                        <p class="mb-0">
+                                                            Revise os preços de venda dos produtos que estão sendo vendidos abaixo do custo.
+                                                            Considere reajustar preços ou negociar melhores condições com fornecedores.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if (Model.Any(m => m.Categoria.ToString() == "DescontoExcessivo"))
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="alert alert-info">
+                                                        <h6><i class="fas fa-tags"></i> Descontos</h6>
+                                                        <p class="mb-0">
+                                                            Estabeleça limites para descontos e treine a equipe de vendas sobre 
+                                                            o impacto dos descontos na margem de lucro.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if (Model.Any(m => m.Categoria.ToString() == "MargemBaixa"))
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="alert alert-success">
+                                                        <h6><i class="fas fa-percentage"></i> Margem</h6>
+                                                        <p class="mb-0">
+                                                            Analise produtos com margem baixa e considere estratégias para 
+                                                            aumentar o valor percebido ou reduzir custos.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

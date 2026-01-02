@@ -1,7 +1,7 @@
-@model Orama.Domain.Entities.AlertaMargem
+@model Orama.Domain.Entities.ExplicacaoResultado
 
 @{
-    ViewData["Title"] = "Detalhes do Alerta";
+    ViewData["Title"] = "Detalhes da Explicação";
 }
 
 <div class="container-fluid">
@@ -10,97 +10,47 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">
-                        <i class="fas fa-exclamation-triangle text-warning"></i>
-                        Detalhes do Alerta #@Model.Id
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        Detalhes da Explicação #@Model.Id
                     </h3>
                     <div>
                         <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Voltar
                         </a>
-                        @if (Model.EhAtivo)
-                        {
-                            <button type="button" class="btn btn-success btn-sm" onclick="resolverAlerta()">
-                                <i class="fas fa-check"></i> Resolver
-                            </button>
-                        }
-                        else
-                        {
-                            <form method="post" action="@Url.Action("Reativar", new { id = Model.Id })" style="display: inline;">
-                                <button type="submit" class="btn btn-warning btn-sm" 
-                                        onclick="return confirm('Tem certeza que deseja reativar este alerta?')">
-                                    <i class="fas fa-undo"></i> Reativar
-                                </button>
-                            </form>
-                        }
+                        <a href="@Url.Action("Venda", new { vendaId = Model.VendaId })" class="btn btn-info btn-sm">
+                            <i class="fas fa-list"></i> Todas da Venda
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <!-- Informações do Alerta -->
+                        <!-- Tipo e Categoria -->
                         <div class="col-md-6">
-                            <div class="card">
+                            <div class="card @Model.CssClass">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-info-circle"></i> Informações do Alerta</h5>
+                                    <h5>
+                                        <i class="@Model.Icone"></i>
+                                        Tipo de Resultado
+                                    </h5>
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-borderless">
                                         <tr>
                                             <td><strong>Tipo:</strong></td>
                                             <td>
-                                                @if (Model.Tipo == TipoAlertaMargem.VendaMargemNegativa)
-                                                {
-                                                    <span class="badge badge-danger">
-                                                        <i class="fas fa-exclamation-triangle"></i> Venda com Prejuízo
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge badge-warning">
-                                                        <i class="fas fa-box"></i> Produto Abaixo do Custo
-                                                    </span>
-                                                }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Status:</strong></td>
-                                            <td>
-                                                @if (Model.EhAtivo)
-                                                {
-                                                    <span class="badge badge-warning">
-                                                        <i class="fas fa-exclamation-circle"></i> Ativo
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge badge-success">
-                                                        <i class="fas fa-check-circle"></i> Resolvido
-                                                    </span>
-                                                }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Data do Alerta:</strong></td>
-                                            <td>@Model.DataAlerta.ToString("dd/MM/yyyy HH:mm")</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Dias desde o Alerta:</strong></td>
-                                            <td>
-                                                <span class="badge @(Model.DiasDesdeAlerta > 7 ? "badge-danger" : Model.DiasDesdeAlerta > 3 ? "badge-warning" : "badge-info")">
-                                                    @Model.DiasDesdeAlerta dia(s)
+                                                <span class="badge @(Model.Tipo == TipoResultado.Prejuizo ? "badge-danger" : Model.Tipo == TipoResultado.Atencao ? "badge-warning" : "badge-success")">
+                                                    @Model.TipoDescricao
                                                 </span>
                                             </td>
                                         </tr>
-                                        @if (Model.EhResolvido)
-                                        {
-                                            <tr>
-                                                <td><strong>Data Resolução:</strong></td>
-                                                <td>@Model.DataResolucao?.ToString("dd/MM/yyyy HH:mm")</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Resolvido por:</strong></td>
-                                                <td>@(Model.UsuarioResolucao?.Nome ?? "N/A")</td>
-                                            </tr>
-                                        }
+                                        <tr>
+                                            <td><strong>Categoria:</strong></td>
+                                            <td>@Model.CategoriaDescricao</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Data:</strong></td>
+                                            <td>@Model.DataExplicacao.ToString("dd/MM/yyyy HH:mm")</td>
+                                        </tr>
                                     </table>
                                 </div>
                             </div>
@@ -110,7 +60,7 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-dollar-sign"></i> Dados Financeiros</h5>
+                                    <h5><i class="fas fa-calculator"></i> Dados Financeiros</h5>
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-borderless">
@@ -122,18 +72,18 @@
                                             <td><strong>Custo Total:</strong></td>
                                             <td class="text-right">@Model.CustoTotal.ToString("C")</td>
                                         </tr>
-                                        <tr class="@(Model.LucroVenda < 0 ? "table-danger" : "")">
-                                            <td><strong>Lucro/Prejuízo:</strong></td>
+                                        <tr class="@(Model.LucroCalculado < 0 ? "table-danger" : "table-success")">
+                                            <td><strong>Resultado:</strong></td>
                                             <td class="text-right">
-                                                <strong class="@(Model.LucroVenda < 0 ? "text-danger" : "text-success")">
-                                                    @Model.LucroVenda.ToString("C")
+                                                <strong class="@(Model.LucroCalculado < 0 ? "text-danger" : "text-success")">
+                                                    @Model.LucroCalculado.ToString("C")
                                                 </strong>
                                             </td>
                                         </tr>
-                                        <tr class="@(Model.MargemPercentual < 0 ? "table-danger" : "")">
-                                            <td><strong>Margem %:</strong></td>
+                                        <tr class="@(Model.MargemPercentual < 0 ? "table-danger" : Model.MargemPercentual < 10 ? "table-warning" : "table-success")">
+                                            <td><strong>Margem:</strong></td>
                                             <td class="text-right">
-                                                <strong class="@(Model.MargemPercentual < 0 ? "text-danger" : "text-success")">
+                                                <strong class="@(Model.MargemPercentual < 0 ? "text-danger" : Model.MargemPercentual < 10 ? "text-warning" : "text-success")">
                                                     @Model.MargemPercentual.ToString("N2")%
                                                 </strong>
                                             </td>
@@ -144,15 +94,21 @@
                         </div>
                     </div>
 
-                    <!-- Descrição do Problema -->
+                    <!-- Explicação Completa -->
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5><i class="fas fa-file-alt"></i> Descrição do Problema</h5>
+                                    <h5><i class="fas fa-comment-alt"></i> Explicação Detalhada</h5>
                                 </div>
                                 <div class="card-body">
-                                    <p class="lead">@Model.Descricao</p>
+                                    <div class="alert @Model.CssClass">
+                                        <h6><strong>Resumo:</strong></h6>
+                                        <p class="mb-2">@Model.ResumoExplicacao</p>
+                                        
+                                        <h6><strong>Explicação Completa:</strong></h6>
+                                        <p class="mb-0">@Model.TextoExplicacao</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -173,7 +129,7 @@
                                         </tr>
                                         <tr>
                                             <td><strong>Cliente:</strong></td>
-                                            <td>@Model.Venda.Cliente?.Nome</td>
+                                            <td>@(Model.Venda.Cliente?.Nome ?? "N/A")</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Data da Venda:</strong></td>
@@ -183,6 +139,18 @@
                                             <td><strong>Status:</strong></td>
                                             <td>
                                                 <span class="badge badge-info">@Model.Venda.Status</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Valor Total:</strong></td>
+                                            <td><strong>@Model.Venda.ValorTotal.ToString("C")</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Margem Real:</strong></td>
+                                            <td>
+                                                <span class="badge @(Model.Venda.MargemPercentual < 0 ? "badge-danger" : Model.Venda.MargemPercentual < 10 ? "badge-warning" : "badge-success")">
+                                                    @Model.Venda.MargemPercentual.ToString("N1")%
+                                                </span>
                                             </td>
                                         </tr>
                                     </table>
@@ -219,6 +187,14 @@
                                                 <td><strong>Preço de Venda:</strong></td>
                                                 <td>@Model.Produto.PrecoVenda.ToString("C")</td>
                                             </tr>
+                                            <tr>
+                                                <td><strong>Margem Padrão:</strong></td>
+                                                <td>
+                                                    <span class="badge @(Model.Produto.MargemLucro < 10 ? "badge-warning" : "badge-success")">
+                                                        @Model.Produto.MargemLucro.ToString("N1")%
+                                                    </span>
+                                                </td>
+                                            </tr>
                                         </table>
                                         <a href="/Produtos/Detalhes/@Model.ProdutoId" class="btn btn-info btn-sm">
                                             <i class="fas fa-eye"></i> Ver Produto
@@ -227,24 +203,50 @@
                                 </div>
                             </div>
                         }
-                    </div>
-
-                    @if (Model.EhResolvido && !string.IsNullOrEmpty(Model.ObservacoesResolucao))
-                    {
-                        <!-- Observações da Resolução -->
-                        <div class="row mt-3">
-                            <div class="col-12">
+                        else
+                        {
+                            <!-- Análise Geral da Venda -->
+                            <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h5><i class="fas fa-comments"></i> Observações da Resolução</h5>
+                                        <h5><i class="fas fa-chart-line"></i> Análise da Venda</h5>
                                     </div>
                                     <div class="card-body">
-                                        <p>@Model.ObservacoesResolucao</p>
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td><strong>Itens na Venda:</strong></td>
+                                                <td>@Model.Venda.Itens.Count</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Subtotal:</strong></td>
+                                                <td>@Model.Venda.SubTotal.ToString("C")</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Desconto:</strong></td>
+                                                <td>@Model.Venda.ValorDesconto.ToString("C")</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Frete:</strong></td>
+                                                <td>@Model.Venda.ValorFrete.ToString("C")</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Custo Total:</strong></td>
+                                                <td>@Model.Venda.CustoTotal.ToString("C")</td>
+                                            </tr>
+                                            <tr class="@(Model.Venda.LucroTotal < 0 ? "table-danger" : "table-success")">
+                                                <td><strong>Lucro Total:</strong></td>
+                                                <td>
+                                                    <strong class="@(Model.Venda.LucroTotal < 0 ? "text-danger" : "text-success")">
+                                                        @Model.Venda.LucroTotal.ToString("C")
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
 
                     <!-- Ações Relacionadas -->
                     <div class="row mt-3">
@@ -258,11 +260,11 @@
                                         <a href="/Vendas/Detalhes/@Model.VendaId" class="btn btn-info">
                                             <i class="fas fa-shopping-cart"></i> Ver Venda
                                         </a>
-                                        <a href="/Explicacoes/Venda/@Model.VendaId" class="btn btn-warning">
-                                            <i class="fas fa-lightbulb"></i> Por que deu prejuízo?
+                                        <a href="/Alertas/Index" class="btn btn-warning">
+                                            <i class="fas fa-exclamation-triangle"></i> Ver Alertas
                                         </a>
-                                        <a href="@Url.Action("Index")" class="btn btn-secondary">
-                                            <i class="fas fa-list"></i> Todos os Alertas
+                                        <a href="@Url.Action("Index", new { tipo = Model.Tipo })" class="btn btn-secondary">
+                                            <i class="fas fa-list"></i> Explicações Similares
                                         </a>
                                         @if (Model.Produto != null)
                                         {
@@ -280,47 +282,3 @@
         </div>
     </div>
 </div>
-
-<!-- Modal para Resolver Alerta -->
-<div class="modal fade" id="modalResolverAlerta" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Resolver Alerta</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <form method="post" action="@Url.Action("Resolver", new { id = Model.Id })">
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Atenção:</strong> Ao resolver este alerta, você está confirmando que o problema foi identificado e tratado.
-                    </div>
-                    <div class="form-group">
-                        <label>Observações sobre a resolução:</label>
-                        <textarea name="observacoes" class="form-control" rows="4" 
-                                  placeholder="Descreva como o problema foi resolvido, as ações tomadas, etc..."></textarea>
-                        <small class="form-text text-muted">
-                            Exemplo: "Preço do produto foi ajustado", "Cliente aceitou desconto especial", "Erro de digitação corrigido", etc.
-                        </small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> Resolver Alerta
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        function resolverAlerta() {
-            $('#modalResolverAlerta').modal('show');
-        }
-    </script>
-}

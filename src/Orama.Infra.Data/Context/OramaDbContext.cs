@@ -59,6 +59,9 @@ public class OramaDbContext : DbContext
     // Alertas de Margem
     public DbSet<AlertaMargem> AlertasMargem { get; set; }
 
+    // Explicações de Resultado
+    public DbSet<ExplicacaoResultado> ExplicacoesResultados { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -360,6 +363,29 @@ public class OramaDbContext : DbContext
             .HasOne(a => a.UsuarioResolucao)
             .WithMany()
             .HasForeignKey(a => a.UsuarioResolucaoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // === RELACIONAMENTOS DE EXPLICAÇÕES DE RESULTADO ===
+        
+        // ExplicacaoResultado -> Empresa
+        modelBuilder.Entity<ExplicacaoResultado>()
+            .HasOne(e => e.Empresa)
+            .WithMany()
+            .HasForeignKey(e => e.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ExplicacaoResultado -> Venda
+        modelBuilder.Entity<ExplicacaoResultado>()
+            .HasOne(e => e.Venda)
+            .WithMany()
+            .HasForeignKey(e => e.VendaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ExplicacaoResultado -> Produto (opcional)
+        modelBuilder.Entity<ExplicacaoResultado>()
+            .HasOne(e => e.Produto)
+            .WithMany()
+            .HasForeignKey(e => e.ProdutoId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 

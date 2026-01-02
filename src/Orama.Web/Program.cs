@@ -127,6 +127,9 @@ builder.Services.AddScoped<IRelatorioLucratividadeService, RelatorioLucratividad
 // Serviços de Alertas de Margem
 builder.Services.AddScoped<IAlertaMargemService, AlertaMargemService>();
 
+// Serviços de Explicação de Resultados
+builder.Services.AddScoped<IExplicacaoResultadoService, ExplicacaoResultadoService>();
+
 // Serviços Fiscais
 // builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
 

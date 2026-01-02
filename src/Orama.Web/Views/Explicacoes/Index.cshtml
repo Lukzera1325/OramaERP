@@ -1,0 +1,206 @@
+@model IEnumerable<Orama.Domain.Entities.ExplicacaoResultado>
+
+@{
+    ViewData["Title"] = "Explicações de Resultado";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        Explicações de Resultado
+                    </h3>
+                    <div>
+                        <a href="@Url.Action("Dashboard")" class="btn btn-info btn-sm">
+                            <i class="fas fa-chart-pie"></i> Dashboard
+                        </a>
+                        <a href="@Url.Action("MotivosPrejuizo")" class="btn btn-warning btn-sm">
+                            <i class="fas fa-search"></i> Motivos Prejuízo
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filtros -->
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label>Tipo de Resultado:</label>
+                                <select name="tipo" class="form-control">
+                                    <option value="@TipoResultado.Prejuizo" @(ViewBag.TipoSelecionado.ToString() == TipoResultado.Prejuizo.ToString() ? "selected" : "")>Prejuízo</option>
+                                    <option value="@TipoResultado.Atencao" @(ViewBag.TipoSelecionado.ToString() == TipoResultado.Atencao.ToString() ? "selected" : "")>Atenção</option>
+                                    <option value="@TipoResultado.Lucro" @(ViewBag.TipoSelecionado.ToString() == TipoResultado.Lucro.ToString() ? "selected" : "")>Lucro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Data Início:</label>
+                                <input type="date" name="dataInicio" class="form-control" value="@ViewBag.DataInicio">
+                            </div>
+                            <div class="col-md-3">
+                                <label>Data Fim:</label>
+                                <input type="date" name="dataFim" class="form-control" value="@ViewBag.DataFim">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Nenhuma explicação encontrada para os filtros selecionados.
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Resumo por Categoria -->
+                        <div class="row mb-4">
+                            <div class="col-md-2">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-list"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total</span>
+                                        <span class="info-box-number">@Model.Count()</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-balance-scale"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Preço vs Custo</span>
+                                        <span class="info-box-number">@Model.Count(e => e.Categoria == CategoriaExplicacao.PrecoVsCusto)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-box bg-orange">
+                                    <span class="info-box-icon"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Margem Baixa</span>
+                                        <span class="info-box-number">@Model.Count(e => e.Categoria == CategoriaExplicacao.MargemBaixa)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-red">
+                                    <span class="info-box-icon"><i class="fas fa-tags"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Desconto Excessivo</span>
+                                        <span class="info-box-number">@Model.Count(e => e.Categoria == CategoriaExplicacao.DescontoExcessivo)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Impacto Total</span>
+                                        <span class="info-box-number">@Model.Sum(e => e.LucroCalculado).ToString("C")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Explicações -->
+                        <div class="row">
+                            @foreach (var explicacao in Model.OrderByDescending(e => e.DataExplicacao))
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card @explicacao.CssClass">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="card-title mb-0">
+                                                <i class="@explicacao.Icone"></i>
+                                                @explicacao.TipoDescricao - @explicacao.CategoriaDescricao
+                                            </h6>
+                                            <small class="text-muted">
+                                                @explicacao.DataExplicacao.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Informações da Venda -->
+                                            <div class="mb-2">
+                                                <strong>Venda:</strong> 
+                                                <a href="/Vendas/Detalhes/@explicacao.VendaId" class="text-decoration-none">
+                                                    @explicacao.Venda.Numero
+                                                </a>
+                                                @if (explicacao.Venda.Cliente != null)
+                                                {
+                                                    <span class="text-muted">- @explicacao.Venda.Cliente.Nome</span>
+                                                }
+                                            </div>
+
+                                            @if (explicacao.Produto != null)
+                                            {
+                                                <!-- Produto Específico -->
+                                                <div class="mb-2">
+                                                    <strong>Produto:</strong> 
+                                                    <span class="badge badge-secondary">@explicacao.Produto.Codigo</span>
+                                                    @explicacao.Produto.Descricao
+                                                </div>
+                                            }
+
+                                            <!-- Resumo da Explicação -->
+                                            <div class="mb-3">
+                                                <strong>@explicacao.ResumoExplicacao</strong>
+                                            </div>
+
+                                            <!-- Dados Financeiros -->
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <small class="text-muted">Valor Venda</small><br>
+                                                    <strong>@explicacao.ValorVenda.ToString("C")</strong>
+                                                </div>
+                                                <div class="col-4">
+                                                    <small class="text-muted">Custo</small><br>
+                                                    <strong>@explicacao.CustoTotal.ToString("C")</strong>
+                                                </div>
+                                                <div class="col-4">
+                                                    <small class="text-muted">Resultado</small><br>
+                                                    <strong class="@(explicacao.LucroCalculado < 0 ? "text-danger" : "text-success")">
+                                                        @explicacao.LucroCalculado.ToString("C")
+                                                    </strong>
+                                                </div>
+                                            </div>
+
+                                            <!-- Margem -->
+                                            <div class="text-center mt-2">
+                                                <small class="text-muted">Margem</small><br>
+                                                <span class="badge @(explicacao.MargemPercentual < 0 ? "badge-danger" : explicacao.MargemPercentual < 10 ? "badge-warning" : "badge-success")">
+                                                    @explicacao.MargemPercentual.ToString("N1")%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer text-right">
+                                            <a href="@Url.Action("Detalhes", new { id = explicacao.Id })" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> Ver Detalhes
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Paginação simples -->
+                        @if (Model.Count() >= 20)
+                        {
+                            <div class="text-center mt-4">
+                                <p class="text-muted">
+                                    Mostrando @Model.Count() explicações. 
+                                    Use os filtros para refinar os resultados.
+                                </p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
