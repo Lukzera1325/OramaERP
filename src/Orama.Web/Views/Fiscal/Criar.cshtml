@@ -1,0 +1,231 @@
+@model Orama.Domain.Entities.Fiscal.EmpresaFiscalConfig
+@{
+    ViewData["Title"] = "Nova Configuração Fiscal";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus"></i>
+                        Nova Configuração Fiscal
+                    </h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i>
+                            Voltar
+                        </a>
+                    </div>
+                </div>
+                
+                <form asp-action="Criar" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="card-body">
+                        @if (TempData["Erro"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                @TempData["Erro"]
+                            </div>
+                        }
+                        
+                        <div class="row">
+                            <!-- Regime Tributário -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="RegimeTributario" class="form-label">
+                                        <i class="fas fa-building"></i>
+                                        Regime Tributário *
+                                    </label>
+                                    <select asp-for="RegimeTributario" class="form-control" id="regimeTributario" onchange="atualizarCRT()">
+                                        <option value="1">Simples Nacional</option>
+                                        <option value="2">Regime Normal</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Regime tributário da empresa
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- CRT -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="CRT" class="form-label">
+                                        <i class="fas fa-certificate"></i>
+                                        CRT (Código de Regime Tributário) *
+                                    </label>
+                                    <select asp-for="CRT" class="form-control" id="crt">
+                                        <option value="1">1 - Simples Nacional</option>
+                                        <option value="2">2 - Simples Nacional - Excesso</option>
+                                        <option value="3">3 - Regime Normal</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Código para NF-e
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- UF -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="UF" class="form-label">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        UF *
+                                    </label>
+                                    <select asp-for="UF" class="form-control">
+                                        <option value="AC">AC - Acre</option>
+                                        <option value="AL">AL - Alagoas</option>
+                                        <option value="AP">AP - Amapá</option>
+                                        <option value="AM">AM - Amazonas</option>
+                                        <option value="BA">BA - Bahia</option>
+                                        <option value="CE">CE - Ceará</option>
+                                        <option value="DF">DF - Distrito Federal</option>
+                                        <option value="ES">ES - Espírito Santo</option>
+                                        <option value="GO">GO - Goiás</option>
+                                        <option value="MA">MA - Maranhão</option>
+                                        <option value="MT">MT - Mato Grosso</option>
+                                        <option value="MS">MS - Mato Grosso do Sul</option>
+                                        <option value="MG">MG - Minas Gerais</option>
+                                        <option value="PA">PA - Pará</option>
+                                        <option value="PB">PB - Paraíba</option>
+                                        <option value="PR">PR - Paraná</option>
+                                        <option value="PE">PE - Pernambuco</option>
+                                        <option value="PI">PI - Piauí</option>
+                                        <option value="RJ">RJ - Rio de Janeiro</option>
+                                        <option value="RN">RN - Rio Grande do Norte</option>
+                                        <option value="RS">RS - Rio Grande do Sul</option>
+                                        <option value="RO">RO - Rondônia</option>
+                                        <option value="RR">RR - Roraima</option>
+                                        <option value="SC">SC - Santa Catarina</option>
+                                        <option value="SP" selected>SP - São Paulo</option>
+                                        <option value="SE">SE - Sergipe</option>
+                                        <option value="TO">TO - Tocantins</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Estado da empresa
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Ambiente Fiscal -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="AmbienteFiscal" class="form-label">
+                                        <i class="fas fa-server"></i>
+                                        Ambiente Fiscal *
+                                    </label>
+                                    <select asp-for="AmbienteFiscal" class="form-control">
+                                        <option value="2">Homologação</option>
+                                        <option value="1">Produção</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        <strong>Atenção:</strong> Use Homologação para testes
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Versão Fiscal -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="VersaoFiscal" class="form-label">
+                                        <i class="fas fa-code-branch"></i>
+                                        Versão Fiscal *
+                                    </label>
+                                    <input asp-for="VersaoFiscal" class="form-control" placeholder="Ex: 2025.1" />
+                                    <small class="form-text text-muted">
+                                        Versão para controle de mudanças fiscais
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Vigente De -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="VigenteDe" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Vigente De *
+                                    </label>
+                                    <input asp-for="VigenteDe" type="date" class="form-control" />
+                                    <small class="form-text text-muted">
+                                        Data de início da vigência
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Vigente Até -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="VigenteAte" class="form-label">
+                                        <i class="fas fa-calendar-times"></i>
+                                        Vigente Até
+                                    </label>
+                                    <input asp-for="VigenteAte" type="date" class="form-control" />
+                                    <small class="form-text text-muted">
+                                        Deixe em branco para vigência indefinida
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Importante:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Esta configuração será aplicada a todas as operações fiscais da empresa</li>
+                                <li>Certifique-se de que os dados estão corretos antes de salvar</li>
+                                <li>Use ambiente de Homologação para testes</li>
+                                <li>A vigência controla quando esta configuração será aplicada</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Salvar Configuração
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function atualizarCRT() {
+    const regime = document.getElementById('regimeTributario').value;
+    const crtSelect = document.getElementById('crt');
+    
+    // Limpar opções
+    crtSelect.innerHTML = '';
+    
+    if (regime === '1') { // Simples Nacional
+        crtSelect.innerHTML = `
+            <option value="1">1 - Simples Nacional</option>
+            <option value="2">2 - Simples Nacional - Excesso</option>
+        `;
+    } else { // Regime Normal
+        crtSelect.innerHTML = `
+            <option value="3">3 - Regime Normal</option>
+        `;
+    }
+}
+
+// Inicializar ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    atualizarCRT();
+});
+</script>

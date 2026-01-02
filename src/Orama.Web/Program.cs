@@ -136,6 +136,11 @@ builder.Services.AddScoped<ISimulacaoService, SimulacaoService>();
 builder.Services.AddScoped<IDecisaoGerencialService, DecisaoGerencialService>();
 builder.Services.AddScoped<IChecklistFechamentoService, ChecklistFechamentoService>();
 
+// Serviços Fiscais (ISOLADOS DO CORE)
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.IEmpresaFiscalService, Orama.Application.Services.Fiscal.EmpresaFiscalService>();
+builder.Services.AddScoped<Orama.Application.Services.Fiscal.IContextoFiscalService, Orama.Application.Services.Fiscal.ContextoFiscalService>();
+builder.Services.AddScoped<Orama.Domain.Interfaces.ITaxCalculator, Orama.Application.Services.Fiscal.BasicTaxCalculator>();
+
 // Serviços Fiscais
 // builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
 

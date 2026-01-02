@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Orama.Domain.Entities;
+using Orama.Domain.Entities.Fiscal;
 
 namespace Orama.Infra.Data.Context;
 
@@ -67,6 +68,11 @@ public class OramaDbContext : DbContext
     public DbSet<DecisaoGerencial> DecisoesGerenciais { get; set; }
     public DbSet<ChecklistFechamento> ChecklistsFechamento { get; set; }
     public DbSet<ChecklistItem> ChecklistItens { get; set; }
+
+    // Configurações Fiscais (ISOLADAS DO CORE)
+    public DbSet<EmpresaFiscalConfig> EmpresasFiscaisConfig { get; set; }
+    public DbSet<ProdutoFiscalConfig> ProdutosFiscaisConfig { get; set; }
+    public DbSet<OperacaoFiscalConfig> OperacoesFiscaisConfig { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
