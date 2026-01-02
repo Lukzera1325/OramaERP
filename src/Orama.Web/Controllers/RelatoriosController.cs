@@ -235,7 +235,7 @@ public class RelatoriosController : BaseController
         try
         {
             var empresaId = ObterEmpresaId();
-            var relatorio = await _estoqueService.ObterRelatorioPosicaoEstoqueAsync(empresaId);
+            var relatorio = await _estoqueService.ObterPosicaoEstoqueAsync(empresaId);
 
             return View(relatorio);
         }

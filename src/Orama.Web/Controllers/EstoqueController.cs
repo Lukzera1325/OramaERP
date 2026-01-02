@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Orama.Application.Services;
-using Orama.Domain.Entities;
 using Orama.Web.Models;
 
 namespace Orama.Web.Controllers;
 
 /// <summary>
-/// Controller para controle de estoque
+/// Controller extremamente simples para estoque
+/// Recebe request -> Chama service -> Retorna response
 /// </summary>
 public class EstoqueController : BaseController
 {
@@ -20,432 +20,166 @@ public class EstoqueController : BaseController
         _produtoService = produtoService;
     }
 
-    /// <summary>
-    /// Lista movimentações de estoque
-    /// </summary>
-    public async Task<IActionResult> Index(MovimentacaoFiltroViewModel? filtro = null)
+    // GET: Estoque (Histórico de movimentações)
+    public async Task<IActionResult> Index()
     {
-        try
-        {
-            var empresaId = ObterEmpresaId();
-            IEnumerable<MovimentacaoEstoque> movimentacoes;
-
-            // Aplicar filtros
-            if (filtro?.ProdutoId.HasValue == true)
-            {
-                movimentacoes = await _estoqueService.ObterMovimentacoesPorProdutoAsync(empresaId, filtro.ProdutoId.Value);
-            }
-            else if (filtro?.Tipo.HasValue == true)
-            {
-                movimentacoes = await _estoqueService.ObterMovimentacoesPorTipoAsync(empresaId, filtro.Tipo.Value);
-            }
-            else if (filtro?.DataInicial.HasValue == true && filtro?.DataFinal.HasValue == true)
-            {
-                movimentacoes = await _estoqueService.ObterMovimentacoesPorPeriodoAsync(empresaId, filtro.DataInicial.Value, filtro.DataFinal.Value);
-            }
-            else
-            {
-                movimentacoes = await _estoqueService.ObterMovimentacoesAsync(empresaId);
-            }
-
-            var viewModel = movimentacoes.Take(100).Select(m => new MovimentacaoEstoqueViewModel
-            {
-                Id = m.Id,
-                ProdutoId = m.ProdutoId,
-                ProdutoNome = m.Produto?.Descricao,
-                ProdutoCodigo = m.Produto?.Codigo,
-                Tipo = m.Tipo,
-                DataMovimentacao = m.DataMovimentacao,
-                Quantidade = m.Quantidade,
-                EstoqueAnterior = m.EstoqueAnterior,
-                EstoquePosterior = m.EstoquePosterior,
-                CustoUnitario = m.CustoUnitario,
-                Motivo = m.Motivo,
-                Observacoes = m.Observacoes,
-                UsuarioNome = m.Usuario?.Nome
-            }).ToList();
-
-            // Preparar dados para filtros
-            await PrepararDadosFiltro(filtro ?? new MovimentacaoFiltroViewModel());
-
-            ViewBag.Filtro = filtro;
-            return View(viewModel);
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = $"Erro ao carregar movimentações: {ex.Message}";
-            return View(new List<MovimentacaoEstoqueViewModel>());
-        }
+        var empresaId = ObterEmpresaId();
+        var movimentacoes = await _estoqueService.ObterHistoricoAsync(empresaId);
+        return View(movimentacoes);
     }
 
-    /// <summary>
-    /// Exibe posição atual do estoque
-    /// </summary>
+    // GET: Estoque/Posicao (Posição atual do estoque)
     public async Task<IActionResult> Posicao()
     {
-        try
-        {
-            var empresaId = ObterEmpresaId();
-            var produtos = await _estoqueService.ObterPosicaoEstoqueAsync(empresaId);
-
-            var viewModel = produtos.Select(p => new PosicaoEstoqueViewModel
-            {
-                Id = p.Id,
-                Codigo = p.Codigo,
-                Nome = p.Descricao,
-                Categoria = p.CategoriaNavigation?.Nome,
-                EstoqueAtual = p.EstoqueAtual,
-                EstoqueMinimo = p.EstoqueMinimo,
-                EstoqueMaximo = p.EstoqueMaximo,
-                PrecoCusto = p.PrecoCusto
-            }).ToList();
-
-            ViewBag.ValorTotalEstoque = await _estoqueService.CalcularValorTotalEstoqueAsync(empresaId);
-            ViewBag.ProdutosEstoqueBaixo = viewModel.Count(p => p.EstoqueAtual <= p.EstoqueMinimo);
-            ViewBag.ProdutosSemEstoque = viewModel.Count(p => p.EstoqueAtual <= 0);
-
-            return View(viewModel);
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = $"Erro ao carregar posição de estoque: {ex.Message}";
-            return View(new List<PosicaoEstoqueViewModel>());
-        }
+        var empresaId = ObterEmpresaId();
+        var produtos = await _estoqueService.ObterPosicaoEstoqueAsync(empresaId);
+        return View(produtos);
     }
 
-    /// <summary>
-    /// Exibe produtos com estoque baixo
-    /// </summary>
+    // GET: Estoque/EstoqueBaixo (Produtos com estoque baixo)
     public async Task<IActionResult> EstoqueBaixo()
     {
-        try
-        {
-            var empresaId = ObterEmpresaId();
-            var produtos = await _estoqueService.ObterProdutosEstoqueBaixoAsync(empresaId);
-
-            var viewModel = produtos.Select(p => new PosicaoEstoqueViewModel
-            {
-                Id = p.Id,
-                Codigo = p.Codigo,
-                Nome = p.Descricao,
-                Categoria = p.CategoriaNavigation?.Nome,
-                EstoqueAtual = p.EstoqueAtual,
-                EstoqueMinimo = p.EstoqueMinimo,
-                EstoqueMaximo = p.EstoqueMaximo,
-                PrecoCusto = p.PrecoCusto
-            }).ToList();
-
-            return View(viewModel);
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = $"Erro ao carregar produtos com estoque baixo: {ex.Message}";
-            return View(new List<PosicaoEstoqueViewModel>());
-        }
+        var empresaId = ObterEmpresaId();
+        var produtos = await _estoqueService.ObterProdutosEstoqueBaixoAsync(empresaId);
+        return View(produtos);
     }
 
-    /// <summary>
-    /// Exibe histórico de um produto
-    /// </summary>
-    public async Task<IActionResult> Historico(int id)
+    // GET: Estoque/Ajustar (Formulário para ajustar estoque)
+    public async Task<IActionResult> Ajustar()
     {
-        try
-        {
-            var empresaId = ObterEmpresaId();
-            var produto = await _produtoService.ObterPorIdAsync(id, empresaId);
-            
-            if (produto == null)
-            {
-                TempData["Erro"] = "Produto não encontrado";
-                return RedirectToAction(nameof(Posicao));
-            }
-
-            var movimentacoes = await _estoqueService.ObterHistoricoProdutoAsync(empresaId, id);
-
-            var viewModel = movimentacoes.Select(m => new MovimentacaoEstoqueViewModel
-            {
-                Id = m.Id,
-                ProdutoId = m.ProdutoId,
-                ProdutoNome = m.Produto?.Descricao,
-                ProdutoCodigo = m.Produto?.Codigo,
-                Tipo = m.Tipo,
-                DataMovimentacao = m.DataMovimentacao,
-                Quantidade = m.Quantidade,
-                EstoqueAnterior = m.EstoqueAnterior,
-                EstoquePosterior = m.EstoquePosterior,
-                CustoUnitario = m.CustoUnitario,
-                Motivo = m.Motivo,
-                Observacoes = m.Observacoes,
-                UsuarioNome = m.Usuario?.Nome
-            }).ToList();
-
-            ViewBag.Produto = produto;
-            return View(viewModel);
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = $"Erro ao carregar histórico: {ex.Message}";
-            return RedirectToAction(nameof(Posicao));
-        }
+        var empresaId = ObterEmpresaId();
+        var produtos = await _produtoService.ObterTodosAsync(empresaId);
+        
+        ViewBag.Produtos = new SelectList(produtos, "Id", "CodigoFormatado");
+        return View(new EstoqueViewModel());
     }
 
-    /// <summary>
-    /// Exibe formulário para ajuste de estoque
-    /// </summary>
-    public async Task<IActionResult> Ajustar(int? id = null)
-    {
-        try
-        {
-            var viewModel = new AjusteEstoqueViewModel();
-
-            if (id.HasValue)
-            {
-                var empresaId = ObterEmpresaId();
-                var produto = await _produtoService.ObterPorIdAsync(id.Value, empresaId);
-                
-                if (produto != null)
-                {
-                    viewModel.ProdutoId = produto.Id;
-                    viewModel.ProdutoNome = produto.Descricao;
-                    viewModel.EstoqueAtual = produto.EstoqueAtual;
-                    viewModel.QuantidadeReal = produto.EstoqueAtual;
-                }
-            }
-
-            await PrepararDadosAjuste(viewModel);
-            return View(viewModel);
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = $"Erro ao preparar ajuste: {ex.Message}";
-            return RedirectToAction(nameof(Posicao));
-        }
-    }
-
-    /// <summary>
-    /// Processa ajuste de estoque
-    /// </summary>
+    // POST: Estoque/Ajustar (Processar ajuste de estoque)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Ajustar(AjusteEstoqueViewModel viewModel)
+    public async Task<IActionResult> Ajustar(EstoqueViewModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            var empresaId = ObterEmpresaId();
+            var produtos = await _produtoService.ObterTodosAsync(empresaId);
+            ViewBag.Produtos = new SelectList(produtos, "Id", "CodigoFormatado");
+            return View(model);
+        }
+
         try
         {
-            if (!ModelState.IsValid)
-            {
-                await PrepararDadosAjuste(viewModel);
-                return View(viewModel);
-            }
-
             var empresaId = ObterEmpresaId();
-            var usuarioId = UsuarioLogado?.Id ?? 0;
+            var usuarioId = 1; // TODO: Obter do contexto
 
-            var movimentacao = await _estoqueService.AjustarEstoqueAsync(
+            var sucesso = await _estoqueService.AjustarEstoqueAsync(
+                model.ProdutoId, 
+                model.NovoEstoque, 
+                model.Motivo, 
                 empresaId, 
-                viewModel.ProdutoId, 
-                viewModel.QuantidadeReal, 
-                viewModel.Motivo, 
                 usuarioId);
 
-            if (movimentacao != null)
+            if (sucesso)
             {
-                TempData["Sucesso"] = $"Ajuste realizado com sucesso! Diferença: {viewModel.Diferenca:N2}";
+                TempData["Sucesso"] = "Estoque ajustado com sucesso!";
+                return RedirectToAction(nameof(Posicao));
             }
             else
             {
-                TempData["Info"] = "Não houve diferença entre o estoque atual e a contagem física.";
+                TempData["Erro"] = "Produto não encontrado.";
             }
-
-            return RedirectToAction(nameof(Posicao));
         }
         catch (Exception ex)
         {
-            TempData["Erro"] = $"Erro ao realizar ajuste: {ex.Message}";
-            await PrepararDadosAjuste(viewModel);
-            return View(viewModel);
+            TempData["Erro"] = $"Erro ao ajustar estoque: {ex.Message}";
         }
+
+        var empresaIdError = ObterEmpresaId();
+        var produtosError = await _produtoService.ObterTodosAsync(empresaIdError);
+        ViewBag.Produtos = new SelectList(produtosError, "Id", "CodigoFormatado");
+        return View(model);
     }
 
-    /// <summary>
-    /// Exibe formulário para inventário físico
-    /// </summary>
+    // GET: Estoque/Inventario (Inventário de estoque)
     public async Task<IActionResult> Inventario()
     {
-        try
-        {
-            var empresaId = ObterEmpresaId();
-            var produtos = await _estoqueService.ObterProdutosParaInventarioAsync(empresaId);
-
-            var viewModel = new InventarioViewModel
-            {
-                Itens = produtos.Select(p => new InventarioItemViewModel
-                {
-                    ProdutoId = p.Id,
-                    Codigo = p.Codigo,
-                    Nome = p.Descricao,
-                    Categoria = p.CategoriaNavigation?.Nome,
-                    EstoqueSistema = p.EstoqueAtual,
-                    ContagemFisica = p.EstoqueAtual // Inicializar com estoque atual
-                }).ToList()
-            };
-
-            return View(viewModel);
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = $"Erro ao preparar inventário: {ex.Message}";
-            return RedirectToAction(nameof(Posicao));
-        }
+        var empresaId = ObterEmpresaId();
+        var produtos = await _estoqueService.ObterProdutosParaInventarioAsync(empresaId);
+        return View(produtos);
     }
 
-    /// <summary>
-    /// Processa inventário físico
-    /// </summary>
+    // POST: Estoque/ProcessarInventario (Processar inventário)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Inventario(InventarioViewModel viewModel)
+    public async Task<IActionResult> ProcessarInventario(Dictionary<int, decimal> contagem)
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return View(viewModel);
-            }
-
             var empresaId = ObterEmpresaId();
-            var usuarioId = UsuarioLogado?.Id ?? 0;
+            var usuarioId = 1; // TODO: Obter do contexto
 
-            // Preparar dicionário com contagem física
-            var contagemFisica = viewModel.Itens.ToDictionary(i => i.ProdutoId, i => i.ContagemFisica);
+            var sucesso = await _estoqueService.ProcessarInventarioAsync(contagem, empresaId, usuarioId);
 
-            var movimentacoes = await _estoqueService.ProcessarInventarioAsync(
-                empresaId, 
-                contagemFisica, 
-                usuarioId, 
-                viewModel.ObservacoesGerais);
-
-            var totalAjustes = movimentacoes.Count();
-            var totalDiferenca = movimentacoes.Sum(m => m.Tipo == TipoMovimentacaoEstoque.AjustePositivo ? 
-                m.Quantidade : -m.Quantidade);
-
-            TempData["Sucesso"] = $"Inventário processado com sucesso! {totalAjustes} ajuste(s) realizado(s). Diferença total: {totalDiferenca:N2}";
-            return RedirectToAction(nameof(Posicao));
+            if (sucesso)
+            {
+                TempData["Sucesso"] = "Inventário processado com sucesso!";
+            }
+            else
+            {
+                TempData["Erro"] = "Erro ao processar inventário.";
+            }
         }
         catch (Exception ex)
         {
             TempData["Erro"] = $"Erro ao processar inventário: {ex.Message}";
-            return View(viewModel);
         }
+
+        return RedirectToAction(nameof(Posicao));
     }
 
-    /// <summary>
-    /// Obtém dados do produto para ajuste (AJAX)
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> ObterDadosProduto(int produtoId)
+    // GET: Estoque/Historico (Histórico de um produto específico)
+    public async Task<IActionResult> Historico(int produtoId)
+    {
+        var empresaId = ObterEmpresaId();
+        var movimentacoes = await _estoqueService.ObterHistoricoAsync(empresaId, produtoId);
+        return View(movimentacoes);
+    }
+
+    // AJAX: Entrada de estoque
+    [HttpPost]
+    public async Task<IActionResult> EntradaEstoque(int produtoId, decimal quantidade, string motivo)
     {
         try
         {
             var empresaId = ObterEmpresaId();
-            var produto = await _produtoService.ObterPorIdAsync(produtoId, empresaId);
+            var usuarioId = 1; // TODO: Obter do contexto
 
-            if (produto == null)
-                return Json(new { success = false, message = "Produto não encontrado" });
+            var sucesso = await _estoqueService.EntradaEstoqueAsync(produtoId, quantidade, motivo, empresaId, usuarioId);
 
-            return Json(new
-            {
-                success = true,
-                data = new
-                {
-                    id = produto.Id,
-                    nome = produto.Descricao,
-                    codigo = produto.Codigo,
-                    estoqueAtual = produto.EstoqueAtual,
-                    estoqueMinimo = produto.EstoqueMinimo,
-                    estoqueMaximo = produto.EstoqueMaximo
-                }
-            });
+            return Json(new { success = sucesso, message = sucesso ? "Entrada registrada com sucesso!" : "Produto não encontrado." });
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = $"Erro ao obter dados do produto: {ex.Message}" });
+            return Json(new { success = false, message = ex.Message });
         }
     }
 
-    /// <summary>
-    /// Gera relatório de estoque (AJAX)
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> GerarRelatorio()
+    // AJAX: Saída de estoque
+    [HttpPost]
+    public async Task<IActionResult> SaidaEstoque(int produtoId, decimal quantidade, string motivo)
     {
         try
         {
             var empresaId = ObterEmpresaId();
-            var relatorio = await _estoqueService.ObterRelatorioPosicaoEstoqueAsync(empresaId);
+            var usuarioId = 1; // TODO: Obter do contexto
 
-            return Json(new { success = true, data = relatorio });
+            var sucesso = await _estoqueService.SaidaEstoqueAsync(produtoId, quantidade, motivo, empresaId, usuarioId);
+
+            return Json(new { success = sucesso, message = sucesso ? "Saída registrada com sucesso!" : "Produto não encontrado." });
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = $"Erro ao gerar relatório: {ex.Message}" });
+            return Json(new { success = false, message = ex.Message });
         }
     }
-
-    #region Métodos Auxiliares
-
-    /// <summary>
-    /// Prepara dados para filtros
-    /// </summary>
-    private async Task PrepararDadosFiltro(MovimentacaoFiltroViewModel filtro)
-    {
-        var empresaId = ObterEmpresaId();
-
-        // Produtos
-        var produtos = await _produtoService.ObterTodosAsync(empresaId);
-        var produtosList = produtos.Where(p => p.ControlaEstoque)
-            .Select(p => new { Value = p.Id, Text = $"{p.Codigo} - {p.Descricao}" }).ToList();
-        produtosList.Insert(0, new { Value = 0, Text = "Todos os produtos" });
-        filtro.Produtos = new SelectList(produtosList, "Value", "Text", filtro.ProdutoId);
-
-        // Tipos de movimentação
-        var tipos = Enum.GetValues<TipoMovimentacaoEstoque>()
-            .Select(t => new { Value = (int)t, Text = GetTipoDescricao(t) })
-            .ToList();
-        tipos.Insert(0, new { Value = 0, Text = "Todos os tipos" });
-        filtro.Tipos = new SelectList(tipos, "Value", "Text", (int?)filtro.Tipo);
-    }
-
-    /// <summary>
-    /// Prepara dados para ajuste
-    /// </summary>
-    private async Task PrepararDadosAjuste(AjusteEstoqueViewModel viewModel)
-    {
-        var empresaId = ObterEmpresaId();
-
-        // Produtos que controlam estoque
-        var produtos = await _produtoService.ObterTodosAsync(empresaId);
-        var produtosList = produtos.Where(p => p.ControlaEstoque)
-            .Select(p => new { Value = p.Id, Text = $"{p.Codigo} - {p.Descricao}" }).ToList();
-        viewModel.Produtos = new SelectList(produtosList, "Value", "Text", viewModel.ProdutoId);
-    }
-
-    /// <summary>
-    /// Obtém descrição do tipo de movimentação
-    /// </summary>
-    private static string GetTipoDescricao(TipoMovimentacaoEstoque tipo)
-    {
-        return tipo switch
-        {
-            TipoMovimentacaoEstoque.EntradaCompra => "Entrada - Compra",
-            TipoMovimentacaoEstoque.SaidaVenda => "Saída - Venda",
-            TipoMovimentacaoEstoque.AjustePositivo => "Ajuste Positivo",
-            TipoMovimentacaoEstoque.AjusteNegativo => "Ajuste Negativo",
-            TipoMovimentacaoEstoque.Transferencia => "Transferência",
-            TipoMovimentacaoEstoque.Devolucao => "Devolução",
-            TipoMovimentacaoEstoque.Perda => "Perda",
-            _ => "Desconhecido"
-        };
-    }
-
-    #endregion
 }

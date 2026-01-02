@@ -1,0 +1,486 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Explosão de Materiais";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-sitemap"></i>
+                        Explosão de Materiais (MRP)
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="ListasMateriais" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Filtros e Parâmetros -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Produto Final *</label>
+                                <select id="produtoId" class="form-control select2">
+                                    <option value="">Selecione o produto...</option>
+                                    @foreach (var produto in ViewBag.Produtos as SelectList)
+                                    {
+                                        <option value="@produto.Value">@produto.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Quantidade *</label>
+                                <input type="number" id="quantidade" class="form-control" value="1" min="0.01" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Data Necessidade</label>
+                                <input type="date" id="dataNecessidade" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-primary btn-block" onclick="calcularExplosao()">
+                                    <i class="fas fa-calculator"></i> Calcular
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-success btn-block" onclick="gerarOrdemProducao()" id="btnGerarOP" style="display: none;">
+                                    <i class="fas fa-plus"></i> Gerar OP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opções Avançadas -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-cog"></i> Opções de Cálculo</h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="considerarEstoque" class="form-check-input" checked />
+                                                <label for="considerarEstoque" class="form-check-label">
+                                                    Considerar Estoque Atual
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="considerarPerdas" class="form-check-input" checked />
+                                                <label for="considerarPerdas" class="form-check-label">
+                                                    Considerar % de Perdas
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="agruparMateriais" class="form-check-input" checked />
+                                                <label for="agruparMateriais" class="form-check-label">
+                                                    Agrupar Materiais Iguais
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" id="mostrarCustos" class="form-check-input" checked />
+                                                <label for="mostrarCustos" class="form-check-label">
+                                                    Mostrar Custos
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resultado da Explosão -->
+                    <div id="resultadoExplosao" style="display: none;">
+                        <!-- Resumo -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info">
+                                        <i class="fas fa-boxes"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total de Materiais</span>
+                                        <span class="info-box-number" id="totalMateriais">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Disponíveis</span>
+                                        <span class="info-box-number" id="materiaisDisponiveis">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Insuficientes</span>
+                                        <span class="info-box-number" id="materiaisInsuficientes">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Custo Total</span>
+                                        <span class="info-box-number" id="custoTotal">R$ 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabela de Materiais -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-list"></i> Necessidades de Materiais
+                                </h5>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="exportarExcel()">
+                                        <i class="fas fa-file-excel"></i> Excel
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="imprimirRelatorio()">
+                                        <i class="fas fa-print"></i> Imprimir
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="tabelaMateriais">
+                                        <thead>
+                                            <tr>
+                                                <th>Nível</th>
+                                                <th>Material</th>
+                                                <th>Código</th>
+                                                <th>Tipo</th>
+                                                <th>Qtd. Bruta</th>
+                                                <th>% Perda</th>
+                                                <th>Qtd. Líquida</th>
+                                                <th>Estoque</th>
+                                                <th>Necessário</th>
+                                                <th class="custo-column">Custo Unit.</th>
+                                                <th class="custo-column">Custo Total</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="materiaisBody">
+                                            <!-- Dados carregados via AJAX -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estrutura Hierárquica -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-sitemap"></i> Estrutura Hierárquica (Árvore BOM)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="arvoreEstrutura">
+                                    <!-- Árvore carregada via AJAX -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alertas e Recomendações -->
+                        <div class="card mt-3" id="cardAlertas" style="display: none;">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-exclamation-triangle"></i> Alertas e Recomendações
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="listaAlertas">
+                                    <!-- Alertas carregados via AJAX -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado Inicial -->
+                    <div id="estadoInicial">
+                        <div class="text-center py-5">
+                            <i class="fas fa-sitemap fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">Explosão de Materiais (MRP)</h4>
+                            <p class="text-muted">
+                                Selecione um produto e quantidade para calcular as necessidades de materiais.<br>
+                                O sistema irá analisar a estrutura do produto e verificar a disponibilidade no estoque.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Set default date
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            $('#dataNecessidade').val(tomorrow.toISOString().split('T')[0]);
+
+            // Toggle cost columns
+            $('#mostrarCustos').change(function() {
+                $('.custo-column').toggle($(this).is(':checked'));
+            });
+        });
+
+        function calcularExplosao() {
+            var produtoId = $('#produtoId').val();
+            var quantidade = $('#quantidade').val();
+
+            if (!produtoId) {
+                alert('Selecione um produto');
+                return;
+            }
+
+            if (!quantidade || quantidade <= 0) {
+                alert('Informe uma quantidade válida');
+                return;
+            }
+
+            // Show loading
+            $('#estadoInicial').hide();
+            $('#resultadoExplosao').show();
+            $('#materiaisBody').html('<tr><td colspan="12" class="text-center"><i class="fas fa-spinner fa-spin"></i> Calculando explosão...</td></tr>');
+
+            var parametros = {
+                produtoId: produtoId,
+                quantidade: quantidade,
+                dataNecessidade: $('#dataNecessidade').val(),
+                considerarEstoque: $('#considerarEstoque').is(':checked'),
+                considerarPerdas: $('#considerarPerdas').is(':checked'),
+                agruparMateriais: $('#agruparMateriais').is(':checked'),
+                mostrarCustos: $('#mostrarCustos').is(':checked')
+            };
+
+            $.ajax({
+                url: '@Url.Action("CalcularExplosaoCompleta", "Producao")',
+                type: 'GET',
+                data: parametros,
+                success: function(data) {
+                    preencherResultado(data);
+                },
+                error: function() {
+                    $('#materiaisBody').html('<tr><td colspan="12" class="text-center text-danger">Erro ao calcular explosão de materiais</td></tr>');
+                }
+            });
+        }
+
+        function preencherResultado(data) {
+            // Update summary
+            $('#totalMateriais').text(data.resumo.totalMateriais);
+            $('#materiaisDisponiveis').text(data.resumo.materiaisDisponiveis);
+            $('#materiaisInsuficientes').text(data.resumo.materiaisInsuficientes);
+            $('#custoTotal').text('R$ ' + data.resumo.custoTotal.toFixed(2));
+
+            // Fill materials table
+            var tbody = $('#materiaisBody');
+            tbody.empty();
+
+            if (data.materiais && data.materiais.length > 0) {
+                $.each(data.materiais, function(index, material) {
+                    var statusClass = material.necessario <= 0 ? 'success' : 'danger';
+                    var statusText = material.necessario <= 0 ? 'OK' : 'Comprar: ' + material.necessario.toFixed(2);
+                    var nivelIndent = '&nbsp;'.repeat(material.nivel * 4);
+
+                    var row = '<tr class="' + (material.critico ? 'table-warning' : '') + '">' +
+                        '<td>' + material.nivel + '</td>' +
+                        '<td>' + nivelIndent + material.nome + (material.critico ? ' <i class="fas fa-exclamation-triangle text-warning" title="Crítico"></i>' : '') + '</td>' +
+                        '<td>' + (material.codigo || '-') + '</td>' +
+                        '<td><span class="badge badge-secondary">' + material.tipo + '</span></td>' +
+                        '<td>' + material.quantidadeBruta.toFixed(3) + '</td>' +
+                        '<td>' + material.percentualPerda.toFixed(1) + '%</td>' +
+                        '<td><strong>' + material.quantidadeLiquida.toFixed(3) + '</strong></td>' +
+                        '<td>' + material.estoqueAtual.toFixed(3) + '</td>' +
+                        '<td>' + (material.necessario > 0 ? '<strong class="text-danger">' + material.necessario.toFixed(3) + '</strong>' : '0') + '</td>' +
+                        '<td class="custo-column">R$ ' + material.custoUnitario.toFixed(2) + '</td>' +
+                        '<td class="custo-column">R$ ' + material.custoTotal.toFixed(2) + '</td>' +
+                        '<td><span class="badge badge-' + statusClass + '">' + statusText + '</span></td>' +
+                        '</tr>';
+                    tbody.append(row);
+                });
+
+                // Show generate OP button if feasible
+                if (data.resumo.materiaisInsuficientes === 0) {
+                    $('#btnGerarOP').show();
+                } else {
+                    $('#btnGerarOP').hide();
+                }
+            } else {
+                tbody.append('<tr><td colspan="12" class="text-center text-muted">Nenhum material encontrado</td></tr>');
+            }
+
+            // Fill hierarchical structure
+            preencherArvoreEstrutura(data.estrutura);
+
+            // Fill alerts
+            preencherAlertas(data.alertas);
+
+            // Toggle cost columns based on checkbox
+            $('.custo-column').toggle($('#mostrarCustos').is(':checked'));
+        }
+
+        function preencherArvoreEstrutura(estrutura) {
+            var arvore = $('#arvoreEstrutura');
+            arvore.empty();
+
+            if (estrutura && estrutura.length > 0) {
+                var html = '<ul class="tree">';
+                $.each(estrutura, function(index, item) {
+                    html += construirNoArvore(item);
+                });
+                html += '</ul>';
+                arvore.html(html);
+            } else {
+                arvore.html('<p class="text-muted">Estrutura não disponível</p>');
+            }
+        }
+
+        function construirNoArvore(item) {
+            var html = '<li>';
+            html += '<span class="tree-node">';
+            html += '<i class="fas fa-' + (item.tipo === 'Produto' ? 'cube' : 'box') + '"></i> ';
+            html += item.nome + ' (' + item.quantidade.toFixed(3) + ')';
+            if (item.critico) {
+                html += ' <i class="fas fa-exclamation-triangle text-warning" title="Crítico"></i>';
+            }
+            html += '</span>';
+
+            if (item.filhos && item.filhos.length > 0) {
+                html += '<ul>';
+                $.each(item.filhos, function(index, filho) {
+                    html += construirNoArvore(filho);
+                });
+                html += '</ul>';
+            }
+
+            html += '</li>';
+            return html;
+        }
+
+        function preencherAlertas(alertas) {
+            var cardAlertas = $('#cardAlertas');
+            var listaAlertas = $('#listaAlertas');
+
+            if (alertas && alertas.length > 0) {
+                listaAlertas.empty();
+                $.each(alertas, function(index, alerta) {
+                    var alertClass = alerta.tipo === 'Erro' ? 'danger' : alerta.tipo === 'Aviso' ? 'warning' : 'info';
+                    var icon = alerta.tipo === 'Erro' ? 'times-circle' : alerta.tipo === 'Aviso' ? 'exclamation-triangle' : 'info-circle';
+                    
+                    var alertHtml = '<div class="alert alert-' + alertClass + '">' +
+                        '<i class="fas fa-' + icon + '"></i> ' +
+                        '<strong>' + alerta.tipo + ':</strong> ' + alerta.mensagem +
+                        '</div>';
+                    listaAlertas.append(alertHtml);
+                });
+                cardAlertas.show();
+            } else {
+                cardAlertas.hide();
+            }
+        }
+
+        function gerarOrdemProducao() {
+            var produtoId = $('#produtoId').val();
+            var quantidade = $('#quantidade').val();
+            var dataNecessidade = $('#dataNecessidade').val();
+
+            if (confirm('Confirma a geração da Ordem de Produção?')) {
+                window.location.href = '@Url.Action("CriarOrdemProducao", "Producao")' + 
+                    '?produtoId=' + produtoId + 
+                    '&quantidade=' + quantidade + 
+                    '&dataPrevista=' + dataNecessidade;
+            }
+        }
+
+        function exportarExcel() {
+            var produtoId = $('#produtoId').val();
+            var quantidade = $('#quantidade').val();
+
+            if (!produtoId || !quantidade) {
+                alert('Calcule a explosão primeiro');
+                return;
+            }
+
+            window.open('@Url.Action("ExportarExplosaoExcel", "Producao")' + 
+                '?produtoId=' + produtoId + '&quantidade=' + quantidade);
+        }
+
+        function imprimirRelatorio() {
+            window.print();
+        }
+    </script>
+
+    <style>
+        .tree {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .tree ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .tree li {
+            margin: 5px 0;
+        }
+
+        .tree-node {
+            padding: 2px 5px;
+            border-radius: 3px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        @@media print {
+            .card-tools, .btn, .form-group {
+                display: none !important;
+            }
+        }
+    </style>
+}

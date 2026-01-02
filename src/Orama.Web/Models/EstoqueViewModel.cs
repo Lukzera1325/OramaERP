@@ -5,6 +5,26 @@ using Orama.Domain.Entities;
 namespace Orama.Web.Models;
 
 /// <summary>
+/// ViewModel para ajuste de estoque
+/// </summary>
+public class EstoqueViewModel
+{
+    [Display(Name = "Produto")]
+    [Required(ErrorMessage = "Produto é obrigatório")]
+    public int ProdutoId { get; set; }
+
+    [Display(Name = "Novo Estoque")]
+    [Required(ErrorMessage = "Novo estoque é obrigatório")]
+    [Range(0, double.MaxValue, ErrorMessage = "Estoque deve ser maior ou igual a zero")]
+    public decimal NovoEstoque { get; set; }
+
+    [Display(Name = "Motivo")]
+    [Required(ErrorMessage = "Motivo é obrigatório")]
+    [StringLength(200, ErrorMessage = "Motivo deve ter no máximo 200 caracteres")]
+    public string Motivo { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// ViewModel para movimentações de estoque
 /// </summary>
 public class MovimentacaoEstoqueViewModel

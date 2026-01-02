@@ -6,24 +6,28 @@ using Orama.Web.Models;
 
 namespace Orama.Web.Controllers;
 
+/// <summary>
+/// Controller extremamente simples para Vendas
+/// Apenas recebe requests, valida input básico, chama service e retorna resposta
+/// ZERO lógica de negócio aqui
+/// </summary>
 public class VendasController : BaseController
 {
     private readonly IVendaService _vendaService;
     private readonly IClienteService _clienteService;
     private readonly IProdutoService _produtoService;
-    private readonly IContaBancariaService _contaBancariaService;
 
     public VendasController(
         IVendaService vendaService,
         IClienteService clienteService,
-        IProdutoService produtoService,
-        IContaBancariaService contaBancariaService)
+        IProdutoService produtoService)
     {
         _vendaService = vendaService;
         _clienteService = clienteService;
         _produtoService = produtoService;
-        _contaBancariaService = contaBancariaService;
     }
+
+    // CRUD Básico - Simples e Direto
 
     public async Task<IActionResult> Index(string filtro = "todas")
     {
@@ -56,7 +60,9 @@ public class VendasController : BaseController
 
         var empresaId = UsuarioLogado?.EmpresaId ?? 0;
         var venda = await _vendaService.ObterPorIdAsync(id, empresaId);
-        if (venda == null) return NotFound();
+        
+        if (venda == null) 
+            return NotFound();
 
         return View(VendaViewModel.FromEntity(venda));
     }
@@ -66,7 +72,7 @@ public class VendasController : BaseController
         if (!TemPermissao("Vendas.Incluir"))
             return RedirectToAction("AccessDenied", "Auth");
 
-        await CarregarViewBags();
+        await PrepararDadosFormulario();
         return View(new VendaViewModel());
     }
 
@@ -77,25 +83,9 @@ public class VendasController : BaseController
         if (!TemPermissao("Vendas.Incluir"))
             return RedirectToAction("AccessDenied", "Auth");
 
-        // Remover itens vazios (sem produto selecionado)
-        model.Itens = model.Itens.Where(i => i.ProdutoId > 0).ToList();
-
-        if (!model.Itens.Any())
-        {
-            ModelState.AddModelError("", "Adicione pelo menos um item à venda");
-        }
-
-        // Remover validações de campos que não são enviados no form
-        ModelState.Remove("ClienteNome");
-        ModelState.Remove("VendedorNome");
-        foreach (var key in ModelState.Keys.Where(k => k.Contains("ProdutoNome") || k.Contains("ProdutoCodigo")).ToList())
-        {
-            ModelState.Remove(key);
-        }
-
         if (!ModelState.IsValid)
         {
-            await CarregarViewBags();
+            await PrepararDadosFormulario();
             return View(model);
         }
 
@@ -103,15 +93,16 @@ public class VendasController : BaseController
         {
             var empresaId = UsuarioLogado?.EmpresaId ?? 0;
             var venda = model.ToEntity(empresaId);
-            await _vendaService.IncluirAsync(venda);
-
-            TempData["Sucesso"] = "Venda cadastrada com sucesso!";
+            
+            await _vendaService.CriarAsync(venda);
+            
+            TempData["Sucesso"] = "Venda criada com sucesso!";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             TempData["Erro"] = ex.Message;
-            await CarregarViewBags();
+            await PrepararDadosFormulario();
             return View(model);
         }
     }
@@ -122,57 +113,25 @@ public class VendasController : BaseController
             return RedirectToAction("AccessDenied", "Auth");
 
         var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-        Console.WriteLine($"[DEBUG] Edit GET - Id: {id}, EmpresaId: {empresaId}");
-        
         var venda = await _vendaService.ObterPorIdAsync(id, empresaId);
-        if (venda == null)
-        {
-            Console.WriteLine($"[DEBUG] Venda não encontrada");
+        
+        if (venda == null) 
             return NotFound();
-        }
 
-        Console.WriteLine($"[DEBUG] Venda encontrada - Status: {venda.Status}, Itens: {venda.Itens?.Count ?? 0}");
-
-        if (venda.Status == StatusVenda.Faturada || venda.Status == StatusVenda.Cancelado)
-        {
-            TempData["Erro"] = "Não é possível editar uma venda faturada ou cancelada";
-            return RedirectToAction(nameof(Index));
-        }
-
-        await CarregarViewBags();
-        var viewModel = VendaViewModel.FromEntity(venda);
-        Console.WriteLine($"[DEBUG] ViewModel criado - Itens: {viewModel.Itens?.Count ?? 0}");
-        return View(viewModel);
+        await PrepararDadosFormulario();
+        return View(VendaViewModel.FromEntity(venda));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, VendaViewModel model)
+    public async Task<IActionResult> Edit(VendaViewModel model)
     {
         if (!TemPermissao("Vendas.Alterar"))
             return RedirectToAction("AccessDenied", "Auth");
 
-        if (id != model.Id) return NotFound();
-
-        // Remover itens vazios (sem produto selecionado)
-        model.Itens = model.Itens.Where(i => i.ProdutoId > 0).ToList();
-
-        if (!model.Itens.Any())
-        {
-            ModelState.AddModelError("", "Adicione pelo menos um item à venda");
-        }
-
-        // Remover validações de campos que não são enviados no form
-        ModelState.Remove("ClienteNome");
-        ModelState.Remove("VendedorNome");
-        foreach (var key in ModelState.Keys.Where(k => k.Contains("ProdutoNome") || k.Contains("ProdutoCodigo")).ToList())
-        {
-            ModelState.Remove(key);
-        }
-
         if (!ModelState.IsValid)
         {
-            await CarregarViewBags();
+            await PrepararDadosFormulario();
             return View(model);
         }
 
@@ -180,15 +139,16 @@ public class VendasController : BaseController
         {
             var empresaId = UsuarioLogado?.EmpresaId ?? 0;
             var venda = model.ToEntity(empresaId);
-            await _vendaService.AlterarAsync(venda);
-
+            
+            await _vendaService.AtualizarAsync(venda);
+            
             TempData["Sucesso"] = "Venda atualizada com sucesso!";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             TempData["Erro"] = ex.Message;
-            await CarregarViewBags();
+            await PrepararDadosFormulario();
             return View(model);
         }
     }
@@ -200,7 +160,9 @@ public class VendasController : BaseController
 
         var empresaId = UsuarioLogado?.EmpresaId ?? 0;
         var venda = await _vendaService.ObterPorIdAsync(id, empresaId);
-        if (venda == null) return NotFound();
+        
+        if (venda == null) 
+            return NotFound();
 
         return View(VendaViewModel.FromEntity(venda));
     }
@@ -216,6 +178,7 @@ public class VendasController : BaseController
         {
             var empresaId = UsuarioLogado?.EmpresaId ?? 0;
             await _vendaService.ExcluirAsync(id, empresaId);
+            
             TempData["Sucesso"] = "Venda excluída com sucesso!";
         }
         catch (Exception ex)
@@ -226,233 +189,79 @@ public class VendasController : BaseController
         return RedirectToAction(nameof(Index));
     }
 
+    // Operações de Negócio - Uma linha cada
+
     [HttpPost]
     public async Task<IActionResult> Aprovar(int id)
     {
-        if (!TemPermissao("Vendas.Alterar"))
-            return RedirectToAction("AccessDenied", "Auth");
+        if (!TemPermissao("Vendas.Aprovar"))
+            return Json(new { sucesso = false, mensagem = "Sem permissão" });
 
         try
         {
             var empresaId = UsuarioLogado?.EmpresaId ?? 0;
             await _vendaService.AprovarAsync(id, empresaId);
-            TempData["Sucesso"] = "Venda aprovada com sucesso!";
+            
+            return Json(new { sucesso = true, mensagem = "Venda aprovada com sucesso!" });
         }
         catch (Exception ex)
         {
-            TempData["Erro"] = ex.Message;
+            return Json(new { sucesso = false, mensagem = ex.Message });
         }
-
-        return RedirectToAction(nameof(Details), new { id });
     }
 
+    [HttpPost]
     public async Task<IActionResult> Faturar(int id)
     {
-        if (!TemPermissao("Vendas.Alterar"))
-            return RedirectToAction("AccessDenied", "Auth");
-
-        var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-        var venda = await _vendaService.ObterPorIdAsync(id, empresaId);
-        if (venda == null) return NotFound();
-
-        var contas = await _contaBancariaService.ObterTodosAsync(empresaId);
-        ViewBag.ContasBancarias = new SelectList(contas, "Id", "Descricao");
-
-        return View(VendaViewModel.FromEntity(venda));
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Faturar(int id, int? contaBancariaId)
-    {
-        if (!TemPermissao("Vendas.Alterar"))
-            return RedirectToAction("AccessDenied", "Auth");
+        if (!TemPermissao("Vendas.Faturar"))
+            return Json(new { sucesso = false, mensagem = "Sem permissão" });
 
         try
         {
             var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            await _vendaService.FaturarAsync(id, empresaId, contaBancariaId);
-            TempData["Sucesso"] = "Venda faturada com sucesso! Conta a receber gerada.";
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = ex.Message;
-        }
-
-        return RedirectToAction(nameof(Details), new { id });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Cancelar(int id)
-    {
-        if (!TemPermissao("Vendas.Alterar"))
-            return RedirectToAction("AccessDenied", "Auth");
-
-        try
-        {
-            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            await _vendaService.CancelarAsync(id, empresaId);
-            TempData["Sucesso"] = "Venda cancelada com sucesso!";
-        }
-        catch (Exception ex)
-        {
-            TempData["Erro"] = ex.Message;
-        }
-
-        return RedirectToAction(nameof(Details), new { id });
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> BuscarProduto(string termo)
-    {
-        var produtos = await _produtoService.BuscarAsync(termo);
-
-        var resultado = produtos
-            .Take(10)
-            .Select(p => new
-            {
-                p.Id,
-                p.Codigo,
-                p.Descricao,
-                p.PrecoVenda,
-                p.EstoqueAtual,
-                p.Unidade
-            });
-
-        return Json(resultado);
-    }
-
-    /// <summary>
-    /// Adiciona item à venda via AJAX
-    /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> AdicionarItem(int vendaId, int produtoId, decimal quantidade)
-    {
-        if (!TemPermissao("Vendas.Alterar"))
-            return Json(new { success = false, message = "Sem permissão" });
-
-        try
-        {
-            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            var item = new VendaItem
-            {
-                ProdutoId = produtoId,
-                Quantidade = quantidade
-            };
-
-            await _vendaService.AdicionarItemAsync(vendaId, item, empresaId);
-            return Json(new { success = true, message = "Item adicionado com sucesso!" });
-        }
-        catch (Exception ex)
-        {
-            return Json(new { success = false, message = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Atualiza item da venda via AJAX
-    /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> AtualizarItem(int itemId, decimal quantidade, decimal valorUnitario)
-    {
-        if (!TemPermissao("Vendas.Alterar"))
-            return Json(new { success = false, message = "Sem permissão" });
-
-        try
-        {
-            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            var item = new VendaItem
-            {
-                Id = itemId,
-                Quantidade = quantidade,
-                PrecoUnitario = valorUnitario
-            };
-
-            await _vendaService.AtualizarItemAsync(item, empresaId);
-            return Json(new { success = true, message = "Item atualizado com sucesso!" });
-        }
-        catch (Exception ex)
-        {
-            return Json(new { success = false, message = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Remove item da venda via AJAX
-    /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> RemoverItem(int itemId)
-    {
-        if (!TemPermissao("Vendas.Alterar"))
-            return Json(new { success = false, message = "Sem permissão" });
-
-        try
-        {
-            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            await _vendaService.RemoverItemAsync(itemId, empresaId);
-            return Json(new { success = true, message = "Item removido com sucesso!" });
-        }
-        catch (Exception ex)
-        {
-            return Json(new { success = false, message = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Valida estoque antes de faturar
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> ValidarEstoque(int vendaId)
-    {
-        if (!TemPermissao("Vendas.Visualizar"))
-            return Json(new { success = false, message = "Sem permissão" });
-
-        try
-        {
-            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            var estoqueOk = await _vendaService.ValidarEstoqueAsync(vendaId, empresaId);
-            return Json(new { success = true, estoqueOk });
-        }
-        catch (Exception ex)
-        {
-            return Json(new { success = false, message = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Recalcula totais da venda via AJAX
-    /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> RecalcularTotais(int vendaId)
-    {
-        if (!TemPermissao("Vendas.Alterar"))
-            return Json(new { success = false, message = "Sem permissão" });
-
-        try
-        {
-            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
-            var venda = await _vendaService.RecalcularTotaisAsync(vendaId, empresaId);
+            await _vendaService.FaturarAsync(id, empresaId);
             
-            return Json(new { 
-                success = true, 
-                subTotal = venda.SubTotal,
-                valorDesconto = venda.ValorDesconto,
-                valorFrete = venda.ValorFrete,
-                valorTotal = venda.ValorTotal
-            });
+            return Json(new { sucesso = true, mensagem = "Venda faturada com sucesso!" });
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(new { sucesso = false, mensagem = ex.Message });
         }
     }
 
-    private async Task CarregarViewBags()
+    [HttpPost]
+    public async Task<IActionResult> Cancelar(int id, string motivo = "")
     {
-        var clientes = await _clienteService.ObterTodosAsync();
-        var produtos = await _produtoService.ObterTodosAsync();
+        if (!TemPermissao("Vendas.Cancelar"))
+            return Json(new { sucesso = false, mensagem = "Sem permissão" });
 
-        ViewBag.Clientes = new SelectList(clientes, "Id", "Nome");
-        ViewBag.Produtos = new SelectList(produtos, "Id", "CodigoFormatado");
+        try
+        {
+            var empresaId = UsuarioLogado?.EmpresaId ?? 0;
+            await _vendaService.CancelarAsync(id, empresaId, motivo);
+            
+            return Json(new { sucesso = true, mensagem = "Venda cancelada com sucesso!" });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { sucesso = false, mensagem = ex.Message });
+        }
+    }
+
+    // Método auxiliar privado - Simples
+
+    private async Task PrepararDadosFormulario()
+    {
+        var empresaId = UsuarioLogado?.EmpresaId ?? 0;
+        
+        ViewBag.Clientes = new SelectList(
+            await _clienteService.ObterTodosAsync(empresaId), 
+            "Id", "Nome"
+        );
+        
+        ViewBag.Produtos = new SelectList(
+            await _produtoService.ObterTodosAsync(empresaId), 
+            "Id", "Descricao"
+        );
     }
 }

@@ -114,6 +114,9 @@ builder.Services.AddScoped<IVendaService, VendaService>();
 builder.Services.AddScoped<ICompraService, CompraService>();
 builder.Services.AddScoped<IEstoqueService, EstoqueService>();
 
+// Domain Services - Lógica de negócio complexa
+builder.Services.AddScoped<Orama.Domain.Services.VendaProcessingService>();
+
 // Serviços de Produção
 builder.Services.AddScoped<IOrdemProducaoService, OrdemProducaoService>();
 builder.Services.AddScoped<IListaMateriaisService, ListaMateriaisService>();
@@ -122,7 +125,7 @@ builder.Services.AddScoped<IInspecaoQualidadeService, InspecaoQualidadeService>(
 builder.Services.AddScoped<INaoConformidadeService, NaoConformidadeService>();
 
 // Serviços Fiscais
-builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>();
+// builder.Services.AddScoped<INotaFiscalService, NotaFiscalService>(); // Removido - não utilizado
 
 // Registro do HttpClient para integrações externas
 builder.Services.AddHttpClient();

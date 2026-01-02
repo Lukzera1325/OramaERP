@@ -101,6 +101,51 @@ public class Produto : BaseEntity
     public string EstoqueFormatado => ControlaEstoque ? 
         $"{EstoqueAtual:N2} {Unidade}" : 
         "Não controlado";
+
+    // Métodos de negócio para estoque
+    public bool PodeVender(decimal quantidade)
+    {
+        if (!ControlaEstoque) return true;
+        return EstoqueAtual >= quantidade;
+    }
+
+    public void AdicionarEstoque(decimal quantidade, string motivo = "Entrada")
+    {
+        if (quantidade <= 0)
+            throw new ArgumentException("Quantidade deve ser maior que zero");
+
+        EstoqueAtual += quantidade;
+    }
+
+    public void RemoverEstoque(decimal quantidade, string motivo = "Saída")
+    {
+        if (quantidade <= 0)
+            throw new ArgumentException("Quantidade deve ser maior que zero");
+
+        if (ControlaEstoque && EstoqueAtual < quantidade)
+            throw new InvalidOperationException($"Estoque insuficiente. Disponível: {EstoqueAtual}, Solicitado: {quantidade}");
+
+        EstoqueAtual -= quantidade;
+    }
+
+    public void AjustarEstoque(decimal novoEstoque, string motivo = "Ajuste")
+    {
+        if (novoEstoque < 0)
+            throw new ArgumentException("Estoque não pode ser negativo");
+
+        EstoqueAtual = novoEstoque;
+    }
+
+    public bool PrecisaReposicao()
+    {
+        return ControlaEstoque && EstoqueAtual <= EstoqueMinimo;
+    }
+
+    public decimal QuantidadeSugeridaCompra()
+    {
+        if (!PrecisaReposicao()) return 0;
+        return EstoqueMaximo - EstoqueAtual;
+    }
 }
 
 /// <summary>

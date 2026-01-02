@@ -23,6 +23,63 @@
         </div>
     </div>
 
+    <!-- Ações Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Vendas", "Relatorios")" class="btn btn-success w-100">
+                                <i class="fas fa-chart-line"></i> Relatório Vendas
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Compras", "Relatorios")" class="btn btn-info w-100">
+                                <i class="fas fa-shopping-cart"></i> Relatório Compras
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Estoque", "Relatorios")" class="btn btn-warning w-100">
+                                <i class="fas fa-boxes"></i> Relatório Estoque
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Financeiro", "Relatorios")" class="btn btn-primary w-100">
+                                <i class="fas fa-money-bill-wave"></i> Relatório Financeiro
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Index", "Clientes")" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-users"></i> Gerenciar Clientes
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Index", "Produtos")" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-box"></i> Gerenciar Produtos
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("DRE", "Relatorios")" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-calculator"></i> DRE
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-dark w-100">
+                                <i class="fas fa-home"></i> Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- KPIs Cards -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-3">
@@ -382,3 +439,16 @@
         background-color: #e74a3b;
     }
 </style>
+
+@section Scripts {
+    <script src="~/js/chart.js"></script>
+    <script>
+        // Atualizar dashboard via AJAX
+        function atualizarDashboard() {
+            location.reload();
+        }
+        
+        // Auto-refresh a cada 5 minutos
+        setInterval(atualizarDashboard, 300000);
+    </script>
+}
