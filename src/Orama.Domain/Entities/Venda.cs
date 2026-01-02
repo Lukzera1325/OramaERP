@@ -34,6 +34,35 @@ public class Venda : BaseEntity
     public decimal ValorFrete { get; set; }
     public decimal ValorTotal { get; set; }
 
+    // Controle de Margem e Lucro
+    /// <summary>
+    /// Custo total dos produtos vendidos
+    /// Calculado automaticamente ao faturar a venda
+    /// </summary>
+    [Display(Name = "Custo Total")]
+    public decimal CustoTotal { get; set; } = 0;
+
+    /// <summary>
+    /// Lucro total da venda (ValorTotal - CustoTotal)
+    /// Calculado automaticamente ao faturar a venda
+    /// </summary>
+    [Display(Name = "Lucro Total")]
+    public decimal LucroTotal { get; set; } = 0;
+
+    /// <summary>
+    /// Margem percentual da venda (LucroTotal / ValorTotal) × 100
+    /// Calculado automaticamente ao faturar a venda
+    /// </summary>
+    [Display(Name = "Margem %")]
+    public decimal MargemPercentual { get; set; } = 0;
+
+    /// <summary>
+    /// Data em que a margem foi calculada
+    /// Registra quando o cálculo foi realizado
+    /// </summary>
+    [Display(Name = "Data Cálculo Margem")]
+    public DateTime? DataMargemCalculada { get; set; }
+
     // Pagamento
     public FormaPagamento FormaPagamento { get; set; } = FormaPagamento.Dinheiro;
     public int Parcelas { get; set; } = 1;
@@ -105,6 +134,67 @@ public class Venda : BaseEntity
 
         Status = StatusVenda.Faturada;
         DataAtualizacao = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Calcula margem e lucro da venda baseado no custo dos produtos
+    /// 
+    /// Fórmulas:
+    /// - Lucro = ValorTotal - CustoTotal
+    /// - Margem (%) = (Lucro / ValorTotal) × 100
+    /// 
+    /// Deve ser chamado após o faturamento, quando os custos estão definidos
+    /// </summary>
+    public void CalcularMargemELucro(IEnumerable<Produto> produtos)
+    {
+        if (Status != StatusVenda.Faturada)
+            throw new InvalidOperationException("Margem só pode ser calculada para vendas faturadas");
+
+        if (!Itens.Any())
+            throw new InvalidOperationException("Não é possível calcular margem sem itens");
+
+        decimal custoTotalCalculado = 0;
+
+        foreach (var item in Itens)
+        {
+            var produto = produtos.FirstOrDefault(p => p.Id == item.ProdutoId);
+            if (produto == null)
+                throw new InvalidOperationException($"Produto ID {item.ProdutoId} não encontrado");
+
+            // Determinar custo baseado no tipo do produto
+            decimal custoUnitario = ObterCustoUnitarioProduto(produto);
+            
+            // Calcular custo total do item
+            decimal custoItem = item.Quantidade * custoUnitario;
+            custoTotalCalculado += custoItem;
+
+            // Atualizar custo no item para auditoria
+            item.CustoUnitario = custoUnitario;
+            item.CustoTotal = custoItem;
+        }
+
+        // Registrar custos e calcular lucro/margem
+        CustoTotal = custoTotalCalculado;
+        LucroTotal = ValorTotal - CustoTotal;
+        
+        // Calcular margem percentual (evitar divisão por zero)
+        MargemPercentual = ValorTotal > 0 ? (LucroTotal / ValorTotal) * 100 : 0;
+        
+        DataMargemCalculada = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Determina o custo unitário do produto baseado no seu tipo
+    /// 
+    /// Regras:
+    /// - Produto Acabado (produzido): usar custo de produção mais recente
+    /// - Outros produtos: usar custo médio do estoque (PrecoCusto)
+    /// </summary>
+    private decimal ObterCustoUnitarioProduto(Produto produto)
+    {
+        // Para produtos produzidos, idealmente usaríamos o custo da ordem de produção
+        // Por simplicidade, vamos usar o PrecoCusto que já é atualizado pela produção
+        return produto.PrecoCusto;
     }
 
     /// <summary>
@@ -203,6 +293,21 @@ public class Venda : BaseEntity
     /// Verifica se a venda pode ser cancelada
     /// </summary>
     public bool PodeSerCancelada => Status != StatusVenda.Entregue && Status != StatusVenda.Cancelado;
+
+    /// <summary>
+    /// Indica se a margem e lucro já foram calculados
+    /// </summary>
+    public bool MargemCalculada => DataMargemCalculada.HasValue;
+
+    /// <summary>
+    /// Indica se a venda está dando lucro (margem positiva)
+    /// </summary>
+    public bool EstaDandoLucro => LucroTotal > 0;
+
+    /// <summary>
+    /// Indica se a venda está sendo vendida abaixo do custo
+    /// </summary>
+    public bool VendaAbaixoDoCusto => MargemCalculada && LucroTotal < 0;
 }
 
 /// <summary>
@@ -224,6 +329,31 @@ public class VendaItem : BaseEntity
     public decimal PercentualDesconto { get; set; }
     public decimal ValorDesconto { get; set; }
     public decimal ValorTotal { get; set; }
+
+    // Controle de Custo e Margem por Item
+    /// <summary>
+    /// Custo unitário do produto no momento da venda
+    /// Preenchido automaticamente ao calcular margem
+    /// </summary>
+    [Display(Name = "Custo Unitário")]
+    public decimal CustoUnitario { get; set; } = 0;
+
+    /// <summary>
+    /// Custo total do item (CustoUnitario × Quantidade)
+    /// Calculado automaticamente ao calcular margem
+    /// </summary>
+    [Display(Name = "Custo Total")]
+    public decimal CustoTotal { get; set; } = 0;
+
+    /// <summary>
+    /// Lucro do item (ValorTotal - CustoTotal)
+    /// </summary>
+    public decimal LucroItem => ValorTotal - CustoTotal;
+
+    /// <summary>
+    /// Margem percentual do item
+    /// </summary>
+    public decimal MargemItem => ValorTotal > 0 ? (LucroItem / ValorTotal) * 100 : 0;
 
     [StringLength(200)]
     public string? Observacoes { get; set; }

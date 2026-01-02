@@ -182,7 +182,7 @@ public class VendaService : IVendaService
         if (venda == null)
             throw new InvalidOperationException("Venda não encontrada");
 
-        // Buscar produtos para validação
+        // Buscar produtos para validação e cálculo de margem
         var produtoIds = venda.Itens.Select(i => i.ProdutoId).ToList();
         var produtos = await _context.Produtos
             .Where(p => produtoIds.Contains(p.Id) && p.EmpresaId == empresaId)
@@ -191,11 +191,14 @@ public class VendaService : IVendaService
         // Usar Domain Service para processar faturamento
         var resultado = _vendaProcessingService.ProcessarFaturamento(venda, produtos);
 
+        // Calcular margem e lucro após faturamento
+        resultado.VendaFaturada.CalcularMargemELucro(produtos);
+
         // Persistir mudanças
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // Salvar venda faturada
+            // Salvar venda faturada com margem calculada
             await _context.SaveChangesAsync();
 
             // Salvar movimentações de estoque
@@ -325,5 +328,99 @@ public class VendaService : IVendaService
             .OrderByDescending(p => p.QuantidadeVendida)
             .Take(limite)
             .ToListAsync();
+    }
+
+    // Relatórios de Lucratividade
+
+    /// <summary>
+    /// Obtém relatório de lucratividade por período
+    /// Mostra vendas faturadas com margem calculada
+    /// </summary>
+    public async Task<IEnumerable<Venda>> ObterRelatorioLucratividadeAsync(DateTime dataInicio, DateTime dataFim, int empresaId)
+    {
+        return await _context.Vendas
+            .Include(v => v.Cliente)
+            .Include(v => v.Itens)
+                .ThenInclude(i => i.Produto)
+            .Where(v => v.EmpresaId == empresaId &&
+                       v.Status == StatusVenda.Faturada &&
+                       v.DataVenda >= dataInicio &&
+                       v.DataVenda <= dataFim &&
+                       v.MargemCalculada &&
+                       v.Ativo)
+            .OrderByDescending(v => v.MargemPercentual)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Obtém vendas mais lucrativas do período
+    /// </summary>
+    public async Task<IEnumerable<Venda>> ObterVendasMaisLucrativasAsync(int empresaId, int quantidade = 10)
+    {
+        return await _context.Vendas
+            .Include(v => v.Cliente)
+            .Where(v => v.EmpresaId == empresaId &&
+                       v.Status == StatusVenda.Faturada &&
+                       v.MargemCalculada &&
+                       v.Ativo)
+            .OrderByDescending(v => v.LucroTotal)
+            .Take(quantidade)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Obtém vendas com prejuízo (vendas abaixo do custo)
+    /// </summary>
+    public async Task<IEnumerable<Venda>> ObterVendasComPrejuizoAsync(int empresaId)
+    {
+        return await _context.Vendas
+            .Include(v => v.Cliente)
+            .Where(v => v.EmpresaId == empresaId &&
+                       v.Status == StatusVenda.Faturada &&
+                       v.MargemCalculada &&
+                       v.LucroTotal < 0 &&
+                       v.Ativo)
+            .OrderBy(v => v.LucroTotal)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Obtém resumo de lucratividade por período
+    /// </summary>
+    public async Task<dynamic> ObterResumoLucratividadeAsync(DateTime dataInicio, DateTime dataFim, int empresaId)
+    {
+        var vendas = await _context.Vendas
+            .Where(v => v.EmpresaId == empresaId &&
+                       v.Status == StatusVenda.Faturada &&
+                       v.DataVenda >= dataInicio &&
+                       v.DataVenda <= dataFim &&
+                       v.MargemCalculada &&
+                       v.Ativo)
+            .ToListAsync();
+
+        if (!vendas.Any())
+        {
+            return new
+            {
+                TotalVendas = 0,
+                ValorTotalVendas = 0m,
+                CustoTotalVendas = 0m,
+                LucroTotalVendas = 0m,
+                MargemMediaPercentual = 0m,
+                VendasComLucro = 0,
+                VendasComPrejuizo = 0
+            };
+        }
+
+        return new
+        {
+            TotalVendas = vendas.Count,
+            ValorTotalVendas = vendas.Sum(v => v.ValorTotal),
+            CustoTotalVendas = vendas.Sum(v => v.CustoTotal),
+            LucroTotalVendas = vendas.Sum(v => v.LucroTotal),
+            MargemMediaPercentual = vendas.Average(v => v.MargemPercentual),
+            VendasComLucro = vendas.Count(v => v.LucroTotal > 0),
+            VendasComPrejuizo = vendas.Count(v => v.LucroTotal < 0)
+        };
     }
 }

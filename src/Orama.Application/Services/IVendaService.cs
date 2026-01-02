@@ -29,4 +29,10 @@ public interface IVendaService
     // Consultas e Relatórios
     Task<decimal> ObterTotalVendasAsync(int empresaId, DateTime? inicio = null, DateTime? fim = null);
     Task<IEnumerable<dynamic>> ObterProdutosMaisVendidosAsync(int empresaId, DateTime inicio, DateTime fim, int limite = 10);
+    
+    // Relatórios de Lucratividade
+    Task<IEnumerable<Venda>> ObterRelatorioLucratividadeAsync(DateTime dataInicio, DateTime dataFim, int empresaId);
+    Task<IEnumerable<Venda>> ObterVendasMaisLucrativasAsync(int empresaId, int quantidade = 10);
+    Task<IEnumerable<Venda>> ObterVendasComPrejuizoAsync(int empresaId);
+    Task<dynamic> ObterResumoLucratividadeAsync(DateTime dataInicio, DateTime dataFim, int empresaId);
 }
