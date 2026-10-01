@@ -518,47 +518,6 @@ public class OramaDbContext : DbContext
             }
         );
 
-        // Usuário Administrador (Super Admin)
-        modelBuilder.Entity<Usuario>().HasData(
-            new Usuario
-            {
-                Id = 1,
-                Nome = "Administrador",
-                Email = "admin@orama.com.br",
-                Senha = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-                PerfilId = 1,
-                EmpresaId = 1, // Empresa principal
-                IsSuperAdmin = true,
-                DataCriacao = DateTime.UtcNow,
-                Ativo = true
-            }
-        );
-
-        // Vincular usuário às empresas (Super Admin tem acesso a todas)
-        modelBuilder.Entity<UsuarioEmpresa>().HasData(
-            new UsuarioEmpresa
-            {
-                UsuarioId = 1,
-                EmpresaId = 1,
-                IsAdmin = true,
-                DataVinculo = DateTime.UtcNow
-            },
-            new UsuarioEmpresa
-            {
-                UsuarioId = 1,
-                EmpresaId = 2,
-                IsAdmin = true,
-                DataVinculo = DateTime.UtcNow
-            },
-            new UsuarioEmpresa
-            {
-                UsuarioId = 1,
-                EmpresaId = 3,
-                IsAdmin = true,
-                DataVinculo = DateTime.UtcNow
-            }
-        );
-
         // Permissões
         var permissoes = new[]
         {

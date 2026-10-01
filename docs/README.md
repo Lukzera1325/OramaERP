@@ -1,9 +1,9 @@
 # 📚 DOCUMENTAÇÃO ERP ORAMA
 
-**Sistema ERP Industrial Completo**  
-**Versão**: 1.0  
-**Status**: ✅ **100% Funcional - Produção Ready**  
-**Data**: Janeiro 2025
+**Sistema ERP Industrial**
+**Versão**: 1.0
+**Status**: Em auditoria de prontidão; não considerar liberado para produção sem concluir os bloqueios listados em [AUDIT.md](AUDIT.md).
+**Última revisão**: 2026-10-01
 
 ---
 
@@ -11,11 +11,10 @@
 
 O **ERP Orama** é um sistema empresarial completo desenvolvido em **.NET 8** com **arquitetura enterprise** que oferece gestão integrada para empresas industriais.
 
-### **📊 Sistema Completo**
-- **14 módulos** 100% funcionais
-- **100% das funcionalidades** implementadas
-- **~60.000 linhas** de código profissional
-- **0 erros** de compilação
+### **📊 Escopo**
+- O repositório contém módulos web e um aplicativo mobile.
+- A compilação Release passou nesta revisão, com quatro avisos de nulabilidade.
+- A cobertura funcional e a prontidão de produção ainda não foram certificadas.
 
 ### **🏗️ Arquitetura Enterprise**
 - **Domain Driven Design** (DDD)
@@ -23,16 +22,14 @@ O **ERP Orama** é um sistema empresarial completo desenvolvido em **.NET 8** co
 - **Multi-tenant** preparado
 - **APIs REST** documentadas
 
-### **📱 Mobile First**
-- **App Android nativo** (.NET MAUI)
-- **Sincronização offline**
-- **Interface moderna** e intuitiva
+### **📱 Mobile**
+- Aplicativo .NET MAUI; login autenticado depende de API configurada e ainda requer validação em dispositivo.
 
 ---
 
 ## 📋 **MÓDULOS IMPLEMENTADOS**
 
-### **✅ Core Business (100%)**
+### **Módulos presentes no repositório**
 - **Segurança** - Login, usuários, perfis, permissões
 - **Cadastros** - Clientes, fornecedores, produtos, categorias
 - **Financeiro** - Contas a receber/pagar, bancos, movimentações
@@ -40,7 +37,7 @@ O **ERP Orama** é um sistema empresarial completo desenvolvido em **.NET 8** co
 - **Compras** - Cotações, pedidos, recebimento
 - **Estoque** - Movimentações, inventário, relatórios
 
-### **✅ Módulos Industriais (100%)**
+### **Módulos industriais**
 - **Produção** - Ordens, BOM, controle de custos
 - **Controle de Custos** - Cálculo automático de custos de produção
 - **Margem e Lucro** - Análise de lucratividade por venda
@@ -48,7 +45,7 @@ O **ERP Orama** é um sistema empresarial completo desenvolvido em **.NET 8** co
 - **Alertas** - Sistema de alertas de margem negativa
 - **Explicações** - Sistema que explica resultados financeiros
 
-### **✅ Módulos Avançados (100%)**
+### **Módulos adicionais**
 - **Mobile** - App completo com sincronização
 - **APIs** - REST endpoints para integração
 
@@ -71,8 +68,7 @@ cd OramaERP
 .\executar-sistema.ps1
 
 # Acesse: http://localhost:5000
-# Login: admin@orama.com.br
-# Senha: Admin@123
+# Configure uma conta individual antes de entrar no sistema.
 ```
 
 ---
@@ -86,13 +82,16 @@ cd OramaERP
 
 ### **Para Novos Desenvolvedores**
 - **[Guia do Estagiário](guia-estagiario.md)** - Onboarding completo
-- **[Padrões de Código](padroes-codigo.md)** - Convenções e boas práticas
+- Consulte os guias arquivados em [archive](archive/) para materiais históricos.
 - **[Fluxos de Negócio](fluxos-negocio.md)** - Como o sistema funciona
 
-### **Para DevOps**
-- **[Instalação](../INSTALACAO.md)** - Setup e configuração
-- **[Docker](docker.md)** - Containerização
-- **[Deploy](deploy.md)** - Publicação em produção
+### Engenharia e operação
+- [Auditoria](AUDIT.md)
+- [Revisão de segurança](security-review.md)
+- [Multi-tenancy](multi-tenancy.md)
+- [Inventário de documentação](documentation-inventory.md)
+- [Compose local](../docker-compose.yml)
+- Documentos legados foram preservados em [archive](archive/).
 
 ---
 
@@ -112,44 +111,7 @@ cd OramaERP
 
 ---
 
-## 📈 **ESTATÍSTICAS DO PROJETO**
+## **Pendências**
+- Migrations PostgreSQL, execução de CI, cenários transacionais de vendas/estoque e validação do mobile ainda precisam ser verificados.
 
-### **Código Implementado**
-- **~60.000 linhas** de código
-- **25 Controllers** (21 Web + 4 API)
-- **21 Services** completos
-- **24 Entidades** do domínio
-- **~120 Views** Razor
-- **0 erros** de compilação
-
-### **Cobertura Funcional**
-- **14 módulos** 100% completos
-- **100% funcional** para produção
-- **Sistema industrial completo**
-
----
-
-## 🏆 **CONQUISTAS**
-
-### **✅ Sistema Enterprise**
-- Arquitetura sólida e escalável
-- Código de qualidade profissional
-- Padrões de mercado implementados
-- Multi-tenant e seguro
-
-### **✅ Funcionalidade Completa**
-- Gestão empresarial completa
-- App mobile com sincronização
-- APIs para integrações
-- Relatórios gerenciais
-
-### **✅ Pronto para Mercado**
-- 100% das funcionalidades implementadas
-- Interface moderna e responsiva
-- Documentação técnica completa
-- **Pode ser usado em produção AGORA**
-
----
-
-**Desenvolvido com ❤️ em .NET 8**  
-**Última atualização**: Janeiro 2025
+Consulte [AUDIT.md](AUDIT.md), [security-review.md](security-review.md) e [FINAL_REVIEW.md](FINAL_REVIEW.md) antes de qualquer liberação.

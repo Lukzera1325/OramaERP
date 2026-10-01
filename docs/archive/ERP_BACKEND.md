@@ -357,7 +357,7 @@ Entities/
     "DefaultConnection": "Data Source=orama.db"
   },
   "Jwt": {
-    "Key": "ChaveSecretaParaOramaGoMobile2024!@#",
+    "Key": "${JWT_KEY}",
     "Issuer": "OramaERP",
     "Audience": "OramaGoMobile"
   }
@@ -379,8 +379,7 @@ dotnet run --project src/Orama.Web
 ### **Acesso**
 - **URL**: http://localhost:5050
 - **Swagger**: http://localhost:5050/api/docs
-- **Login**: admin@orama.com.br
-- **Senha**: Admin@123
+- Use uma conta individual provisionada para o ambiente.
 
 ---
 

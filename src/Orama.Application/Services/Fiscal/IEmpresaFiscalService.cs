@@ -25,7 +25,7 @@ namespace Orama.Application.Services.Fiscal
         /// <summary>
         /// Encerra a vigência de uma configuração fiscal
         /// </summary>
-        Task EncerrarVigenciaAsync(int configuracaoId, DateTime dataEncerramento);
+        Task EncerrarVigenciaAsync(int configuracaoId, int empresaId, DateTime dataEncerramento);
         
         /// <summary>
         /// Lista todas as configurações fiscais da empresa

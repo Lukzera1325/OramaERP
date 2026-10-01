@@ -62,7 +62,8 @@ namespace Orama.Web.Controllers
             try
             {
                 // Validar venda
-                var erros = await _emissaoService.ValidarVendaParaNFeAsync(vendaId);
+                var empresaId = ObterEmpresaId();
+                var erros = await _emissaoService.ValidarVendaParaNFeAsync(vendaId, empresaId);
                 if (erros.Any())
                 {
                     TempData["Erro"] = $"Venda inválida: {string.Join(", ", erros)}";
@@ -70,7 +71,7 @@ namespace Orama.Web.Controllers
                 }
                 
                 // Gerar NF-e
-                var nfe = await _emissaoService.GerarNFeAsync(vendaId, UsuarioId);
+                var nfe = await _emissaoService.GerarNFeAsync(vendaId, empresaId, UsuarioId);
                 
                 TempData["Sucesso"] = $"NF-e {nfe.Numero} gerada com sucesso!";
                 return RedirectToAction(nameof(Detalhes), new { id = nfe.Id });
@@ -91,7 +92,7 @@ namespace Orama.Web.Controllers
         {
             try
             {
-                var nfe = await _emissaoService.AssinarEEnviarAsync(id, UsuarioId);
+                var nfe = await _emissaoService.AssinarEEnviarAsync(id, ObterEmpresaId(), UsuarioId);
                 
                 if (nfe.Status == NFeStatus.Autorizada)
                 {
@@ -120,7 +121,7 @@ namespace Orama.Web.Controllers
         {
             try
             {
-                var nfe = await _consultaService.ConsultarSituacaoAsync(id, UsuarioId);
+                var nfe = await _consultaService.ConsultarSituacaoAsync(id, ObterEmpresaId(), UsuarioId);
                 
                 TempData["Sucesso"] = $"Consulta realizada. Status: {nfe.Status} - {nfe.MensagemSefaz}";
                 return RedirectToAction(nameof(Detalhes), new { id });
@@ -141,7 +142,7 @@ namespace Orama.Web.Controllers
         {
             try
             {
-                var nfe = await _cancelamentoService.CancelarNFeAsync(id, justificativa, UsuarioId);
+                var nfe = await _cancelamentoService.CancelarNFeAsync(id, ObterEmpresaId(), justificativa, UsuarioId);
                 
                 TempData["Sucesso"] = $"NF-e {nfe.Numero} cancelada com sucesso!";
                 return RedirectToAction(nameof(Detalhes), new { id });
@@ -170,7 +171,7 @@ namespace Orama.Web.Controllers
                 }
                 
                 // Verificar se pode cancelar
-                var (podeCancelar, motivoCancelamento) = await _cancelamentoService.PodeCancelarAsync(id);
+                var (podeCancelar, motivoCancelamento) = await _cancelamentoService.PodeCancelarAsync(id, empresaId);
                 ViewBag.PodeCancelar = podeCancelar;
                 ViewBag.MotivoCancelamento = motivoCancelamento;
                 

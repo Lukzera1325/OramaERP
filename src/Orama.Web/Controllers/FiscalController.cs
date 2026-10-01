@@ -146,7 +146,7 @@ namespace Orama.Web.Controllers
         {
             try
             {
-                await _empresaFiscalService.EncerrarVigenciaAsync(id, dataEncerramento);
+                await _empresaFiscalService.EncerrarVigenciaAsync(id, ObterEmpresaId(), dataEncerramento);
                 
                 TempData["Sucesso"] = "Vigência da configuração fiscal encerrada com sucesso!";
             }

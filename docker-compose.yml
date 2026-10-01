@@ -1,42 +1,46 @@
-# Docker Compose para desenvolvimento local do Orama ERP
-# Facilita a configuração do PostgreSQL para desenvolvimento
-
-version: '3.8'
-
+# Local portfolio/demo stack. For production, use managed secrets and migrations.
 services:
-  # Banco de dados PostgreSQL
   postgres:
-    image: postgres:15-alpine
-    container_name: orama_postgres
+    image: postgres:16-alpine
     environment:
-      POSTGRES_DB: orama_erp_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    networks:
-      - orama_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
-  # pgAdmin para administração do banco (opcional)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: orama_pgadmin
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@orama.com.br
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Database__Provider: PostgreSql
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:?Set POSTGRES_DB in .env};Username=${POSTGRES_USER:?Set POSTGRES_USER in .env};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env}
+      Jwt__Issuer: ${JWT_ISSUER:-OramaERP}
+      Jwt__Audience: ${JWT_AUDIENCE:-OramaGoMobile}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN:-http://localhost:5000}
+      Seed__AdminEmail: ${SEED_ADMIN_EMAIL:-}
+      Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:-}
     ports:
-      - "8080:80"
+      - "127.0.0.1:${WEB_PORT:-5000}:8080"
     depends_on:
-      - postgres
-    networks:
-      - orama_network
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
 volumes:
   postgres_data:
-
-networks:
-  orama_network:
-    driver: bridge

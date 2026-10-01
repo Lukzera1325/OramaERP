@@ -40,7 +40,9 @@ public abstract class BaseController : Controller
     /// <summary>
     /// ID do usuário atualmente logado
     /// </summary>
-    protected int UsuarioId => UsuarioLogado?.Id ?? 1; // Fallback para usuário ID 1
+    protected int UsuarioId => UsuarioLogado?.Id is > 0 and var usuarioId
+        ? usuarioId
+        : throw new UnauthorizedAccessException("Usuário não autenticado.");
 
     /// <summary>
     /// Verifica se o usuário tem uma permissão específica
@@ -116,6 +118,8 @@ public abstract class BaseController : Controller
     /// </summary>
     protected int ObterEmpresaId()
     {
-        return UsuarioLogado?.EmpresaId ?? 1; // Fallback para empresa ID 1
+        return UsuarioLogado?.EmpresaId is > 0 and var empresaId
+            ? empresaId
+            : throw new UnauthorizedAccessException("Empresa ativa não encontrada.");
     }
 }

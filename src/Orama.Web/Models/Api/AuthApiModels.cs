@@ -50,7 +50,7 @@ public class LoginApiResponse
     /// <summary>
     /// Data de expiração do token
     /// </summary>
-    public DateTime TokenExpiration { get; set; } = DateTime.UtcNow.AddDays(30);
+    public DateTime TokenExpiration { get; set; } = DateTime.UtcNow.AddHours(8);
 }
 
 /// <summary>

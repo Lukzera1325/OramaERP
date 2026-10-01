@@ -1312,11 +1312,6 @@ namespace Orama.Infra.Data.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Usuarios",
-                columns: new[] { "Id", "Ativo", "DataAtualizacao", "DataCriacao", "DataUltimoAcesso", "Email", "EmpresaId", "IsSuperAdmin", "Nome", "PerfilId", "Permissoes", "Senha", "Telefone", "UltimoLogin" },
-                values: new object[] { 1, true, null, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(2118), null, "admin@orama.com.br", 1, true, "Administrador", 1, "[]", "$2a$11$nZ/FWIV4VvxrxD3O6BKsaujiei3TsiStDF60i7kkirwUcAm6JO1eC", null, null });
-
-            migrationBuilder.InsertData(
                 table: "Produtos",
                 columns: new[] { "Id", "Altura", "Ativo", "Categoria", "CategoriaId", "Cest", "Codigo", "CodigoBarras", "ControlaEstoque", "DataAtualizacao", "DataCriacao", "Descricao", "DescricaoDetalhada", "EmpresaId", "EstoqueAtual", "EstoqueMaximo", "EstoqueMinimo", "Largura", "MargemLucro", "Ncm", "Observacoes", "Peso", "PrecoCusto", "PrecoMinimo", "PrecoVenda", "Profundidade", "Unidade" },
                 values: new object[,]
@@ -1327,16 +1322,6 @@ namespace Orama.Infra.Data.Migrations
                     { 4, null, true, null, 5, null, "SERVIDOR001", null, true, null, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(3640), "Servidor Dell PowerEdge T340", null, 2, 3m, 10m, 1m, null, 41.18m, "84713012", null, null, 8500.00m, 0m, 12000.00m, null, "UN" },
                     { 5, null, true, null, 7, null, "ARROZ001", null, true, null, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(3643), "Arroz Branco Tipo 1 - 5kg", null, 3, 200m, 500m, 50m, null, 51.20m, "10063021", null, null, 12.50m, 0m, 18.90m, null, "PCT" },
                     { 6, null, true, null, 8, null, "DETERGENTE001", null, true, null, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(3647), "Detergente Líquido 500ml", null, 3, 150m, 300m, 30m, null, 94.44m, "34022000", null, null, 1.80m, 0m, 3.50m, null, "UN" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "UsuarioEmpresas",
-                columns: new[] { "EmpresaId", "UsuarioId", "DataVinculo", "IsAdmin" },
-                values: new object[,]
-                {
-                    { 1, 1, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(2393), true },
-                    { 2, 1, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(2394), true },
-                    { 3, 1, new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(2396), true }
                 });
 
             migrationBuilder.CreateIndex(

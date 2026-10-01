@@ -2740,20 +2740,6 @@ namespace Orama.Infra.Data.Migrations
 
                     b.ToTable("Usuarios");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Ativo = true,
-                            DataCriacao = new DateTime(2026, 1, 2, 16, 28, 55, 718, DateTimeKind.Utc).AddTicks(3078),
-                            Email = "admin@orama.com.br",
-                            EmpresaId = 1,
-                            IsSuperAdmin = true,
-                            Nome = "Administrador",
-                            PerfilId = 1,
-                            Permissoes = "[]",
-                            Senha = "$2a$11$abcRhMNduTP4j4JP2bfd/u5PYYAGJL64OlbcM0Xhi8iRfeMmdiOcG"
-                        });
                 });
 
             modelBuilder.Entity("Orama.Domain.Entities.UsuarioEmpresa", b =>

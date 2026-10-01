@@ -104,8 +104,8 @@ code .
 
 ### **2. Acesse o Sistema**
 - **URL**: http://localhost:5000
-- **Login**: admin@orama.com.br
-- **Senha**: Admin@123
+- **Login**: solicite uma conta individual de desenvolvimento ao responsável pelo ambiente.
+- **Senha**: use a credencial provisionada para você; não reutilize contas de demonstração.
 
 ### **3. Explore os Módulos**
 1. **Cadastros** → Produtos, Clientes, Fornecedores
@@ -280,7 +280,7 @@ dotnet restore
 
 ### **Dentro do Projeto**
 - **[Arquitetura](arquitetura.md)** - Como o sistema está estruturado
-- **[Padrões](padroes-codigo.md)** - Convenções do projeto
+- Materiais históricos de convenções ficam em [archive](archive/), quando disponíveis.
 - **[Backend](backend.md)** - Documentação técnica completa
 
 ---

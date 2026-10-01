@@ -105,22 +105,6 @@ public partial class LoginViewModel : BaseViewModel
         }
     }
 
-    [RelayCommand]
-    private async Task FillAdminCredentialsAsync()
-    {
-        Email = "admin@orama.com.br";
-        Senha = "Admin@123";
-        LembrarMe = true;
-    }
-
-    [RelayCommand]
-    private async Task FillVendedorCredentialsAsync()
-    {
-        Email = "vendedor@orama.com.br";
-        Senha = "123456";
-        LembrarMe = true;
-    }
-
     private async Task NavigateToDashboard()
     {
         await _navigationService.NavigateToAsync("//dashboard");

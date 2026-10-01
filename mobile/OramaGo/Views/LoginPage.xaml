@@ -115,32 +115,6 @@
                 </Frame>
             </StackLayout>
 
-            <!-- Informações de Teste -->
-            <Frame BackgroundColor="#E3F2FD" 
-                   BorderColor="#2196F3" 
-                   CornerRadius="10" 
-                   Padding="15"
-                   Margin="0,20,0,0">
-                <StackLayout Spacing="10">
-                    <Label Text="Contas de Teste:" 
-                           FontSize="14" 
-                           FontAttributes="Bold" 
-                           TextColor="#1976D2" />
-                    
-                    <StackLayout Spacing="5">
-                        <Label Text="👤 Admin: admin@orama.com.br / Admin@123" 
-                               FontSize="12" 
-                               TextColor="#1976D2" />
-                        <Label Text="👤 Vendedor: vendedor@orama.com.br / 123456" 
-                               FontSize="12" 
-                               TextColor="#1976D2" />
-                        <Label Text="🚫 Sem Acesso: semacesso@orama.com.br / 123456" 
-                               FontSize="12" 
-                               TextColor="#1976D2" />
-                    </StackLayout>
-                </StackLayout>
-            </Frame>
-
             <!-- Versão -->
             <Label Text="Versão 1.0.0" 
                    FontSize="12" 

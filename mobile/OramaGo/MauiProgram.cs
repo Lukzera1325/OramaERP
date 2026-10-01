@@ -37,8 +37,13 @@ public static class MauiProgram
 		builder.Services.AddScoped<IClienteSyncService, ClienteSyncService>();
 		
 		// Serviços de autenticação e segurança
+		var apiBaseUrl = Preferences.Get("OramaApiBaseUrl", "https://localhost:5001/");
 		builder.Services.AddHttpClient();
-		builder.Services.AddScoped<IAuthService, AuthService>();
+		builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+		{
+			if (Uri.TryCreate(apiBaseUrl, UriKind.Absolute, out var baseUri) && baseUri.Scheme == Uri.UriSchemeHttps)
+				client.BaseAddress = baseUri;
+		});
 		builder.Services.AddScoped<IPermissionService, PermissionService>();
 		builder.Services.AddScoped<IUserContextService, UserContextService>();
 		builder.Services.AddScoped<IStartupService, StartupService>();

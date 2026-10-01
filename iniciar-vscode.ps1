@@ -50,7 +50,6 @@ Write-Host "3. Selecione 'run-web' para executar o sistema" -ForegroundColor Whi
 Write-Host "4. Acesse http://localhost:5000" -ForegroundColor White
 Write-Host ""
 Write-Host "🔑 LOGIN:" -ForegroundColor Cyan
-Write-Host "Email: admin@orama.com.br" -ForegroundColor White
-Write-Host "Senha: Admin@123" -ForegroundColor White
+Write-Host "Use uma conta individual provisionada para este ambiente." -ForegroundColor White
 Write-Host ""
 Write-Host "📚 Consulte o GUIA_MIGRACAO_VSCODE.md para mais detalhes" -ForegroundColor Yellow

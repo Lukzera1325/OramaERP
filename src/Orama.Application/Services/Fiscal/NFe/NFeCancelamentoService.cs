@@ -18,7 +18,7 @@ namespace Orama.Application.Services.Fiscal.NFe
             _sefazGateway = sefazGateway;
         }
         
-        public async Task<NFeDocumento> CancelarNFeAsync(int nfeId, string justificativa, int usuarioId)
+        public async Task<NFeDocumento> CancelarNFeAsync(int nfeId, int empresaId, string justificativa, int usuarioId)
         {
             // Validar justificativa
             if (string.IsNullOrWhiteSpace(justificativa) || justificativa.Length < 15)
@@ -26,13 +26,13 @@ namespace Orama.Application.Services.Fiscal.NFe
             
             var nfe = await _context.NFeDocumentos
                 .Include(n => n.Eventos)
-                .FirstOrDefaultAsync(n => n.Id == nfeId);
+                .FirstOrDefaultAsync(n => n.Id == nfeId && _context.Vendas.Any(v => v.Id == n.VendaId && v.EmpresaId == empresaId));
             
             if (nfe == null)
                 throw new ArgumentException("NF-e não encontrada");
             
             // Verificar se pode cancelar
-            var (pode, motivo) = await PodeCancelarAsync(nfeId);
+            var (pode, motivo) = await PodeCancelarAsync(nfeId, empresaId);
             if (!pode)
                 throw new InvalidOperationException(motivo);
             
@@ -91,9 +91,10 @@ namespace Orama.Application.Services.Fiscal.NFe
             }
         }
         
-        public async Task<(bool Pode, string Motivo)> PodeCancelarAsync(int nfeId)
+        public async Task<(bool Pode, string Motivo)> PodeCancelarAsync(int nfeId, int empresaId)
         {
-            var nfe = await _context.NFeDocumentos.FindAsync(nfeId);
+            var nfe = await _context.NFeDocumentos
+                .FirstOrDefaultAsync(n => n.Id == nfeId && _context.Vendas.Any(v => v.Id == n.VendaId && v.EmpresaId == empresaId));
             
             if (nfe == null)
                 return (false, "NF-e não encontrada");

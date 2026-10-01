@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using OramaGo.Models;
 using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace OramaGo.Services;
 
@@ -28,9 +29,39 @@ public class AuthService : IAuthService
         {
             _logger.LogInformation($"Tentando fazer login para: {request.Email}");
 
-            // TODO: Implementar chamada real para API quando estiver pronta
-            // Por enquanto, simular login para desenvolvimento
-            var response = await SimulateLoginAsync(request);
+            using var httpResponse = await _httpClient.PostAsJsonAsync("api/AuthApi/login", new
+            {
+                request.Email,
+                request.Senha
+            });
+
+            var envelope = await httpResponse.Content.ReadFromJsonAsync<ApiEnvelope<ApiLoginData>>();
+            if (!httpResponse.IsSuccessStatusCode || envelope?.Success != true || envelope.Data == null)
+            {
+                return new LoginResponse
+                {
+                    Sucesso = false,
+                    Erro = envelope?.Message ?? "Email ou senha inválidos"
+                };
+            }
+
+            var payload = envelope.Data;
+            var response = new LoginResponse
+            {
+                Sucesso = true,
+                Token = payload.Token,
+                ExpiresAt = payload.TokenExpiration,
+                Usuario = new UsuarioInfo
+                {
+                    Id = payload.Usuario.Id,
+                    Nome = payload.Usuario.Nome,
+                    Email = payload.Usuario.Email,
+                    EmpresaId = payload.Usuario.EmpresaId,
+                    EmpresaNome = payload.Usuario.EmpresaNome,
+                    TemPermissaoOramaGo = payload.Usuario.Permissoes.Contains("OramaGo.Acesso"),
+                    Permissoes = payload.Usuario.Permissoes
+                }
+            };
 
             if (response.Sucesso && response.Usuario != null)
             {
@@ -145,21 +176,15 @@ public class AuthService : IAuthService
         try
         {
             var currentUser = await GetCurrentUserAsync();
-            if (currentUser?.RefreshToken == null)
+            if (currentUser == null)
                 return false;
 
             _logger.LogInformation("Renovando token...");
 
-            // TODO: Implementar chamada real para API quando estiver pronta
-            // Por enquanto, simular renovação
-            var newExpiry = DateTime.Now.AddHours(8);
-            currentUser.ExpiresAt = newExpiry;
-
-            await SaveUserSessionAsync(currentUser);
-            _currentUser = currentUser;
-
-            _logger.LogInformation("Token renovado com sucesso");
-            return true;
+            // O backend ainda não possui endpoint de refresh; não prolongamos tokens localmente.
+            await ClearSessionAsync();
+            AuthenticationChanged?.Invoke(this, false);
+            return false;
         }
         catch (Exception ex)
         {
@@ -209,93 +234,27 @@ public class AuthService : IAuthService
         }
     }
 
-    // Método temporário para simular login durante desenvolvimento
-    private async Task<LoginResponse> SimulateLoginAsync(LoginRequest request)
+    private sealed class ApiEnvelope<T>
     {
-        await Task.Delay(1000); // Simular delay de rede
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public T? Data { get; set; }
+    }
 
-        // Credenciais de teste
-        if (request.Email == "admin@orama.com.br" && request.Senha == "Admin@123")
-        {
-            return new LoginResponse
-            {
-                Sucesso = true,
-                Token = "fake_jwt_token_" + Guid.NewGuid().ToString("N")[..16],
-                RefreshToken = "fake_refresh_token_" + Guid.NewGuid().ToString("N")[..16],
-                ExpiresAt = DateTime.Now.AddHours(8),
-                Usuario = new UsuarioInfo
-                {
-                    Id = 1,
-                    Nome = "Administrador",
-                    Email = request.Email,
-                    EmpresaId = 1,
-                    EmpresaNome = "Empresa Demo",
-                    TemPermissaoOramaGo = true,
-                    Permissoes = new List<string> 
-                    { 
-                        "Vendas.Visualizar", 
-                        "Vendas.Incluir", 
-                        "Vendas.Alterar",
-                        "Clientes.Visualizar",
-                        "Clientes.Incluir",
-                        "Clientes.Alterar",
-                        "Produtos.Visualizar"
-                    }
-                }
-            };
-        }
+    private sealed class ApiLoginData
+    {
+        public string Token { get; set; } = string.Empty;
+        public DateTime TokenExpiration { get; set; }
+        public ApiUser Usuario { get; set; } = new();
+    }
 
-        if (request.Email == "vendedor@orama.com.br" && request.Senha == "123456")
-        {
-            return new LoginResponse
-            {
-                Sucesso = true,
-                Token = "fake_jwt_token_" + Guid.NewGuid().ToString("N")[..16],
-                RefreshToken = "fake_refresh_token_" + Guid.NewGuid().ToString("N")[..16],
-                ExpiresAt = DateTime.Now.AddHours(8),
-                Usuario = new UsuarioInfo
-                {
-                    Id = 2,
-                    Nome = "João Vendedor",
-                    Email = request.Email,
-                    EmpresaId = 1,
-                    EmpresaNome = "Empresa Demo",
-                    TemPermissaoOramaGo = true,
-                    Permissoes = new List<string> 
-                    { 
-                        "Vendas.Visualizar", 
-                        "Vendas.Incluir",
-                        "Clientes.Visualizar",
-                        "Clientes.Incluir",
-                        "Produtos.Visualizar"
-                    }
-                }
-            };
-        }
-
-        if (request.Email == "semacesso@orama.com.br" && request.Senha == "123456")
-        {
-            return new LoginResponse
-            {
-                Sucesso = true,
-                Token = "fake_jwt_token_" + Guid.NewGuid().ToString("N")[..16],
-                Usuario = new UsuarioInfo
-                {
-                    Id = 3,
-                    Nome = "Usuário Sem Acesso",
-                    Email = request.Email,
-                    EmpresaId = 1,
-                    EmpresaNome = "Empresa Demo",
-                    TemPermissaoOramaGo = false, // Não tem permissão
-                    Permissoes = new List<string>()
-                }
-            };
-        }
-
-        return new LoginResponse
-        {
-            Sucesso = false,
-            Erro = "Email ou senha inválidos"
-        };
+    private sealed class ApiUser
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public int EmpresaId { get; set; }
+        public string EmpresaNome { get; set; } = string.Empty;
+        public List<string> Permissoes { get; set; } = new();
     }
 }

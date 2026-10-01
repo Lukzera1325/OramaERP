@@ -641,12 +641,6 @@ namespace Orama.Infra.Data.Migrations
                 column: "DataVinculo",
                 value: new DateTime(2026, 1, 2, 16, 28, 55, 718, DateTimeKind.Utc).AddTicks(3363));
 
-            migrationBuilder.UpdateData(
-                table: "Usuarios",
-                keyColumn: "Id",
-                keyValue: 1,
-                columns: new[] { "DataCriacao", "Senha" },
-                values: new object[] { new DateTime(2026, 1, 2, 16, 28, 55, 718, DateTimeKind.Utc).AddTicks(3078), "$2a$11$abcRhMNduTP4j4JP2bfd/u5PYYAGJL64OlbcM0Xhi8iRfeMmdiOcG" });
         }
 
         /// <inheritdoc />
@@ -1276,12 +1270,6 @@ namespace Orama.Infra.Data.Migrations
                 column: "DataVinculo",
                 value: new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(2396));
 
-            migrationBuilder.UpdateData(
-                table: "Usuarios",
-                keyColumn: "Id",
-                keyValue: 1,
-                columns: new[] { "DataCriacao", "Senha" },
-                values: new object[] { new DateTime(2025, 12, 30, 0, 51, 22, 8, DateTimeKind.Utc).AddTicks(2118), "$2a$11$nZ/FWIV4VvxrxD3O6BKsaujiei3TsiStDF60i7kkirwUcAm6JO1eC" });
         }
     }
 }

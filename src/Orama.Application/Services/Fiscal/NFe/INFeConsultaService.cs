@@ -10,7 +10,7 @@ namespace Orama.Application.Services.Fiscal.NFe
         /// <summary>
         /// Consulta situação da NF-e na SEFAZ
         /// </summary>
-        Task<NFeDocumento> ConsultarSituacaoAsync(int nfeId, int usuarioId);
+        Task<NFeDocumento> ConsultarSituacaoAsync(int nfeId, int empresaId, int usuarioId);
         
         /// <summary>
         /// Consulta situação por chave de acesso

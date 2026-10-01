@@ -26,7 +26,7 @@ src/
 
 ## 📊 **MÓDULOS IMPLEMENTADOS**
 
-### **✅ Core Business (100%)**
+### **Módulos presentes (descrição funcional, não certificação de completude)**
 
 #### **1. Segurança e Usuários**
 - **Entidades**: Usuario, Empresa, Perfil
@@ -71,7 +71,7 @@ src/
   - Baixas e quitações
   - Fluxo de caixa
 
-### **✅ Módulos Industriais (100%)**
+### **Módulos industriais**
 
 #### **7. Produção Industrial**
 - **Entidades**: OrdemProducao, EstruturaProduto
@@ -114,7 +114,7 @@ src/
   - Categorização de problemas
   - Integração com alertas
 
-### **✅ APIs e Integrações (100%)**
+### **APIs e integrações**
 
 #### **13. APIs REST**
 - **Endpoints**: Clientes, Produtos, Vendas, Estoque
@@ -413,21 +413,9 @@ POST   /api/estoque/movimentar # Movimentar estoque
 
 ---
 
-## 📈 **ESTATÍSTICAS**
+## **Status de validação**
 
-### **Código Implementado**
-- **~60.000 linhas** de código C#
-- **25 Controllers** (21 Web + 4 API)
-- **21 Services** com interfaces
-- **24 Entidades** do domínio
-- **~120 Views** Razor
-- **0 erros** de compilação
-
-### **Cobertura Funcional**
-- **14 módulos** 100% implementados
-- **Sistema industrial completo**
-- **APIs REST completas**
-- **Interface responsiva**
+Confira [AUDIT.md](AUDIT.md) para resultados de build e testes. A lista de módulos acima descreve áreas do código, não uma certificação de completude ou prontidão para produção.
 
 ---
 

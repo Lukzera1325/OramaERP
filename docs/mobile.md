@@ -43,10 +43,10 @@ Interface                            Sincronização
 
 ## 📊 **MÓDULOS IMPLEMENTADOS**
 
-### **✅ Core Mobile (100%)**
+### **Escopo mobile (não certifica completude; confira o status de validação em AUDIT.md)**
 
 #### **1. Autenticação e Segurança**
-- **Login offline** - Credenciais armazenadas localmente
+- **Login online** - Autenticação pelo backend; operação offline não foi validada nesta revisão
 - **Multi-empresa** - Seleção de empresa por domínio
 - **Token JWT** - Autenticação com backend
 - **Logout seguro** - Limpeza de dados locais
@@ -491,21 +491,9 @@ dotnet publish -f net8.0-android -c Release -p:AndroidKeyStore=true -p:AndroidSi
 
 ---
 
-## 📊 **ESTATÍSTICAS MOBILE**
+## **Status de validação**
 
-### **Código Implementado**
-- **~15.000 linhas** de código C#/XAML
-- **13 ViewModels** com MVVM
-- **11 Views** XAML
-- **25 Services** mobile
-- **5 Modelos** locais
-- **0 erros** de compilação
-
-### **Funcionalidades**
-- **6 módulos** 100% funcionais
-- **Offline-first** completo
-- **Sincronização** automática
-- **Interface nativa** otimizada
+O build MAUI não foi concluído nesta máquina: faltam workloads iOS/MacCatalyst e o ambiente não permitiu gravar artefatos do target Windows. A lista de telas/serviços acima não certifica operação offline ou sincronização ponta a ponta. Consulte [AUDIT.md](AUDIT.md).
 
 ---
 

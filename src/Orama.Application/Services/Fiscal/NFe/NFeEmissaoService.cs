@@ -29,10 +29,10 @@ namespace Orama.Application.Services.Fiscal.NFe
             _vendaMapper = vendaMapper;
         }
         
-        public async Task<NFeDocumento> GerarNFeAsync(int vendaId, int usuarioId)
+        public async Task<NFeDocumento> GerarNFeAsync(int vendaId, int empresaId, int usuarioId)
         {
             // Validar venda
-            var erros = await ValidarVendaParaNFeAsync(vendaId);
+            var erros = await ValidarVendaParaNFeAsync(vendaId, empresaId);
             if (erros.Any())
             {
                 throw new InvalidOperationException($"Venda inválida para NF-e: {string.Join(", ", erros)}");
@@ -40,7 +40,10 @@ namespace Orama.Application.Services.Fiscal.NFe
             
             // Verificar se já existe NF-e para esta venda
             var nfeExistente = await _context.NFeDocumentos
-                .FirstOrDefaultAsync(n => n.VendaId == vendaId);
+                .Join(_context.Vendas, n => n.VendaId, v => v.Id, (n, v) => new { NFe = n, Venda = v })
+                .Where(x => x.Venda.EmpresaId == empresaId && x.NFe.VendaId == vendaId)
+                .Select(x => x.NFe)
+                .FirstOrDefaultAsync();
             
             if (nfeExistente != null)
             {
@@ -51,7 +54,7 @@ namespace Orama.Application.Services.Fiscal.NFe
             var venda = await _context.Vendas
                 .Include(v => v.Itens)
                 .ThenInclude(i => i.Produto)
-                .FirstOrDefaultAsync(v => v.Id == vendaId);
+                .FirstOrDefaultAsync(v => v.Id == vendaId && v.EmpresaId == empresaId);
             
             if (venda == null)
             {
@@ -62,7 +65,7 @@ namespace Orama.Application.Services.Fiscal.NFe
             var nfeDocumento = await _vendaMapper.MapearVendaParaNFeAsync(venda, usuarioId);
             
             // Gerar número e chave de acesso
-            nfeDocumento.Numero = await ObterProximoNumeroAsync(venda.EmpresaId);
+            nfeDocumento.Numero = await ObterProximoNumeroAsync(empresaId);
             
             // Buscar configuração da empresa para UF e CNPJ
             var empresaConfig = await _context.EmpresasFiscaisConfig
@@ -78,7 +81,7 @@ namespace Orama.Application.Services.Fiscal.NFe
             }
             
             // Buscar dados da empresa
-            var empresa = await _context.Empresas.FindAsync(venda.EmpresaId);
+            var empresa = await _context.Empresas.FirstOrDefaultAsync(e => e.Id == venda.EmpresaId);
             if (empresa == null)
             {
                 throw new InvalidOperationException("Empresa não encontrada");
@@ -98,11 +101,12 @@ namespace Orama.Application.Services.Fiscal.NFe
             return nfeDocumento;
         }
         
-        public async Task<NFeDocumento> AssinarEEnviarAsync(int nfeId, int usuarioId)
+        public async Task<NFeDocumento> AssinarEEnviarAsync(int nfeId, int empresaId, int usuarioId)
         {
             var nfe = await _context.NFeDocumentos
+                .Where(n => n.Id == nfeId && _context.Vendas.Any(v => v.Id == n.VendaId && v.EmpresaId == empresaId))
                 .Include(n => n.Itens)
-                .FirstOrDefaultAsync(n => n.Id == nfeId);
+                .FirstOrDefaultAsync();
             
             if (nfe == null)
             {
@@ -119,7 +123,7 @@ namespace Orama.Application.Services.Fiscal.NFe
                 // Verificar segurança para produção
                 if (nfe.AmbienteFiscal == AmbienteFiscal.Producao)
                 {
-                    await ValidarProducaoHabilitadaAsync(nfe.VendaId);
+                    await ValidarProducaoHabilitadaAsync(nfe.VendaId, empresaId);
                 }
                 
                 // Gerar XML
@@ -169,14 +173,14 @@ namespace Orama.Application.Services.Fiscal.NFe
             return ultimoNumero + 1;
         }
         
-        public async Task<List<string>> ValidarVendaParaNFeAsync(int vendaId)
+        public async Task<List<string>> ValidarVendaParaNFeAsync(int vendaId, int empresaId)
         {
             var erros = new List<string>();
             
             var venda = await _context.Vendas
                 .Include(v => v.Itens)
                 .ThenInclude(i => i.Produto)
-                .FirstOrDefaultAsync(v => v.Id == vendaId);
+                .FirstOrDefaultAsync(v => v.Id == vendaId && v.EmpresaId == empresaId);
             
             if (venda == null)
             {
@@ -301,9 +305,9 @@ namespace Orama.Application.Services.Fiscal.NFe
             return JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
         }
         
-        private async Task ValidarProducaoHabilitadaAsync(int vendaId)
+        private async Task ValidarProducaoHabilitadaAsync(int vendaId, int empresaId)
         {
-            var venda = await _context.Vendas.FindAsync(vendaId);
+            var venda = await _context.Vendas.FirstOrDefaultAsync(v => v.Id == vendaId && v.EmpresaId == empresaId);
             if (venda == null) return;
             
             var empresaConfig = await _context.EmpresasFiscaisConfig

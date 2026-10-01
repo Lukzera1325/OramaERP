@@ -18,11 +18,11 @@ namespace Orama.Application.Services.Fiscal.NFe
             _sefazGateway = sefazGateway;
         }
         
-        public async Task<NFeDocumento> ConsultarSituacaoAsync(int nfeId, int usuarioId)
+        public async Task<NFeDocumento> ConsultarSituacaoAsync(int nfeId, int empresaId, int usuarioId)
         {
             var nfe = await _context.NFeDocumentos
                 .Include(n => n.Eventos)
-                .FirstOrDefaultAsync(n => n.Id == nfeId);
+                .FirstOrDefaultAsync(n => n.Id == nfeId && _context.Vendas.Any(v => v.Id == n.VendaId && v.EmpresaId == empresaId));
             
             if (nfe == null)
                 throw new ArgumentException("NF-e não encontrada");

@@ -6,7 +6,7 @@
 - **ERP Orama**: 100% funcional em http://localhost:5000
 - **Compilação**: 0 erros, apenas warnings não críticos
 - **Database**: SQLite inicializada com dados de teste
-- **Login**: admin@orama.com.br / Admin@123
+- **Login**: use uma conta individual provisionada no ambiente.
 
 ### 🎯 Últimas Implementações Realizadas
 1. **Módulo Fiscal**: NotaFiscal completo com CRUD
@@ -176,8 +176,7 @@ dotnet run --project src/Orama.Web --urls "http://localhost:5001"
 ## 📊 DADOS DE TESTE
 
 ### Login Administrativo
-- **Email**: admin@orama.com.br
-- **Senha**: Admin@123
+- **Acesso**: solicite provisionamento ao responsável pelo ambiente.
 
 ### Dados Pré-cadastrados
 - **Empresa**: Orama Tecnologia (ID: 1)

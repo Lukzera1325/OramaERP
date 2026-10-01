@@ -224,7 +224,7 @@ public class AuthApiController : ControllerBase
 
     private string GerarTokenJWT(Domain.Entities.Usuario usuario)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "ChaveSecretaParaOramaGoMobile2024!@#"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -243,10 +243,10 @@ public class AuthApiController : ControllerBase
         var allClaims = claims.Concat(permissionClaims).ToArray();
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"] ?? "OramaERP",
-            audience: _configuration["Jwt:Audience"] ?? "OramaGoMobile",
+            issuer: _configuration["Jwt:Issuer"]!,
+            audience: _configuration["Jwt:Audience"]!,
             claims: allClaims,
-            expires: DateTime.UtcNow.AddDays(30), // Token válido por 30 dias
+            expires: DateTime.UtcNow.AddHours(8),
             signingCredentials: credentials
         );
 
@@ -257,7 +257,7 @@ public class AuthApiController : ControllerBase
     {
         try
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "ChaveSecretaParaOramaGoMobile2024!@#"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             
             var tokenHandler = new JwtSecurityTokenHandler();
             var validationParameters = new TokenValidationParameters
@@ -265,9 +265,9 @@ public class AuthApiController : ControllerBase
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
                 ValidateIssuer = true,
-                ValidIssuer = _configuration["Jwt:Issuer"] ?? "OramaERP",
+                ValidIssuer = _configuration["Jwt:Issuer"]!,
                 ValidateAudience = true,
-                ValidAudience = _configuration["Jwt:Audience"] ?? "OramaGoMobile",
+                ValidAudience = _configuration["Jwt:Audience"]!,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };

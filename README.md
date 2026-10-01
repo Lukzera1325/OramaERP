@@ -1,191 +1,112 @@
-# 🚀 ERP ORAMA - Sistema Empresarial Completo
+# Órama ERP
 
-[![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-95%25%20Funcional-brightgreen.svg)](README.md)
-[![Mobile](https://img.shields.io/badge/Mobile-.NET%20MAUI-purple.svg)](mobile/)
-
-**Versão**: 1.0  
-**Status**: ✅ **95% Funcional - Pronto para Produção**  
-**Data**: Janeiro 2025
-
-> **Sistema ERP completo e moderno desenvolvido em .NET 8 com app mobile nativo**
+ERP industrial desenvolvido em .NET 8 para explorar arquitetura de sistemas corporativos, multi-tenancy, produção, estoque, vendas, financeiro e fiscal. Este é um projeto de portfólio em evolução, não um produto certificado para operação fiscal ou empresarial.
 
 ---
 
-## 🌟 **DESTAQUES DO PROJETO**
+## Why this project exists
 
-### **📊 Sistema Completo**
-- **13 módulos** 100% funcionais
-- **95% das funcionalidades** implementadas
-- **~55.000 linhas** de código profissional
-- **0 erros** de compilação
-
-### **🏗️ Arquitetura Enterprise**
-- **Domain Driven Design** (DDD)
-- **Clean Architecture** em camadas
-- **Multi-tenant** preparado
-- **APIs REST** documentadas
-
-### **📱 Mobile First**
-- **App Android nativo** (.NET MAUI)
-- **Sincronização offline**
-- **Interface moderna** e intuitiva
-- **Multi-empresa** por domínio
-
-### **💼 Pronto para Negócios**
-- **Interface profissional** com Bootstrap 5
-- **Dashboard executivo** com BI
-- **Relatórios gerenciais** completos
-- **Pode ser usado em produção AGORA**
+O repositório demonstra decisões e fluxos típicos de um monólito modular. Funcionalidades fiscais usam um gateway mock e não substituem integração homologada com a SEFAZ.
 
 ---
 
 ---
 
-## 📸 **SCREENSHOTS**
+## Screenshots
 
 ### **Dashboard Executivo**
-![Dashboard](docs/screenshots/dashboard.png)
-*Dashboard com KPIs em tempo real, gráficos interativos e métricas de negócio*
+Screenshots reais ainda não foram capturados. Não há imagens de interface publicadas neste repositório.
 
 ### **Gestão de Vendas**
-![Vendas](docs/screenshots/vendas.png)
-*Interface completa para gestão de vendas com workflow de orçamento → pedido → faturamento*
 
 ### **App Mobile**
-![Mobile](docs/screenshots/mobile.png)
-*App Android nativo com sincronização offline e interface moderna*
-
-> **Nota**: Screenshots serão adicionados em breve
+<!-- Add screenshots captured from a running, sanitized instance when available. -->
 
 ---
 
-## 📋 **VISÃO GERAL**
+## Highlights
 
-O **ERP Orama** é um sistema empresarial completo desenvolvido em **.NET 8** com **arquitetura enterprise** que oferece gestão integrada para empresas de todos os portes.
+O Órama ERP organiza domínios empresariais em uma solução ASP.NET Core MVC/API e um cliente móvel .NET MAUI.
 
 ### **🎯 Principais Características**
-- ✅ **Sistema Web Completo** - ASP.NET Core MVC
-- ✅ **App Mobile Nativo** - .NET MAUI multiplataforma
-- ✅ **APIs REST** - Integração e sincronização
-- ✅ **Banco de Dados** - SQLite (desenvolvimento) / SQL Server (produção)
-- ✅ **Multi-tenant** - Isolamento por empresa
-- ✅ **Offline First** - Funciona sem internet
+- ASP.NET Core MVC e APIs com autenticação JWT
+- EF Core com SQLite e PostgreSQL configuráveis
+- Vendas, compras, financeiro, estoque, produção/BOM e relatórios
+- Fiscal/NF-e isolado, com gateway SEFAZ mock
+- Cliente .NET MAUI com persistência local
 
 ---
 
-## 🏗️ **ARQUITETURA DO SISTEMA**
+## Architecture
 
-### **Backend (.NET 8)**
-```
-src/
-├── Orama.Domain/          # Entidades e regras de negócio
-├── Orama.Application/     # Serviços e lógica de aplicação
-├── Orama.Infra.Data/      # Acesso a dados (Entity Framework)
-├── Orama.Infra.CrossCutting/ # Utilitários e helpers
-└── Orama.Web/             # Interface web (MVC + APIs)
+Arquitetura em camadas. Application referencia Infra.Data, portanto o projeto não afirma aderência estrita a Clean Architecture.
+
+```mermaid
+flowchart LR
+  Web[ASP.NET Core MVC/API] --> App[Application Services]
+  App --> Domain[Domain]
+  App --> Data[Infra.Data / EF Core]
+  Data --> DB[(SQLite ou PostgreSQL)]
+  Web --> Cross[Infra.CrossCutting]
 ```
 
-### **Mobile (.NET MAUI)**
-```
-mobile/OramaGo/
-├── Models/                # Modelos locais
-├── ViewModels/            # MVVM ViewModels
-├── Views/                 # Telas XAML
-├── Services/              # Serviços e APIs
-└── Data/                  # SQLite local
-```
+O cliente móvel está em `mobile/OramaGo` e usa MVVM, XAML e SQLite local.
 
 ---
 
-## 📊 **MÓDULOS IMPLEMENTADOS**
+## Domains
 
-### **✅ Core Business (100%)**
-- **Segurança** - Login, usuários, perfis, permissões
-- **Cadastros** - Clientes, fornecedores, produtos, categorias
-- **Financeiro** - Contas a receber/pagar, bancos, movimentações
-- **Vendas** - Orçamentos, pedidos, faturamento
-- **Compras** - Cotações, pedidos, recebimento
-- **Estoque** - Movimentações, inventário, relatórios
+- Cadastros e segurança
+- Vendas e compras
+- Estoque e inventário
+- Produção e estrutura de produto (BOM)
+- Financeiro e relatórios
+- Fiscal/NF-e: fluxo com gateway mock, sem autorização real pela SEFAZ
 
-### **✅ Módulos Avançados (100%)**
-- **Produção** - Ordens, BOM, qualidade, não conformidades
-- **Relatórios** - Dashboard, DRE, relatórios gerenciais
-- **Mobile** - App completo com sincronização
-- **APIs** - REST endpoints para integração
+## Business flow
 
-### **⚠️ Módulos Parciais (40%)**
-- **Fiscal** - Notas fiscais básicas (falta SEFAZ)
+```mermaid
+flowchart LR
+  Compra --> Estoque --> Producao[Produção] --> Custo --> Venda --> Faturamento --> Margem
+```
 
-### **🔄 Funcionalidades Complementares (Futuro)**
-- **Exportação** - Excel/PDF (estrutura pronta)
-- **Business Intelligence** - Dashboards avançados
-- **Integrações** - SEFAZ, bancos, contabilidade
+## Multi-tenancy
+
+Entidades de negócio carregam `EmpresaId` e as operações devem validar o tenant ativo. A cobertura atual é parcial; consulte [docs/AUDIT.md](docs/AUDIT.md) e [docs/multi-tenancy.md](docs/multi-tenancy.md).
 
 ---
 
-## 🚀 **QUICK START**
+## Running locally with Docker
 
-### **1. Clone o Repositório**
+### Clone o repositório
 ```bash
 git clone https://github.com/Lukzera1325/OramaERP.git
 cd OramaERP
 ```
 
-### **2. Execute o Sistema**
+### Configure e suba o ambiente
 ```bash
-# Opção 1: Script automático
-.\executar-sistema.ps1
-
-# Opção 2: Manual
-dotnet restore
-dotnet run --project src/Orama.Web
+cp .env.example .env
+# Edite .env: use senhas locais únicas e uma JWT_KEY aleatória (>= 32 caracteres).
+docker compose up --build
 ```
 
-### **3. Acesse o Sistema**
-- **URL**: http://localhost:5000
-- **Login**: admin@orama.com.br
-- **Senha**: Admin@123
+URL: `http://localhost:5000`. Configure `SEED_ADMIN_EMAIL` e `SEED_ADMIN_PASSWORD` no `.env` para provisionar uma conta local, somente se o banco estiver vazio.
 
-### **4. Para VS Code + Copilot**
-```bash
-.\iniciar-vscode.ps1
-```
+O Compose é para desenvolvimento/portfólio. O schema PostgreSQL usa `EnsureCreated`; migrations versionadas ainda são SQLite e não constituem caminho de deploy PostgreSQL.
 
----
+## Running without Docker
 
-## 🚀 **COMO EXECUTAR**
-
-### **Pré-requisitos**
-- .NET 8 SDK
-- Visual Studio 2022 ou VS Code
-- SQLite (incluído)
+Requires .NET 8 SDK and externally configured `Jwt:Key` (at least 32 characters), `Jwt:Issuer`, `Jwt:Audience` and connection string. Use User Secrets or environment variables; do not store live secrets in appsettings.
 
 ### **Backend Web**
 
-#### **Opção 1: VS Code (Recomendado)**
+#### Local CLI
 ```bash
-# Execute o script de inicialização
-.\iniciar-vscode.ps1
-
-# Ou manualmente:
-dotnet restore
-dotnet build
-code .
-# No VS Code: Ctrl+Shift+P > Tasks: Run Task > run-web
-```
-
-#### **Opção 2: Linha de Comando**
-```bash
-# Execute o script PowerShell
-.\executar-sistema.ps1
-# ou
+dotnet restore Orama.sln
+dotnet build Orama.sln --no-restore
 dotnet run --project src/Orama.Web
 ```
-
-#### **📚 Documentação para VS Code**
-- **[GUIA_MIGRACAO_VSCODE.md](GUIA_MIGRACAO_VSCODE.md)** - Setup completo para VS Code + Copilot
 
 ### **App Mobile**
 ```bash
@@ -194,10 +115,7 @@ dotnet run --project src/Orama.Web
 # Executar no emulador ou dispositivo
 ```
 
-### **Acesso Padrão**
-- **URL**: http://localhost:5000
-- **Login**: admin@orama.com.br
-- **Senha**: Admin@123
+Provision an account individually or use the optional external one-time seed settings. No default login is embedded.
 
 ---
 
@@ -210,30 +128,24 @@ dotnet run --project src/Orama.Web
 - **[Arquitetura](docs/arquitetura.md)** - Padrões e estrutura
 
 ### **👨‍🎓 Para Novos Desenvolvedores**
-- **[Guia do Estagiário](docs/guia-estagiario.md)** - Onboarding completo
+- **[Guia do Estagiário](docs/guia-estagiario.md)** - Onboarding
 - **[Fluxos de Negócio](docs/fluxos-negocio.md)** - Como o sistema funciona
 
-### **🔧 Para DevOps**
-- **[Instalação](INSTALACAO.md)** - Setup e configuração
-- **docker-compose.yml** - Containerização completa
-- **executar-sistema.ps1** - Script de execução automática
+### For DevOps
+- [Audit](docs/AUDIT.md)
+- [Security review](docs/security-review.md)
+- [Docker Compose](docker-compose.yml)
 
 ---
 
 ## 📈 **ESTATÍSTICAS DO PROJETO**
 
-### **Código Implementado**
-- **~55.000 linhas** de código
-- **23 Controllers** (19 Web + 4 API)
-- **19 Services** completos
-- **22 Entidades** do domínio
-- **~110 Views** Razor
-- **0 erros** de compilação
+### Current verification
+- Build is tracked through CI; local compile currently retains nullable warnings.
+- Automated test scope is described in [docs/AUDIT.md](docs/AUDIT.md).
 
 ### **Cobertura Funcional**
-- **13 módulos** 100% completos
-- **1 módulo** 40% completo
-- **95% funcional** para produção
+- No functionality-completion or production-readiness percentage is claimed.
 
 ---
 
@@ -243,7 +155,7 @@ dotnet run --project src/Orama.Web
 - **.NET 8** - Framework principal
 - **ASP.NET Core MVC** - Interface web
 - **Entity Framework Core** - ORM
-- **SQLite/SQL Server** - Banco de dados
+- **SQLite/PostgreSQL** - Provedores configuráveis (migrations existentes SQLite)
 - **JWT** - Autenticação APIs
 - **Bootstrap 5** - Interface responsiva
 - **Chart.js** - Gráficos interativos
@@ -282,23 +194,15 @@ dotnet run --project src/Orama.Web
 
 ## 🏆 **CONQUISTAS**
 
-### **✅ Sistema Enterprise**
-- Arquitetura sólida e escalável
-- Código de qualidade profissional
-- Padrões de mercado implementados
-- Multi-tenant e seguro
+### Escopo
+- Monólito modular em evolução
+- Isolamento de tenant requer validação e testes contínuos
 
-### **✅ Funcionalidade Completa**
-- Gestão empresarial completa
-- App mobile com sincronização
-- APIs para integrações
-- Relatórios gerenciais
+### Estado
+- Não declarar funcionalidades como completas sem testes/validação específicos.
 
-### **✅ Pronto para Mercado**
-- 95% das funcionalidades implementadas
-- Interface moderna e responsiva
-- Documentação técnica completa
-- Pode ser usado em produção **AGORA**
+### Limitações
+- Projeto de portfólio, não certificado para produção empresarial ou emissão fiscal real.
 
 ---
 
@@ -312,17 +216,15 @@ dotnet run --project src/Orama.Web
 ### **Desenvolvimento**
 - Arquitetura modular e extensível
 - Padrões DDD implementados
-- Testes estruturados (em desenvolvimento)
+- Testes automatizados iniciais; confira o audit para o escopo e limitações.
 
 ---
 
 ## 🎊 **CONCLUSÃO**
 
-O **ERP Orama** é um sistema empresarial **completo e profissional** que pode competir com soluções comerciais do mercado. Com 95% das funcionalidades implementadas, está pronto para uso em empresas reais.
-
-**Próximo passo**: Implementar exportação e colocar em produção! 🚀
+O Órama ERP é um projeto de portfólio. A entrada em produção depende de auditorias, testes e operação de infraestrutura que ainda não foram verificados.
 
 ---
 
 **Desenvolvido com ❤️ em .NET 8**  
-**Última atualização**: 29/12/2024
+**Última atualização**: 2026

@@ -76,9 +76,7 @@ O sistema estará disponível em:
 
 ## 🔐 Acesso Inicial
 
-**Usuário padrão:**
-- **Email:** admin@orama.com.br
-- **Senha:** Admin@123
+**Acesso inicial:** configure/provisione uma conta administrativa individual. O projeto não inclui credenciais padrão.
 
 ## 🛠️ Comandos Úteis
 

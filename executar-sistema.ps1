@@ -76,8 +76,7 @@ try {
 Write-Host ""
 Write-Host "🚀 INICIANDO O SISTEMA..." -ForegroundColor Green
 Write-Host "📍 URL: http://localhost:5050" -ForegroundColor Cyan
-Write-Host "📧 Login: admin@orama.com.br" -ForegroundColor Cyan
-Write-Host "🔑 Senha: Admin@123" -ForegroundColor Cyan
+Write-Host "Use uma conta individual provisionada para este ambiente." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Pressione Ctrl+C para parar o servidor" -ForegroundColor Yellow
 Write-Host ""

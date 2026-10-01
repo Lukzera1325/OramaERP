@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/node_modules/
+.git/
+.env
+*.db
+*.sqlite*
+docs/screenshots/
+tests/
+mobile/

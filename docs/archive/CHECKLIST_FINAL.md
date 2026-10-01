@@ -11,7 +11,7 @@
 - [x] **SQLite**: Arquivo criado em `src/Orama.Web/orama.db`
 - [x] **Migrations**: Aplicadas com sucesso
 - [x] **Seed Data**: Dados de teste carregados
-- [x] **Login Admin**: admin@orama.com.br / Admin@123
+- [ ] Provisionar contas individuais por ambiente (não há usuário demo embutido).
 
 ### ✅ Módulos Funcionais
 - [x] **Autenticação**: Login/logout funcionando
@@ -63,7 +63,7 @@ dotnet run --project src/Orama.Web
 
 # 3. Testar login
 # Abrir http://localhost:5000
-# Login: admin@orama.com.br / Admin@123
+# Configure uma conta individual provisionada para este ambiente.
 # Resultado esperado: Dashboard carregado
 ```
 
@@ -120,7 +120,7 @@ Orama ERP/
 ### Status Final
 - **Compilação**: ✅ 0 erros
 - **Execução**: ✅ Rodando em http://localhost:5000
-- **Login**: ✅ admin@orama.com.br / Admin@123
+- **Login**: requer usuário individual provisionado.
 - **Módulos**: ✅ Todos funcionais
 - **VS Code**: ✅ Configurado e pronto
 - **Documentação**: ✅ Completa e atualizada

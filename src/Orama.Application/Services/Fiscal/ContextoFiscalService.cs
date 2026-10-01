@@ -122,6 +122,7 @@ namespace Orama.Application.Services.Fiscal
             // Buscar configuração do produto
             var produtoConfig = await _context.ProdutosFiscaisConfig
                 .Where(c => c.ProdutoId == produtoId)
+                .Where(c => _context.Produtos.Any(p => p.Id == c.ProdutoId && p.EmpresaId == empresaId))
                 .Where(c => c.VigenteDe <= data)
                 .Where(c => c.VigenteAte == null || c.VigenteAte >= data)
                 .OrderByDescending(c => c.VigenteDe)

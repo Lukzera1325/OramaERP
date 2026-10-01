@@ -406,6 +406,9 @@ logs/
 *.log
 
 # Temporary files
+.env
+.env.*
+!.env.example
 *.tmp
 *.temp
 

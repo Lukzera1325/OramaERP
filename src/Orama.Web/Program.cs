@@ -9,12 +9,24 @@ using Orama.Infra.Data.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do Entity Framework com SQLite (desenvolvimento local)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("ConnectionStrings:DefaultConnection deve ser configurada.");
+
+var databaseProvider = builder.Configuration["Database:Provider"] ?? "Sqlite";
 builder.Services.AddDbContext<OramaDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (string.Equals(databaseProvider, "PostgreSql", StringComparison.OrdinalIgnoreCase))
+        options.UseNpgsql(connectionString);
+    else if (string.Equals(databaseProvider, "Sqlite", StringComparison.OrdinalIgnoreCase))
+        options.UseSqlite(connectionString);
+    else
+        throw new InvalidOperationException($"Database:Provider não suportado: {databaseProvider}");
+});
 
 // Configuração do MVC
 builder.Services.AddControllersWithViews();
+builder.Services.AddHealthChecks();
 
 // Configuração da API com Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -54,9 +66,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configuração de autenticação JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "ChaveSecretaParaOramaGoMobile2024!@#";
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "OramaERP";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "OramaGoMobile";
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+    throw new InvalidOperationException("Jwt:Key deve ser configurada externamente e possuir pelo menos 32 caracteres.");
+if (string.IsNullOrWhiteSpace(jwtIssuer) || string.IsNullOrWhiteSpace(jwtAudience))
+    throw new InvalidOperationException("Jwt:Issuer e Jwt:Audience devem ser configurados.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -84,17 +100,19 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// Configuração de CORS para API
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OramaGoMobile", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (allowedOrigins.Length > 0)
+            policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -196,6 +214,7 @@ app.MapControllerRoute(
 
 // Mapear controllers da API
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 // Aplicar migrations automaticamente em desenvolvimento
 if (app.Environment.IsDevelopment())
@@ -205,55 +224,51 @@ if (app.Environment.IsDevelopment())
     
     try
     {
-        // Deletar banco existente se estiver vazio ou corrompido
-        if (context.Database.GetDbConnection().State == System.Data.ConnectionState.Closed)
+        await context.Database.EnsureCreatedAsync();
+        var seedEmail = builder.Configuration["Seed:AdminEmail"];
+        var seedPassword = builder.Configuration["Seed:AdminPassword"];
+        if (!string.IsNullOrWhiteSpace(seedEmail) && !string.IsNullOrWhiteSpace(seedPassword))
         {
-            await context.Database.OpenConnectionAsync();
+            if (seedPassword.Length < 12)
+                throw new InvalidOperationException("Seed:AdminPassword deve possuir pelo menos 12 caracteres.");
+
+            if (!await context.Usuarios.AnyAsync())
+            {
+                var profile = await context.Perfis.OrderBy(p => p.Id).FirstOrDefaultAsync()
+                    ?? throw new InvalidOperationException("Crie um perfil antes de provisionar o usuário inicial.");
+                var company = await context.Empresas.OrderBy(e => e.Id).FirstOrDefaultAsync()
+                    ?? throw new InvalidOperationException("Crie uma empresa antes de provisionar o usuário inicial.");
+                var admin = new Usuario
+                {
+                    Nome = builder.Configuration["Seed:AdminName"] ?? "Administrador local",
+                    Email = seedEmail,
+                    Senha = BCrypt.Net.BCrypt.HashPassword(seedPassword),
+                    PerfilId = profile.Id,
+                    EmpresaId = company.Id,
+                    IsSuperAdmin = false,
+                    DataCriacao = DateTime.UtcNow,
+                    Ativo = true
+                };
+                context.Usuarios.Add(admin);
+                await context.SaveChangesAsync();
+                context.UsuarioEmpresas.Add(new UsuarioEmpresa
+                {
+                    UsuarioId = admin.Id,
+                    EmpresaId = company.Id,
+                    IsAdmin = true
+                });
+                await context.SaveChangesAsync();
+                app.Logger.LogInformation("Conta administrativa local provisionada por configuração externa.");
+            }
         }
-        
-        // Verificar se o banco precisa ser recriado
-        var canConnect = await context.Database.CanConnectAsync();
-        if (!canConnect)
-        {
-            Console.WriteLine("🔄 Recriando banco de dados...");
-            await context.Database.EnsureDeletedAsync();
-        }
-        
-        // Criar o banco de dados com os dados iniciais
-        var created = await context.Database.EnsureCreatedAsync();
-        
-        if (created)
-        {
-            Console.WriteLine("✅ Banco de dados criado com sucesso!");
-        }
-        else
-        {
-            Console.WriteLine("ℹ️ Banco de dados já existe");
-        }
-        
-        // Verificar se o usuário admin existe
-        var adminExists = await context.Usuarios.AnyAsync(u => u.Email == "admin@orama.com.br");
-        if (adminExists)
-        {
-            Console.WriteLine("👤 Usuário administrador encontrado");
-        }
-        else
-        {
-            Console.WriteLine("⚠️ Usuário administrador não encontrado!");
-        }
-        
-        Console.WriteLine("📧 Login: admin@orama.com.br");
-        Console.WriteLine("🔑 Senha: Admin@123");
-        Console.WriteLine($"🌐 URL: http://localhost:5050");
+        app.Logger.LogInformation("Banco de desenvolvimento inicializado sem operação destrutiva.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"⚠️ Erro ao inicializar o banco de dados: {ex.Message}");
-        if (ex.InnerException != null)
-        {
-            Console.WriteLine($"Erro interno: {ex.InnerException.Message}");
-        }
+        app.Logger.LogError(ex, "Falha ao inicializar banco de desenvolvimento.");
     }
 }
 
 app.Run();
+
+public partial class Program { }

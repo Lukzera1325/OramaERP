@@ -53,21 +53,27 @@ namespace Orama.Application.Services.Fiscal
         
         public async Task<EmpresaFiscalConfig> AtualizarConfiguracaoAsync(EmpresaFiscalConfig configuracao)
         {
+            var existente = await _context.EmpresasFiscaisConfig
+                .FirstOrDefaultAsync(c => c.Id == configuracao.Id && c.EmpresaId == configuracao.EmpresaId);
+            if (existente == null)
+                throw new ArgumentException("Configuração fiscal não encontrada");
+
             var erros = await ValidarConfiguracaoAsync(configuracao);
             if (erros.Any())
             {
                 throw new InvalidOperationException($"Configuração inválida: {string.Join(", ", erros)}");
             }
             
-            _context.EmpresasFiscaisConfig.Update(configuracao);
+            _context.Entry(existente).CurrentValues.SetValues(configuracao);
             await _context.SaveChangesAsync();
             
             return configuracao;
         }
         
-        public async Task EncerrarVigenciaAsync(int configuracaoId, DateTime dataEncerramento)
+        public async Task EncerrarVigenciaAsync(int configuracaoId, int empresaId, DateTime dataEncerramento)
         {
-            var configuracao = await _context.EmpresasFiscaisConfig.FindAsync(configuracaoId);
+            var configuracao = await _context.EmpresasFiscaisConfig
+                .FirstOrDefaultAsync(c => c.Id == configuracaoId && c.EmpresaId == empresaId);
             if (configuracao == null)
             {
                 throw new ArgumentException("Configuração fiscal não encontrada");

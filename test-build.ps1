@@ -37,8 +37,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "=== PROJETO PRONTO PARA EXECUÇÃO ===" -ForegroundColor Green
     Write-Host "Para executar: dotnet run" -ForegroundColor Cyan
     Write-Host "URL: https://localhost:5001" -ForegroundColor Cyan
-    Write-Host "Login: admin@orama.com.br" -ForegroundColor Cyan
-    Write-Host "Senha: Admin@123" -ForegroundColor Cyan
+    Write-Host "Use uma conta individual provisionada para este ambiente." -ForegroundColor Cyan
 } else {
     Write-Host "✗ Erro na compilação" -ForegroundColor Red
     exit 1

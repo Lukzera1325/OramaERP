@@ -10,12 +10,12 @@ namespace Orama.Application.Services.Fiscal.NFe
         /// <summary>
         /// Cancela uma NF-e
         /// </summary>
-        Task<NFeDocumento> CancelarNFeAsync(int nfeId, string justificativa, int usuarioId);
+        Task<NFeDocumento> CancelarNFeAsync(int nfeId, int empresaId, string justificativa, int usuarioId);
         
         /// <summary>
         /// Verifica se uma NF-e pode ser cancelada
         /// </summary>
-        Task<(bool Pode, string Motivo)> PodeCancelarAsync(int nfeId);
+        Task<(bool Pode, string Motivo)> PodeCancelarAsync(int nfeId, int empresaId);
         
         /// <summary>
         /// Lista NF-es que podem ser canceladas
